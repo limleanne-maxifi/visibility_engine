@@ -99,7 +99,7 @@ export async function sendUserPlanEmail(
 </html>`;
 
   const { error } = await resend.emails.send({
-    from: process.env.FROM_EMAIL,
+    from: FROM_EMAIL,
     to: toEmail,
     subject: `Your AEO action plan, ${firstName}`,
     html,
