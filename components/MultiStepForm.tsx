@@ -1,0 +1,215 @@
+'use client';
+
+import { useState, useEffect } from 'react';
+import { useRouter } from 'next/navigation';
+import { FormData, initialFormData } from '@/lib/types';
+import { generateSessionId, parseUtmParams } from '@/lib/utils';
+import BrandPill from '@/components/BrandPill';
+import ProgressBar from '@/components/ProgressBar';
+import Step1Identity from '@/components/steps/Step1Identity';
+import Step2Context from '@/components/steps/Step2Context';
+import Step3Awareness from '@/components/steps/Step3Awareness';
+import Step4Goals from '@/components/steps/Step4Goals';
+import Step5Consent from '@/components/steps/Step5Consent';
+
+const TOTAL_STEPS = 5;
+
+type Errors = Partial<Record<keyof FormData, string>>;
+
+function validateStep(step: number, data: FormData): Errors {
+  const errors: Errors = {};
+
+  if (step === 1) {
+    if (!data.firstName.trim()) errors.firstName = 'First name is required.';
+    if (!data.email.trim()) {
+      errors.email = 'Business email is required.';
+    } else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(data.email)) {
+      errors.email = 'Please enter a valid email address.';
+    }
+  }
+
+  if (step === 2) {
+    if (!data.occupation) errors.occupation = 'Please select your occupation.';
+    if (!data.industry.trim()) errors.industry = 'Industry is required.';
+  }
+
+  if (step === 3) {
+    if (!data.aiPresence) errors.aiPresence = 'Please select an option.';
+    if (!data.aiPlatform) errors.aiPlatform = 'Please select a platform.';
+  }
+
+  if (step === 4) {
+    if (!data.aeoChallenge) errors.aeoChallenge = 'Please select your biggest challenge.';
+    if (!data.aeoOutcome) errors.aeoOutcome = 'Please select your desired outcome.';
+  }
+
+  if (step === 5) {
+    if (!data.consent) errors.consent = 'Please tick the box to continue.';
+  }
+
+  return errors;
+}
+
+export default function MultiStepForm() {
+  const [step, setStep] = useState(1);
+  const [formData, setFormData] = useState<FormData>(initialFormData);
+  const [errors, setErrors] = useState<Errors>({});
+  const [isLoading, setIsLoading] = useState(false);
+  const [submitError, setSubmitError] = useState<string | null>(null);
+  const router = useRouter();
+
+  // Capture UTM params and generate session metadata on mount
+  useEffect(() => {
+    const utms = parseUtmParams(window.location.search);
+    setFormData((prev) => ({
+      ...prev,
+      ...utms,
+      sessionId: generateSessionId(),
+      timestamp: new Date().toISOString(),
+    }));
+  }, []);
+
+  const handleChange = (updates: Partial<FormData>) => {
+    setFormData((prev) => ({ ...prev, ...updates }));
+    // Clear errors for changed fields
+    const clearedErrors = { ...errors };
+    (Object.keys(updates) as (keyof FormData)[]).forEach((key) => {
+      delete clearedErrors[key];
+    });
+    setErrors(clearedErrors);
+  };
+
+  const goNext = () => {
+    const stepErrors = validateStep(step, formData);
+    if (Object.keys(stepErrors).length > 0) {
+      setErrors(stepErrors);
+      return;
+    }
+    setErrors({});
+    setStep((s) => s + 1);
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  };
+
+  const goBack = () => {
+    setErrors({});
+    setStep((s) => s - 1);
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  };
+
+  const handleSubmit = async () => {
+    const stepErrors = validateStep(5, formData);
+    if (Object.keys(stepErrors).length > 0) {
+      setErrors(stepErrors);
+      return;
+    }
+    setErrors({});
+    setSubmitError(null);
+    setIsLoading(true);
+
+    try {
+      const res = await fetch('/api/generate', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(formData),
+      });
+
+      const data = await res.json();
+
+      if (!res.ok) {
+        throw new Error(data.error ?? 'Something went wrong. Please try again.');
+      }
+
+      router.push(`/results/${data.id}`);
+    } catch (err) {
+      setIsLoading(false);
+      setSubmitError(
+        err instanceof Error
+          ? err.message
+          : 'Something went wrong. Please try again.'
+      );
+    }
+  };
+
+  return (
+    <div className="min-h-screen bg-gray-50 flex items-start justify-center py-10 px-4">
+      <div className="w-full max-w-[520px]">
+        {/* Brand pill */}
+        <div className="mb-4">
+          <BrandPill />
+        </div>
+
+        {/* Card */}
+        <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-6 sm:p-8">
+          {/* Progress bar */}
+          <div className="mb-6">
+            <ProgressBar step={step} totalSteps={TOTAL_STEPS} />
+          </div>
+
+          {/* Step content */}
+          {step === 1 && (
+            <Step1Identity
+              data={formData}
+              onChange={handleChange}
+              onNext={goNext}
+              errors={errors}
+            />
+          )}
+          {step === 2 && (
+            <Step2Context
+              data={formData}
+              onChange={handleChange}
+              onNext={goNext}
+              onBack={goBack}
+              errors={errors}
+            />
+          )}
+          {step === 3 && (
+            <Step3Awareness
+              data={formData}
+              onChange={handleChange}
+              onNext={goNext}
+              onBack={goBack}
+              errors={errors}
+            />
+          )}
+          {step === 4 && (
+            <Step4Goals
+              data={formData}
+              onChange={handleChange}
+              onNext={goNext}
+              onBack={goBack}
+              errors={errors}
+            />
+          )}
+          {step === 5 && (
+            <Step5Consent
+              data={formData}
+              onChange={handleChange}
+              onSubmit={handleSubmit}
+              onBack={goBack}
+              errors={errors}
+              isLoading={isLoading}
+            />
+          )}
+        </div>
+
+        {/* Submission error */}
+        {submitError && (
+          <div className="mt-4 p-4 bg-red-50 border border-red-200 rounded-xl text-sm text-red-700">
+            <p className="font-medium mb-1">Something went wrong</p>
+            <p>{submitError}</p>
+            <p className="mt-2 text-red-500">
+              Need help?{' '}
+              <a
+                href={`mailto:${process.env.NEXT_PUBLIC_CONTACT_EMAIL ?? 'letsgetstarted@maxifidigital.com'}`}
+                className="underline"
+              >
+                Email us directly
+              </a>
+            </p>
+          </div>
+        )}
+      </div>
+    </div>
+  );
+}
