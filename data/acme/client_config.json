@@ -1,0 +1,13 @@
+{
+  "client_name": "Maxifi Digital",
+  "website_url": "https://www.maxifi.com.sg",
+  "industry": "AEO Consulting",
+  "competitors": [],
+  "brand_terms": [
+    "Maxifi",
+    "AEO",
+    "Answer Engine Optimisation",
+    "AI visibility"
+  ],
+  "output_dir": "data/acme"
+}
