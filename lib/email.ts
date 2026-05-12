@@ -4,7 +4,6 @@ import type { AeoLeadRow } from '@/lib/supabase';
 
 const resend = new Resend(process.env.RESEND_API_KEY);
 
-
 const CALENDLY_URL = process.env.CALENDLY_URL ?? 'https://maxifidigital.com';
 
 // ─── Email 1: User plan email (HTML) ─────────────────────────────────────────
@@ -14,6 +13,8 @@ export async function sendUserPlanEmail(
   firstName: string,
   plan: Plan
 ): Promise<void> {
+  const fromEmail = process.env.FROM_EMAIL ?? 'hello@maxifidigital.com';
+
   const stepsHtml = plan.steps
     .map(
       (step) => `
@@ -99,7 +100,7 @@ export async function sendUserPlanEmail(
 </html>`;
 
   const { error } = await resend.emails.send({
-    from: FROM_EMAIL,
+    from: fromEmail,
     to: toEmail,
     subject: `Your AEO action plan, ${firstName}`,
     html,
@@ -111,7 +112,9 @@ export async function sendUserPlanEmail(
 // ─── Email 2: Internal Maxifi notification (plain text) ───────────────────────
 
 export async function sendInternalNotification(lead: AeoLeadRow): Promise<void> {
+  const fromEmail = process.env.FROM_EMAIL ?? 'hello@maxifidigital.com';
   const notifyEmail = process.env.MAXIFI_NOTIFY_EMAIL;
+
   if (!notifyEmail) {
     console.warn('[email] MAXIFI_NOTIFY_EMAIL not set — skipping internal notification');
     return;
@@ -151,7 +154,7 @@ export async function sendInternalNotification(lead: AeoLeadRow): Promise<void> 
   ].join('\n');
 
   const { error } = await resend.emails.send({
-    from: process.env.FROM_EMAIL,
+    from: fromEmail,
     to: notifyEmail,
     subject: `New AEO lead: ${lead.first_name} — ${lead.occupation} in ${lead.industry}`,
     text: body,
