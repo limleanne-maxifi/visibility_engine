@@ -8,9 +8,9 @@ import { sendUserPlanEmail, sendInternalNotification } from '@/lib/email';
 import type { FormData } from '@/lib/types';
 import type { GenerateResponse, GenerateErrorResponse } from '@/lib/planTypes';
 
-const client = new Anthropic({
-  apiKey: process.env.ANTHROPIC_API_KEY,
-});
+function getAnthropicClient() {
+  return new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY });
+}
 
 export async function POST(
   req: NextRequest
@@ -36,7 +36,7 @@ export async function POST(
   // Call Claude
   let rawText: string;
   try {
-    const message = await client.messages.create({
+    const message = await getAnthropicClient().messages.create({
       model: 'claude-sonnet-4-6',
       max_tokens: 1000,
       system: SYSTEM_PROMPT,

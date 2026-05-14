@@ -3,7 +3,7 @@ import { getLeadById } from '@/lib/supabase';
 import CopyLinkButton from './CopyLinkButton';
 
 interface Props {
-  params: { id: string };
+  params: Promise<{ id: string }>;
 }
 
 // ─── Score helpers ────────────────────────────────────────────────────────────
@@ -148,7 +148,8 @@ const PLATFORM_STATUS_STYLES: Record<PlatformStatus, { label: string; cls: strin
 // ─── Page ─────────────────────────────────────────────────────────────────────
 
 export default async function ResultsPage({ params }: Props) {
-  const lead = await getLeadById(params.id);
+  const { id } = await params;
+  const lead = await getLeadById(id);
   if (!lead) notFound();
 
   const plan        = { steps: lead.plan_steps, quickWin: lead.plan_quick_win };
