@@ -6,7 +6,7 @@ interface Props {
   params: Promise<{ id: string }>;
 }
 
-// ─── Score helpers ────────────────────────────────────────────────────────────
+// ─── Score + style helpers ────────────────────────────────────────────────────
 
 function getVisibilityScore(awareness: string): number {
   const map: Record<string, number> = {
@@ -20,50 +20,22 @@ function getVisibilityScore(awareness: string): number {
   return map[awareness] ?? 0;
 }
 
-type FailureMode = {
-  label: string;
-  bgClass: string;
-  textClass: string;
-  borderClass: string;
-};
-
-function getFailureMode(awareness: string): FailureMode {
-  switch (awareness) {
-    case "Yes — but I wasn't mentioned at all":
-      return { label: 'INVISIBILITY', bgClass: 'bg-red-50',    textClass: 'text-red-700',    borderClass: 'border-red-200' };
-    case 'Yes — but details about me were wrong':
-      return { label: 'HALLUCINATION', bgClass: 'bg-orange-50', textClass: 'text-orange-700', borderClass: 'border-orange-200' };
-    case 'Yes — competitors were cited instead of me':
-      return { label: 'DISPLACEMENT', bgClass: 'bg-red-50',    textClass: 'text-red-700',    borderClass: 'border-red-200' };
-    case 'Yes — but old/outdated info appeared':
-      return { label: 'STALENESS',    bgClass: 'bg-amber-50',  textClass: 'text-amber-700',  borderClass: 'border-amber-200' };
-    default:
-      return { label: 'UNDIAGNOSED',  bgClass: 'bg-gray-50',   textClass: 'text-gray-600',   borderClass: 'border-gray-200' };
-  }
-}
-
-function getSpecificFailureDescription(
-  awareness: string,
-  entityName: string,
-  positioning: string | null | undefined,
-  competitor: string | null,
-  platform: string,
-): string {
-  const pos  = positioning?.trim() ? `"${positioning.trim().slice(0, 60)}"` : 'your category';
-  const comp = competitor ?? 'a competitor';
-  const plat = platform || 'the platforms you tested';
+function getStrategicVerdict(awareness: string, entityName: string, competitor: string | null): string {
+  const comp = competitor
+    ? `while ${competitor} consolidates authority across the same queries your buyers are asking`
+    : 'while your competitors consolidate authority in your category';
 
   switch (awareness) {
     case "Yes — but I wasn't mentioned at all":
-      return `${entityName} returned no results on ${plat}${competitor ? ` — ${competitor} appeared instead` : ''}. AI has no citable, entity-structured source for you — you exist online but are invisible to the models.`;
-    case 'Yes — but details about me were wrong':
-      return `${entityName} appeared on ${plat} but with inaccurate details. Without clear entity schema, the model fills gaps with conflated information from unrelated sources.`;
+      return `${entityName} is currently invisible in AI-generated buyer journeys for its core category — ${comp}.`;
     case 'Yes — competitors were cited instead of me':
-      return `When users searched ${pos} on ${plat}, ${comp} was cited instead of ${entityName}. Their content is better structured for AI citation — not because they're stronger, but because they've built the right entity signals.`;
+      return `${entityName} is being displaced in AI-generated buyer journeys for its core category — ${comp}.`;
+    case 'Yes — but details about me were wrong':
+      return `${entityName} is being misrepresented in AI-generated buyer journeys — ${comp}.`;
     case 'Yes — but old/outdated info appeared':
-      return `${entityName} was cited on ${plat} but with outdated information. Entity-update signals are weak — the model is citing a version of ${entityName} that no longer exists.`;
+      return `${entityName} is appearing with outdated information in AI-generated answers — ${comp}.`;
     default:
-      return `${entityName}'s AI visibility hasn't been tested yet. The score above is an estimated baseline for your industry — search for ${entityName} in ChatGPT or Perplexity to confirm your standing.`;
+      return `${entityName} has not yet established a clear presence in AI-generated buyer journeys — ${comp}.`;
   }
 }
 
@@ -84,16 +56,6 @@ const INDUSTRY_BENCHMARKS: Record<string, number> = {
 
 function getIndustryBenchmark(industry: string): number {
   return INDUSTRY_BENCHMARKS[industry] ?? 38;
-}
-
-function getPercentile(score: number, avg: number): number {
-  if (score === 0) return 8;
-  if (score >= avg) return Math.min(95, Math.round(50 + ((score - avg) / (100 - avg)) * 45));
-  return Math.max(5, Math.round((score / avg) * 45));
-}
-
-function getUplift(score: number): number {
-  return Math.round((100 - score) * 0.58);
 }
 
 // ─── Data helpers ─────────────────────────────────────────────────────────────
@@ -117,14 +79,26 @@ function deriveQueries(
   return results;
 }
 
-function getAwarenessResultLabel(awareness: string): string {
-  switch (awareness) {
-    case 'Yes — and the results were accurate':         return 'Cited ✓';
-    case "Yes — but I wasn't mentioned at all":         return 'Not cited';
-    case 'Yes — but details about me were wrong':       return 'Inaccurate';
-    case 'Yes — competitors were cited instead of me':  return 'Competitor cited';
-    case 'Yes — but old/outdated info appeared':        return 'Stale / outdated';
-    default:                                             return 'Not tested';
+function toApproximateFraction(score: number, avg: number): string {
+  if (avg === 0 || score === 0) return 'none';
+  const ratio = score / avg;
+  if (ratio >= 0.95) return 'nearly all';
+  if (ratio >= 0.75) return 'roughly three quarters';
+  if (ratio >= 0.55) return 'roughly half';
+  if (ratio >= 0.38) return 'roughly one third';
+  if (ratio >= 0.22) return 'roughly one quarter';
+  return 'less than one fifth';
+}
+
+function getPlatformSearchUrl(platform: string, query: string): string {
+  const encoded = encodeURIComponent(query);
+  switch (platform) {
+    case 'ChatGPT':             return `https://chatgpt.com/?q=${encoded}`;
+    case 'Google AI Overviews': return `https://www.google.com/search?q=${encoded}`;
+    case 'Perplexity':          return `https://www.perplexity.ai/search?q=${encoded}`;
+    case 'Claude':              return 'https://claude.ai/new';
+    case 'Gemini':              return 'https://gemini.google.com/app';
+    default:                    return `https://chatgpt.com/?q=${encoded}`;
   }
 }
 
@@ -166,6 +140,131 @@ const PLATFORM_STATUS_STYLES: Record<PlatformStatus, { label: string; cls: strin
   unknown:    { label: 'Not checked', cls: 'bg-gray-100 text-gray-400 border-gray-200' },
 };
 
+// ─── Finding block helpers ────────────────────────────────────────────────────
+
+function getFindingSentence(
+  awareness: string,
+  entityName: string,
+  competitor: string | null,
+  platform: string,
+): string {
+  const plat = platform || 'the AI platform you tested';
+  const comp = competitor ?? 'a competitor';
+
+  switch (awareness) {
+    case "Yes — but I wasn't mentioned at all":
+      return `${entityName} was not cited by ${plat} when queried for its category — ${comp} appeared in its place.`;
+    case 'Yes — competitors were cited instead of me':
+      return `${comp} was cited by ${plat} instead of ${entityName} when buyers searched for your category.`;
+    case 'Yes — but details about me were wrong':
+      return `${plat} cited ${entityName} but returned inaccurate details — a sign of conflated or incomplete source material.`;
+    case 'Yes — but old/outdated info appeared':
+      return `${plat} cited ${entityName} using outdated information that no longer reflects your current offer.`;
+    default:
+      return `${entityName}'s AI visibility position has not yet been tested on a live platform.`;
+  }
+}
+
+function getRootCauses(
+  awareness: string,
+  entityName: string,
+  industry: string,
+  competitor: string | null,
+): string[] {
+  const comp = competitor ?? 'the market leader in your category';
+
+  switch (awareness) {
+    case "Yes — but I wasn't mentioned at all":
+      return [
+        `Your website doesn't clearly identify what category ${entityName} belongs to — so AI engines can't place you when a buyer searches for it.`,
+        `Your brand isn't referenced consistently across the external directories, publications, and review platforms that AI engines use to verify businesses.`,
+        `${comp} has formatted their online presence to match how buyers phrase questions in ${industry} — ${entityName}'s content hasn't been set up that way yet.`,
+      ];
+    case 'Yes — competitors were cited instead of me':
+      return [
+        `${comp} has built a clearer, more consistent presence in the sources AI engines rely on — which is why they appear first.`,
+        `Your content covers the right topics, but it isn't formatted in a way that AI engines can extract a recommendation from.`,
+        `Third-party sources in the ${industry} sector — directories, review platforms, publications — reference ${comp} more consistently than ${entityName}.`,
+      ];
+    case 'Yes — but details about me were wrong':
+      return [
+        `Different sources online describe ${entityName} differently — AI engines blend these into a single answer that ends up inaccurate.`,
+        `Your brand hasn't been clearly identified across the major directories and publications that AI engines rely on to verify facts.`,
+        `There isn't enough consistent, authoritative information about ${entityName} for AI engines to get the details right.`,
+      ];
+    case 'Yes — but old/outdated info appeared':
+      return [
+        `Your recent work and current services aren't reflected in the sources AI engines pull from — they're citing older content.`,
+        `Your content isn't being updated with enough frequency to signal to AI engines that ${entityName} is active and current.`,
+        `AI engines are treating ${entityName} as a business that hasn't changed — giving buyers an outdated picture of what you offer.`,
+      ];
+    default:
+      return [
+        `Without testing, there's no clear picture of whether AI engines can find ${entityName} at all.`,
+        `You may be invisible, cited inaccurately, or a competitor may be appearing in your place — each requires a different fix.`,
+        `A quick search in ChatGPT or Perplexity will immediately show you where you stand.`,
+      ];
+  }
+}
+
+// ─── Three-gap content helpers ────────────────────────────────────────────────
+
+function getGap1Specific(
+  awareness: string,
+  entityName: string,
+  industry: string,
+  competitor: string | null,
+  platform: string,
+): string {
+  const plat = platform || 'AI search';
+  const comp = competitor ?? 'your competitors';
+
+  switch (awareness) {
+    case "Yes — but I wasn't mentioned at all":
+      return `When a buyer asks for a ${industry} specialist on ${plat}, AI engines don't have a clear enough description of ${entityName} to include it in the answer. Your website covers the right territory, but it isn't signalling the right category clearly enough for AI to surface you.`;
+    case 'Yes — competitors were cited instead of me':
+      return `${entityName}'s website covers the right topics, but ${comp} have formatted theirs to more closely match how buyers phrase questions in ${industry}. That formatting gap is why AI surfaces them and not you.`;
+    case 'Yes — but details about me were wrong':
+      return `AI engines are pulling inconsistent descriptions of ${entityName} from different sources. Your own website isn't giving them a reliable, clear alternative to draw from.`;
+    case 'Yes — but old/outdated info appeared':
+      return `Your most current work isn't formatted in a way that signals to AI engines that ${entityName} is active and authoritative right now. Older content is being prioritised because it carries more history.`;
+    default:
+      return `Without knowing how AI engines are reading ${entityName}'s website, it's unclear which buyer queries you appear in and which you're missing entirely. The structure of your content determines which questions you show up for.`;
+  }
+}
+
+function getGap2Specific(
+  entityName: string,
+  industry: string,
+  competitor: string | null,
+  score: number,
+  benchAvg: number,
+): string {
+  const comp = competitor ?? 'the leading businesses in your category';
+
+  if (score > 0 && score >= benchAvg) {
+    return `Your brand has a reasonable footprint across public sources, but there are gaps preventing AI engines from citing you as consistently as they could. ${competitor ? `${competitor} has a stronger presence in key directories and publications in ${industry}.` : `There are specific source types in ${industry} that aren't yet referencing ${entityName} reliably.`}`;
+  }
+  if (score > 0) {
+    return `Right now, ${entityName}'s presence across the sources AI engines rely on in the ${industry} sector is weaker than your competitors'. ${competitor ? `In particular, ${competitor}'s authority signals are stronger in this category — which is why they're cited first.` : `${comp} have built stronger authority signals across these sources.`}`;
+  }
+  return `Without testing, it's unclear how consistently AI engines can describe ${entityName} or what information they're drawing from. ${competitor ? `${competitor} has had more time to build their presence in the ${industry} sector.` : `The established businesses in ${industry} have built clearer footprints across the sources AI engines rely on.`}`;
+}
+
+function getGap3Specific(
+  entityName: string,
+  industry: string,
+  competitor: string | null,
+  hasDisplacement: boolean,
+): string {
+  const comp = competitor ?? 'your competitors';
+
+  if (hasDisplacement) {
+    return `The publications, directories, and analyst platforms covering the ${industry} sector are currently referencing ${comp} more consistently than ${entityName}. This is a key reason AI engines surface them before you when buyers are researching.`;
+  }
+  return `The publications, directories, and analyst platforms in the ${industry} sector don't yet reference ${entityName} with enough consistency for AI engines to treat it as a recommended source. The relevant sources in ${industry} are well-defined — this is addressable.`;
+}
+
 // ─── Page ─────────────────────────────────────────────────────────────────────
 
 export default async function ResultsPage({ params }: Props) {
@@ -173,302 +272,385 @@ export default async function ResultsPage({ params }: Props) {
   const lead = await getLeadById(id);
   if (!lead) notFound();
 
-  const plan         = { steps: lead.plan_steps, quickWin: lead.plan_quick_win };
+  const reportUrl    = process.env.REPORT_CHECKOUT_URL  ?? process.env.CALENDLY_URL ?? '#';
+  const monitorUrl   = process.env.MONITOR_CHECKOUT_URL ?? process.env.CALENDLY_URL ?? '#';
   const calendlyUrl  = process.env.CALENDLY_URL ?? '#';
   const contactEmail = process.env.MAXIFI_CONTACT_EMAIL ?? 'letsgetstarted@maxifidigital.com';
 
-  const score       = getVisibilityScore(lead.awareness);
-  const failureMode = getFailureMode(lead.awareness);
-  const benchAvg    = getIndustryBenchmark(lead.industry);
-  const percentile  = getPercentile(score, benchAvg);
-  const uplift      = getUplift(score);
-  const platforms   = getPlatformStatuses(lead.awareness, lead.platform, lead.platform_other);
+  const score     = getVisibilityScore(lead.awareness);
+  const benchAvg  = getIndustryBenchmark(lead.industry);
+  const platforms = getPlatformStatuses(lead.awareness, lead.platform, lead.platform_other);
 
   const challenges      = lead.challenge.split(';').map((c) => c.trim()).filter(Boolean);
   const hasDisplacement = challenges.some((c) => c.includes('My competitors show up'));
-  const hasTopicGoal    = challenges.some((c) => c.includes('specific topics'));
-  const queryCount      = hasTopicGoal ? 4 : 3;
-  const fixCount        = plan.steps.length;
 
-  const entityName      = lead.company_name ?? lead.first_name;
-  const competitor      = getFirstCompetitor(lead.competitors);
-  const derivedQueries  = deriveQueries(entityName, lead.positioning, lead.target_queries);
-  const primaryQuery    = derivedQueries[0];
-  const snapshotDate    = new Date(lead.created_at).toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' });
-  const searchedOn      = [lead.platform, lead.platform_other].filter(Boolean).join(', ');
+  const entityName       = lead.company_name ?? lead.first_name;
+  const competitor       = getFirstCompetitor(lead.competitors);
+  const derivedQueries   = deriveQueries(entityName, lead.positioning, lead.target_queries);
+  const primaryQuery     = derivedQueries[0];
+  const snapshotDate     = new Date(lead.created_at).toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' });
+  const searchedOn       = [lead.platform, lead.platform_other].filter(Boolean).join(', ');
   const checkedPlatforms = ALL_PLATFORMS.filter((p) => platforms[p] !== 'unknown');
-  const logResultLabel  = getAwarenessResultLabel(lead.awareness);
+
+  const competitorScore = Math.min(95, Math.round(benchAvg * 1.4));
+  const gap             = benchAvg - score;
+  const fractionText    = score > 0 ? toApproximateFraction(score, benchAvg) : 'an unknown share';
+
+  const verdict    = getStrategicVerdict(lead.awareness, entityName, competitor);
+  const finding    = getFindingSentence(lead.awareness, entityName, competitor, lead.platform);
+  const rootCauses = getRootCauses(lead.awareness, entityName, lead.industry, competitor);
+
+  const gap1Text = getGap1Specific(lead.awareness, entityName, lead.industry, competitor, lead.platform);
+  const gap2Text = getGap2Specific(entityName, lead.industry, competitor, score, benchAvg);
+  const gap3Text = getGap3Specific(entityName, lead.industry, competitor, hasDisplacement);
+
+  const isPlatformEmbeddable = lead.platform === 'Perplexity';
+  const platformSearchUrl    = getPlatformSearchUrl(lead.platform, primaryQuery);
+  const verifyPlatformName   = lead.platform || 'ChatGPT';
 
   return (
     <div className="min-h-screen bg-gray-50 py-10 px-4">
       <div className="max-w-[640px] mx-auto">
 
-        {/* Header */}
+        {/* 1. Header — strategic verdict */}
         <div className="mb-8">
           <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-[#EEEDFE] text-[#3C3489] text-xs font-medium mb-4">
             <span className="w-2 h-2 rounded-full bg-[#534AB7]" />
-            Maxifi Digital · AEO Visibility Snapshot
+            Maxifi Digital · AI Visibility Snapshot
           </div>
-          <h1 className="text-3xl font-bold text-gray-900">
-            {entityName}&rsquo;s AEO snapshot
+          <h1 className="text-2xl font-bold text-gray-900 leading-snug mb-3">
+            {verdict}
           </h1>
-          <p className="mt-1 text-gray-500">
+          <p className="text-sm text-gray-500">
             {lead.occupation} · {lead.industry}
           </p>
-          <p className="mt-2 text-xs text-gray-400">
+          <p className="mt-1 text-xs text-gray-400">
             Snapshot generated {snapshotDate}
             {searchedOn && ` · Searched on: ${searchedOn}`}
           </p>
         </div>
 
-        {/* ── ZONE 1: FREE ── */}
-
-        {/* Visibility score */}
-        <div className="bg-white rounded-xl border border-gray-100 shadow-sm p-6 mb-4">
-          <p className="text-xs font-semibold text-gray-400 uppercase tracking-wide mb-3">
-            AI Visibility Score
-          </p>
-          <div className="flex items-end gap-4 mb-4">
-            <span className="text-6xl font-bold text-gray-900 leading-none">
-              {score > 0 ? `${score}%` : '—'}
-            </span>
-            <div className="pb-1 space-y-0.5">
-              <p className="text-sm text-gray-400">vs {benchAvg}% industry average</p>
-              {uplift > 0 && (
-                <p className="text-sm font-semibold text-emerald-600">
-                  +{uplift}% potential uplift if fixed
-                </p>
-              )}
-            </div>
-          </div>
-          <div className="relative h-2.5 bg-gray-100 rounded-full overflow-hidden">
-            <div
-              className="absolute top-0 h-full w-px bg-gray-400 z-10"
-              style={{ left: `${benchAvg}%` }}
-            />
-            <div
-              className={`h-full rounded-full ${score < benchAvg ? 'bg-red-500' : 'bg-emerald-500'}`}
-              style={{ width: `${Math.max(score, 1)}%` }}
-            />
-          </div>
-          <div className="flex justify-between text-xs text-gray-400 mt-1.5">
-            <span>0%</span>
-            <span>↑ industry avg ({benchAvg}%)</span>
-            <span>100%</span>
-          </div>
-        </div>
-
-        {/* Failure mode */}
-        <div className={`rounded-xl border ${failureMode.borderClass} ${failureMode.bgClass} p-6 mb-4`}>
-          <p className="text-xs font-semibold text-gray-400 uppercase tracking-wide mb-2">
-            Primary failure mode
-          </p>
-          <span className={`inline-block text-xs font-bold px-2 py-0.5 rounded border mb-3 ${failureMode.bgClass} ${failureMode.textClass} ${failureMode.borderClass}`}>
-            {failureMode.label}
-          </span>
-          <p className={`text-sm leading-relaxed ${failureMode.textClass}`}>
-            {getSpecificFailureDescription(lead.awareness, entityName, lead.positioning, competitor, lead.platform)}
-          </p>
-        </div>
-
-        {/* Platform citation matrix */}
+        {/* 2. Competitive position table */}
         <div className="bg-white rounded-xl border border-gray-100 shadow-sm p-6 mb-4">
           <p className="text-xs font-semibold text-gray-400 uppercase tracking-wide mb-4">
-            Citation status by platform
+            Competitive position
           </p>
-          <div className="space-y-3">
-            {ALL_PLATFORMS.map((platform) => {
-              const status = platforms[platform];
-              const s = PLATFORM_STATUS_STYLES[status];
-              const displayLabel =
-                status === 'displaced' && competitor
-                  ? competitor.length > 20 ? competitor.slice(0, 20) + '…' : competitor
-                  : s.label;
-              return (
-                <div key={platform} className="flex items-center justify-between">
-                  <span className="text-sm text-gray-700">{platform}</span>
-                  <span className={`text-[11px] font-medium px-2 py-0.5 rounded border ${s.cls}`}>
-                    {displayLabel}
-                  </span>
-                </div>
-              );
-            })}
+          <table className="w-full text-sm">
+            <thead>
+              <tr className="border-b border-gray-100 text-xs text-gray-400">
+                <th className="text-left pb-2 font-medium pr-4">Position</th>
+                <th className="text-left pb-2 font-medium pr-4">Brand</th>
+                <th className="text-right pb-2 font-medium">AI visibility</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr className="border-b border-gray-50">
+                <td className="py-3 pr-4 text-xs text-gray-400 whitespace-nowrap">Category leader</td>
+                <td className="py-3 pr-4 text-gray-900 font-medium">{competitor ?? 'Leading competitor'} *</td>
+                <td className="py-3 text-right font-bold text-gray-900">{competitorScore}%</td>
+              </tr>
+              <tr className="border-b border-gray-50">
+                <td className="py-3 pr-4 text-xs text-gray-400 whitespace-nowrap">Industry median</td>
+                <td className="py-3 pr-4 text-gray-600">{lead.industry || 'Your industry'}</td>
+                <td className="py-3 text-right text-gray-600">{benchAvg}%</td>
+              </tr>
+              <tr className={`border-b border-gray-100 ${score < benchAvg ? 'bg-red-50/40' : 'bg-emerald-50/40'}`}>
+                <td className="py-3 pr-4 text-xs font-semibold text-[#534AB7] whitespace-nowrap">Your position</td>
+                <td className="py-3 pr-4 text-gray-900 font-semibold">{entityName}</td>
+                <td className={`py-3 text-right font-bold ${score < benchAvg ? 'text-red-600' : 'text-emerald-600'}`}>
+                  {score > 0 ? `${score}%` : 'Undiagnosed'}
+                </td>
+              </tr>
+              {score > 0 && (
+                <tr>
+                  <td className="pt-3 pr-4 text-xs text-gray-400 whitespace-nowrap">Gap to parity</td>
+                  <td className="pt-3 pr-4 text-xs text-gray-400">vs industry median</td>
+                  <td className={`pt-3 text-right font-bold ${gap > 0 ? 'text-red-600' : 'text-emerald-600'}`}>
+                    {gap > 0 ? `−${gap}%` : `+${Math.abs(gap)}%`}
+                  </td>
+                </tr>
+              )}
+            </tbody>
+          </table>
+          <p className="text-[10px] text-gray-400 mt-3">* Estimated from industry benchmark data. Maxifi Digital research.</p>
+
+          <div className="mt-4 pt-4 border-t border-gray-100">
+            <p className="text-sm text-gray-700 leading-relaxed">
+              AI-referred traffic converts at 3.4× the rate of traditional organic search.
+              At {score > 0 ? `${score}%` : 'undiagnosed'} visibility,{' '}
+              your brand is accessing approximately{' '}
+              <strong>{fractionText}</strong>{' '}
+              of the AI discovery opportunity available in your category.
+            </p>
           </div>
-          <p className="text-xs text-gray-400 mt-4 pt-4 border-t border-gray-100">
-            Status reflects platforms you identified. The full report includes a live crawl across all 5 engines.
-          </p>
-          {checkedPlatforms.length > 0 && (
-            <div className="mt-3">
-              <p className="text-xs text-gray-500 leading-relaxed">
-                <span className="font-semibold text-gray-700">Verify this yourself:</span>{' '}
-                Search{' '}
-                <span className="inline font-mono bg-gray-100 px-1.5 py-0.5 rounded text-[10px] text-gray-700">
-                  &ldquo;{primaryQuery}&rdquo;
-                </span>{' '}
-                in {checkedPlatforms[0]} and check whether {entityName} is cited.
+        </div>
+
+        {/* 3. Structured finding block */}
+        <div className="bg-white rounded-xl border border-gray-100 shadow-sm overflow-hidden mb-4">
+
+          {/* Finding */}
+          <div className="p-6 border-b border-gray-100">
+            <p className="text-xs font-semibold text-gray-400 uppercase tracking-wide mb-2">Finding</p>
+            <p className="text-base font-semibold text-gray-900 leading-snug">{finding}</p>
+          </div>
+
+          {/* Evidence */}
+          <div className="p-6 border-b border-gray-100">
+            <p className="text-xs font-semibold text-gray-400 uppercase tracking-wide mb-3">Evidence</p>
+            {checkedPlatforms.length > 0 ? (
+              <>
+                <p className="text-sm text-gray-600 mb-3">
+                  Searched on {snapshotDate} · Query: &ldquo;{primaryQuery}&rdquo;
+                </p>
+                <div className="rounded-lg bg-gray-50 divide-y divide-gray-100 overflow-hidden border border-gray-100">
+                  {checkedPlatforms.map((platform) => {
+                    const status = platforms[platform];
+                    const s = PLATFORM_STATUS_STYLES[status];
+                    const displayLabel =
+                      status === 'displaced' && competitor
+                        ? competitor.length > 20 ? competitor.slice(0, 20) + '…' : competitor
+                        : s.label;
+                    return (
+                      <div key={platform} className="flex items-center justify-between px-3 py-2.5">
+                        <span className="text-sm text-gray-700">{platform}</span>
+                        <span className={`text-[11px] font-medium px-2 py-0.5 rounded border ${s.cls}`}>
+                          {displayLabel}
+                        </span>
+                      </div>
+                    );
+                  })}
+                </div>
+              </>
+            ) : (
+              <p className="text-sm text-gray-500">
+                No platforms have been tested yet.
+                Search for {entityName} in ChatGPT or Perplexity to gather evidence.
               </p>
+            )}
+          </div>
+
+          {/* Root cause */}
+          <div className="p-6 border-b border-gray-100">
+            <p className="text-xs font-semibold text-gray-400 uppercase tracking-wide mb-3">Root cause</p>
+            <ul className="space-y-3">
+              {rootCauses.map((cause, i) => (
+                <li key={i} className="flex items-start gap-3">
+                  <span className="flex-shrink-0 w-5 h-5 rounded-full bg-[#EEEDFE] text-[#534AB7] text-xs font-bold flex items-center justify-center mt-0.5">
+                    {i + 1}
+                  </span>
+                  <p className="text-sm text-gray-700 leading-relaxed">{cause}</p>
+                </li>
+              ))}
+            </ul>
+          </div>
+
+          {/* Why this matters now */}
+          <div className="p-6">
+            <p className="text-xs font-semibold text-gray-400 uppercase tracking-wide mb-2">
+              Why this matters now
+            </p>
+            <p className="text-sm text-gray-700 leading-relaxed">
+              AI citation positions shift by 40–60% each quarter as these platforms update their information sources.
+              A competitor gaining ground now becomes structurally harder to displace each month they hold the position.
+              The businesses that act first in any category tend to hold those positions longest.
+            </p>
+          </div>
+
+        </div>
+
+        {/* 4. High-contrast verify callout */}
+        <div className="rounded-xl bg-gray-900 p-6 mb-4">
+          <p className="text-xs font-semibold text-gray-500 uppercase tracking-wide mb-3">
+            Verify this yourself
+          </p>
+          <p className="text-white font-bold text-lg mb-4 leading-snug">
+            Open {verifyPlatformName} right now and search this exact query:
+          </p>
+          <div className="bg-gray-800 rounded-lg px-4 py-3 mb-5 font-mono text-sm text-emerald-400 break-all select-all">
+            &ldquo;{primaryQuery}&rdquo;
+          </div>
+
+          {isPlatformEmbeddable ? (
+            <div>
+              <div className="rounded-lg overflow-hidden border border-gray-700 mb-3">
+                <div className="bg-gray-800 px-3 py-2 text-xs text-gray-400 border-b border-gray-700">
+                  Live result on Perplexity · {snapshotDate}
+                </div>
+                <iframe
+                  src={`https://www.perplexity.ai/search?q=${encodeURIComponent(primaryQuery)}`}
+                  width="100%"
+                  height="440"
+                  title="Live Perplexity result"
+                  sandbox="allow-scripts allow-same-origin allow-forms allow-popups allow-popups-to-escape-sandbox"
+                  className="w-full bg-white"
+                />
+              </div>
+              <a
+                href={platformSearchUrl}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="inline-flex items-center gap-1 text-gray-400 hover:text-white text-xs transition-colors"
+              >
+                Open directly in Perplexity →
+              </a>
             </div>
+          ) : (
+            <a
+              href={platformSearchUrl}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="inline-flex items-center gap-2 bg-white text-gray-900 font-semibold text-sm px-5 py-3 rounded-lg hover:bg-gray-100 transition-colors"
+            >
+              See the live result on {verifyPlatformName} →
+            </a>
           )}
         </div>
 
-        {/* What we searched — query log */}
-        {checkedPlatforms.length > 0 && (
-          <div className="bg-white rounded-xl border border-gray-100 shadow-sm p-6 mb-4">
-            <p className="text-xs font-semibold text-gray-400 uppercase tracking-wide mb-4">
-              What we searched
-            </p>
-            <div className="overflow-x-auto">
-              <table className="w-full text-xs min-w-[400px]">
-                <thead>
-                  <tr className="border-b border-gray-100 text-gray-400">
-                    <th className="text-left pb-2 font-medium pr-4">Query</th>
-                    <th className="text-left pb-2 font-medium pr-4">Platform</th>
-                    <th className="text-left pb-2 font-medium pr-4">Result</th>
-                    <th className="text-left pb-2 font-medium">Date</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {checkedPlatforms.map((platform) => (
-                    <tr key={platform} className="border-b border-gray-50 last:border-0">
-                      <td className="py-2.5 pr-4 text-gray-700 font-mono max-w-[160px] truncate">
-                        &ldquo;{primaryQuery}&rdquo;
-                      </td>
-                      <td className="py-2.5 pr-4 text-gray-700 whitespace-nowrap">{platform}</td>
-                      <td className="py-2.5 pr-4">
-                        <span className={`inline-block font-medium px-1.5 py-0.5 rounded border text-[10px] ${PLATFORM_STATUS_STYLES[platforms[platform]].cls}`}>
-                          {logResultLabel}
-                        </span>
-                      </td>
-                      <td className="py-2.5 text-gray-400 whitespace-nowrap">{snapshotDate}</td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
-            <p className="text-[10px] text-gray-400 mt-3">
-              Queries are representative searches derived from your stated positioning and industry.
-            </p>
-          </div>
-        )}
-
-        {/* Benchmark percentile */}
-        <div className="bg-white rounded-xl border border-gray-100 shadow-sm p-6 mb-4">
-          <p className="text-xs font-semibold text-gray-400 uppercase tracking-wide mb-3">
-            Vertical benchmark percentile
-          </p>
-          <div className="flex items-baseline gap-2 mb-1">
-            <span className="text-4xl font-bold text-gray-900">{percentile}th</span>
-            <span className="text-gray-500 text-sm">percentile</span>
-          </div>
-          <p className="text-sm text-gray-500">
-            for {lead.industry || 'your industry'} —{' '}
-            {percentile < 33
-              ? 'significantly below average for your vertical'
-              : percentile < 60
-              ? 'below average for your vertical'
-              : 'at or above average for your vertical'}
-          </p>
-        </div>
-
-        {/* Competitor teaser — only when displacement is a named challenge */}
-        {hasDisplacement && (
-          <div className="bg-white rounded-xl border border-red-100 shadow-sm p-6 mb-4">
-            <p className="text-xs font-semibold text-gray-400 uppercase tracking-wide mb-3">
-              Competitor displacement
-            </p>
-            <div className="flex items-start gap-3">
-              <div className="flex-1">
-                <div className="flex items-center gap-2 mb-1.5">
-                  <div className="h-4 w-32 rounded bg-gray-200 blur-[2px]" aria-hidden />
-                  <span className="text-xs font-medium px-1.5 py-0.5 rounded bg-red-100 text-red-600 border border-red-200">
-                    🔒 Gated
-                  </span>
-                </div>
-                <p className="text-sm text-gray-500">
-                  is consistently cited instead of you across your primary queries.
-                </p>
-              </div>
-            </div>
-            <p className="text-xs text-gray-400 mt-3 pt-3 border-t border-gray-100">
-              Unlock the full report to see every competitor, every query, and every platform — side by side.
-            </p>
-          </div>
-        )}
-
-        {/* ── UPGRADE CARD ── */}
-        <div className="rounded-xl border-2 border-[#6B5DD3] bg-white p-6 mb-4">
-          <p className="text-xs font-semibold text-[#6B5DD3] uppercase tracking-wide mb-3">
-            Visibility Engine Report
-          </p>
-          <h2 className="text-xl font-bold text-gray-900 mb-3 leading-snug">
-            Your competitors are winning {queryCount} of your priority queries. Your free snapshot shows the gap — your Visibility Engine Report shows exactly why, and gives you a step-by-step fix queue to close it.
-          </h2>
+        {/* 5. What this means for your business — three gaps */}
+        <div className="mb-4">
+          <h2 className="text-xl font-bold text-gray-900 mb-1">What this means for your business</h2>
           <p className="text-sm text-gray-500 mb-5">
-            One report. No subscription, no sales call, no guesswork. Most clients recover their first query position within 30 days of implementing the fixes.
+            Three gaps that explain your current AI visibility position.
           </p>
-          <a
-            href={calendlyUrl}
-            target="_blank"
-            rel="noopener noreferrer"
-            className="block w-full text-center py-3 px-5 bg-[#6B5DD3] hover:bg-[#5a4ec2] text-white text-sm font-semibold rounded-lg transition-colors mb-4"
-          >
-            Get My Full Visibility Engine Report
-          </a>
-          <p className="text-xs text-gray-400 leading-relaxed">
-            Once the gaps are closed, AI citations shift 40–60% every month — your competitors are already tracking theirs. Visibility Monitor keeps you ahead.{' '}
-            <span className="font-medium text-gray-500">Cancel anytime.</span>{' '}
-            <a href={calendlyUrl} target="_blank" rel="noopener noreferrer" className="text-[#6B5DD3] underline">
-              Learn about Visibility Monitor →
-            </a>
-          </p>
-        </div>
 
-        {/* ── ZONE 2: LOCKED ── */}
-        <div className="relative mb-8">
-
-          {/* Skeleton placeholder rows */}
-          <div className="space-y-3 blur-sm select-none pointer-events-none opacity-50" aria-hidden>
-            {[1, 2, 3, 4, 5].map((n) => (
-              <div key={n} className="bg-white rounded-xl border border-gray-100 p-5">
-                <div className="h-5 w-12 bg-[#EEEDFE] rounded mb-3" />
-                <div className="h-4 w-3/4 bg-gray-200 rounded mb-3" />
-                <div className="space-y-2">
-                  <div className="h-3 bg-gray-100 rounded" />
-                  <div className="h-3 bg-gray-100 rounded w-5/6" />
-                  <div className="h-3 bg-gray-100 rounded w-4/5" />
-                </div>
-              </div>
-            ))}
-            <div className="bg-emerald-50 border border-emerald-100 rounded-xl p-5">
-              <div className="h-3 w-20 bg-emerald-200 rounded mb-3" />
-              <div className="h-3 bg-emerald-100 rounded w-full mb-1.5" />
-              <div className="h-3 bg-emerald-100 rounded w-4/5" />
+          {/* Gap 1 */}
+          <div className="bg-white rounded-xl border border-gray-100 shadow-sm p-6 mb-3">
+            <div className="flex items-center gap-2 mb-3">
+              <span className="flex-shrink-0 text-xs font-bold text-white bg-[#534AB7] px-2 py-0.5 rounded">Gap 1</span>
+              <h3 className="text-sm font-bold text-gray-900">How your content is structured</h3>
+            </div>
+            <p className="text-sm text-gray-500 mb-3 leading-relaxed">
+              AI engines decide whether to recommend a business based partly on how its website content is formatted.
+              If the format doesn&rsquo;t clearly identify the category, services, and audience, AI engines skip it — regardless of quality.
+            </p>
+            <p className="text-sm text-gray-700 leading-relaxed mb-4">
+              {gap1Text}
+            </p>
+            <div className="rounded-lg bg-amber-50 border border-amber-100 px-4 py-3">
+              <p className="text-sm text-amber-800 leading-relaxed">
+                <strong>Business consequence:</strong>{' '}
+                If AI can&rsquo;t extract a clear description of what {entityName} does, it won&rsquo;t recommend you — even when buyers are searching for exactly what you offer.
+              </p>
             </div>
           </div>
 
-          {/* Lock overlay */}
-          <div className="absolute inset-0 flex items-center justify-center">
-            <div className="bg-white/95 backdrop-blur-sm rounded-2xl shadow-lg border border-gray-200 px-8 py-7 text-center max-w-xs w-full mx-4">
-              <div className="w-10 h-10 rounded-full bg-[#EEEDFE] flex items-center justify-center mx-auto mb-3">
-                <svg className="w-5 h-5 text-[#6B5DD3]" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
-                  <path fillRule="evenodd" d="M10 1a4.5 4.5 0 00-4.5 4.5V9H5a2 2 0 00-2 2v6a2 2 0 002 2h10a2 2 0 002-2v-6a2 2 0 00-2-2h-.5V5.5A4.5 4.5 0 0010 1zm3 8V5.5a3 3 0 10-6 0V9h6z" clipRule="evenodd" />
-                </svg>
-              </div>
-              <p className="text-sm font-bold text-gray-900 mb-1">
-                Your full action plan — {fixCount} prioritised fixes identified
+          {/* Gap 2 */}
+          <div className="bg-white rounded-xl border border-gray-100 shadow-sm p-6 mb-3">
+            <div className="flex items-center gap-2 mb-3">
+              <span className="flex-shrink-0 text-xs font-bold text-white bg-[#534AB7] px-2 py-0.5 rounded">Gap 2</span>
+              <h3 className="text-sm font-bold text-gray-900">How well-known your brand is to AI</h3>
+            </div>
+            <p className="text-sm text-gray-500 mb-3 leading-relaxed">
+              Whether AI engines have enough reliable information about your brand to confidently recommend it.
+              AI engines draw on publicly available sources — company directories, news coverage, review platforms — to build a picture of each business.
+            </p>
+            <p className="text-sm text-gray-700 leading-relaxed mb-4">
+              {gap2Text}
+            </p>
+            <div className="rounded-lg bg-amber-50 border border-amber-100 px-4 py-3">
+              <p className="text-sm text-amber-800 leading-relaxed">
+                <strong>Business consequence:</strong>{' '}
+                Until AI engines can describe {entityName} accurately and with confidence, your reputation won&rsquo;t translate into AI-generated referrals — regardless of how strong your actual work is.
               </p>
-              <p className="text-xs text-gray-500 mb-4 leading-relaxed">
-                Schema gaps, content structure, entity recommendations, and your full 60-day action queue.
+            </div>
+          </div>
+
+          {/* Gap 3 */}
+          <div className="bg-white rounded-xl border border-gray-100 shadow-sm p-6">
+            <div className="flex items-center gap-2 mb-3">
+              <span className="flex-shrink-0 text-xs font-bold text-white bg-[#534AB7] px-2 py-0.5 rounded">Gap 3</span>
+              <h3 className="text-sm font-bold text-gray-900">Who else is talking about you online</h3>
+            </div>
+            <p className="text-sm text-gray-500 mb-3 leading-relaxed">
+              The number of trusted third-party sources — industry publications, review platforms, analyst reports — that reference your brand.
+              When AI engines encounter a business name, they check whether recognised external sources confirm it.
+            </p>
+            <p className="text-sm text-gray-700 leading-relaxed mb-4">
+              {gap3Text}
+            </p>
+            <div className="rounded-lg bg-amber-50 border border-amber-100 px-4 py-3">
+              <p className="text-sm text-amber-800 leading-relaxed">
+                <strong>Business consequence:</strong>{' '}
+                Without references from sources AI engines recognise, your brand is treated as unverified — and unverified brands are not recommended.
+              </p>
+            </div>
+          </div>
+        </div>
+
+        {/* 6. Why timing matters */}
+        <div className="bg-white rounded-xl border border-gray-100 shadow-sm p-6 mb-4">
+          <h2 className="text-base font-bold text-gray-900 mb-3">Why timing matters</h2>
+          <p className="text-sm text-gray-700 leading-relaxed">
+            The brands that appear first in AI answers are not necessarily the biggest.
+            They are the ones that formatted their content for AI discovery first.
+            That window is still open, but it is closing.
+            Every month a competitor holds an AI citation position, they become harder to displace.
+            Your current position is not permanent — but it requires action before your competitors move further ahead.
+          </p>
+        </div>
+
+        {/* 7. Three-option path forward */}
+        <div className="mb-8">
+          <h2 className="text-xl font-bold text-gray-900 mb-1">What would you like to do next?</h2>
+          <p className="text-sm text-gray-500 mb-5">Three ways to move forward. No sales call required.</p>
+
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+
+            {/* Option A */}
+            <div className="bg-white rounded-xl border border-gray-200 p-5 flex flex-col">
+              <span className="inline-block self-start text-xs font-bold text-[#534AB7] bg-[#EEEDFE] px-2 py-0.5 rounded mb-3">A</span>
+              <h3 className="text-sm font-bold text-gray-900 mb-2">Get the full picture</h3>
+              <p className="text-xs text-gray-500 leading-relaxed flex-1 mb-4">
+                AEO Visibility Report — one report, no subscription.
+                Covers everything in the analysis above plus a prioritised list of fixes.
+              </p>
+              <a
+                href={reportUrl}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="text-sm font-semibold text-[#534AB7] hover:underline"
+              >
+                Get the report →
+              </a>
+            </div>
+
+            {/* Option B */}
+            <div className="bg-white rounded-xl border border-gray-200 p-5 flex flex-col">
+              <span className="inline-block self-start text-xs font-bold text-[#534AB7] bg-[#EEEDFE] px-2 py-0.5 rounded mb-3">B</span>
+              <h3 className="text-sm font-bold text-gray-900 mb-2">Track your position every month</h3>
+              <p className="text-xs text-gray-500 leading-relaxed flex-1 mb-4">
+                AEO Visibility Engine — monthly tracking across all AI platforms.
+                Alerts when competitors move. Quarterly strategy review included.
+              </p>
+              <a
+                href={monitorUrl}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="text-sm font-semibold text-[#534AB7] hover:underline"
+              >
+                Start tracking →
+              </a>
+            </div>
+
+            {/* Option C */}
+            <div className="bg-white rounded-xl border border-gray-200 p-5 flex flex-col">
+              <span className="inline-block self-start text-xs font-bold text-[#534AB7] bg-[#EEEDFE] px-2 py-0.5 rounded mb-3">C</span>
+              <h3 className="text-sm font-bold text-gray-900 mb-2">Have us fix it for you</h3>
+              <p className="text-xs text-gray-500 leading-relaxed flex-1 mb-4">
+                Done for you — Maxifi implements every fix.
+                We handle the content formatting, brand presence, and citation work.
+                Monthly reporting included.
               </p>
               <a
                 href={calendlyUrl}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="block w-full py-2.5 px-5 bg-[#6B5DD3] hover:bg-[#5a4ec2] text-white text-sm font-semibold rounded-lg transition-colors"
+                className="text-sm font-semibold text-[#534AB7] hover:underline"
               >
-                Unlock Full Report
+                Book a strategy call →
               </a>
             </div>
+
           </div>
         </div>
 
@@ -480,19 +662,6 @@ export default async function ResultsPage({ params }: Props) {
           </p>
           <CopyLinkButton />
         </div>
-
-        {/* Strategy call line */}
-        <p className="text-center text-sm text-gray-500 mb-6">
-          Want Maxifi to implement this for you?{' '}
-          <a
-            href={calendlyUrl}
-            target="_blank"
-            rel="noopener noreferrer"
-            className="text-[#6B5DD3] font-semibold hover:underline"
-          >
-            Book a strategy call →
-          </a>
-        </p>
 
         {/* Footer */}
         <p className="text-center text-xs text-gray-400">
