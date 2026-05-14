@@ -39,6 +39,9 @@ export interface AeoLeadRow {
   plan_steps: PlanStep[];
   plan_quick_win: string;
   session_id: string | null;
+  competitors: string | null;
+  positioning: string | null;
+  target_queries: string | null;
 }
 
 // ─── Insert a new lead + plan ─────────────────────────────────────────────────
@@ -70,6 +73,9 @@ export async function insertLead(
       plan_steps: plan.steps,
       plan_quick_win: plan.quickWin,
       session_id: formData.sessionId || null,
+      competitors: formData.competitors || null,
+      positioning: formData.positioning || null,
+      target_queries: formData.targetQueries || null,
     })
     .select()
     .single();

@@ -10,19 +10,18 @@ interface Props {
 
 function getVisibilityScore(awareness: string): number {
   const map: Record<string, number> = {
-    "No, I haven't tried this yet": 0,
-    'Yes — and the results were accurate': 72,
-    "Yes — but I wasn't mentioned at all": 8,
-    'Yes — but details about me were wrong': 24,
-    'Yes — competitors were cited instead of me': 17,
-    'Yes — but old/outdated info appeared': 31,
+    "No, I haven't tried this yet":                   0,
+    'Yes — and the results were accurate':            72,
+    "Yes — but I wasn't mentioned at all":             8,
+    'Yes — but details about me were wrong':          24,
+    'Yes — competitors were cited instead of me':     17,
+    'Yes — but old/outdated info appeared':           31,
   };
   return map[awareness] ?? 0;
 }
 
 type FailureMode = {
   label: string;
-  description: string;
   bgClass: string;
   textClass: string;
   borderClass: string;
@@ -31,66 +30,56 @@ type FailureMode = {
 function getFailureMode(awareness: string): FailureMode {
   switch (awareness) {
     case "Yes — but I wasn't mentioned at all":
-      return {
-        label: 'INVISIBILITY',
-        description:
-          "AI engines have no reliable, citable information about you. You're not structured in a way AI can surface — regardless of how strong your work is.",
-        bgClass: 'bg-red-50', textClass: 'text-red-700', borderClass: 'border-red-200',
-      };
+      return { label: 'INVISIBILITY', bgClass: 'bg-red-50',    textClass: 'text-red-700',    borderClass: 'border-red-200' };
     case 'Yes — but details about me were wrong':
-      return {
-        label: 'HALLUCINATION',
-        description:
-          'AI engines reference you but pull inaccurate or conflated details. Missing entity schema and ambiguous authority signals let the model fill gaps with wrong information.',
-        bgClass: 'bg-orange-50', textClass: 'text-orange-700', borderClass: 'border-orange-200',
-      };
+      return { label: 'HALLUCINATION', bgClass: 'bg-orange-50', textClass: 'text-orange-700', borderClass: 'border-orange-200' };
     case 'Yes — competitors were cited instead of me':
-      return {
-        label: 'DISPLACEMENT',
-        description:
-          "Competitors have structured, citable content AI engines prefer. You're present in the training data but losing the citation race — every query a competitor wins is a lead you didn't get.",
-        bgClass: 'bg-red-50', textClass: 'text-red-700', borderClass: 'border-red-200',
-      };
+      return { label: 'DISPLACEMENT', bgClass: 'bg-red-50',    textClass: 'text-red-700',    borderClass: 'border-red-200' };
     case 'Yes — but old/outdated info appeared':
-      return {
-        label: 'STALENESS',
-        description:
-          "AI engines cite you but with outdated information. Your content freshness and entity-update signals are weak — AI is citing a version of you that no longer exists.",
-        bgClass: 'bg-amber-50', textClass: 'text-amber-700', borderClass: 'border-amber-200',
-      };
+      return { label: 'STALENESS',    bgClass: 'bg-amber-50',  textClass: 'text-amber-700',  borderClass: 'border-amber-200' };
     default:
-      return {
-        label: 'UNDIAGNOSED',
-        description:
-          "Your AI visibility status hasn't been assessed yet. The score above is an estimated baseline for your industry. Search for your company name in ChatGPT or Perplexity to confirm your failure mode.",
-        bgClass: 'bg-gray-50', textClass: 'text-gray-600', borderClass: 'border-gray-200',
-      };
+      return { label: 'UNDIAGNOSED',  bgClass: 'bg-gray-50',   textClass: 'text-gray-600',   borderClass: 'border-gray-200' };
+  }
+}
+
+function getSpecificFailureDescription(
+  awareness: string,
+  entityName: string,
+  positioning: string | null | undefined,
+  competitor: string | null,
+  platform: string,
+): string {
+  const pos  = positioning?.trim() ? `"${positioning.trim().slice(0, 60)}"` : 'your category';
+  const comp = competitor ?? 'a competitor';
+  const plat = platform || 'the platforms you tested';
+
+  switch (awareness) {
+    case "Yes — but I wasn't mentioned at all":
+      return `${entityName} returned no results on ${plat}${competitor ? ` — ${competitor} appeared instead` : ''}. AI has no citable, entity-structured source for you — you exist online but are invisible to the models.`;
+    case 'Yes — but details about me were wrong':
+      return `${entityName} appeared on ${plat} but with inaccurate details. Without clear entity schema, the model fills gaps with conflated information from unrelated sources.`;
+    case 'Yes — competitors were cited instead of me':
+      return `When users searched ${pos} on ${plat}, ${comp} was cited instead of ${entityName}. Their content is better structured for AI citation — not because they're stronger, but because they've built the right entity signals.`;
+    case 'Yes — but old/outdated info appeared':
+      return `${entityName} was cited on ${plat} but with outdated information. Entity-update signals are weak — the model is citing a version of ${entityName} that no longer exists.`;
+    default:
+      return `${entityName}'s AI visibility hasn't been tested yet. The score above is an estimated baseline for your industry — search for ${entityName} in ChatGPT or Perplexity to confirm your standing.`;
   }
 }
 
 // ─── Benchmark helpers ────────────────────────────────────────────────────────
 
 const INDUSTRY_BENCHMARKS: Record<string, number> = {
-  'Financial Services & Banking': 47,
-  'Fintech / Financial Technology': 47,
-  'Accounting & Finance': 47,
-  'Legal': 62,
-  'Professional Services': 54,
-  'Consulting & Advisory': 54,
-  'Healthcare & Life Sciences': 78,
-  'B2B SaaS / Enterprise Software': 84,
-  'AI & Machine Learning': 84,
-  'Cybersecurity': 84,
-  'Cloud Infrastructure': 84,
-  'Marketing Technology': 63,
-  'Aviation & Aerospace': 41,
-  'Defense': 41,
-  'Education & Training': 52,
-  'Media & Publishing': 58,
-  'Real Estate & Property': 35,
-  'Retail & E-commerce': 48,
-  'Hospitality & Travel': 42,
-  'Manufacturing & Industrial': 38,
+  'Financial Services & Banking': 47, 'Fintech / Financial Technology': 47,
+  'Accounting & Finance': 47,         'Legal': 62,
+  'Professional Services': 54,        'Consulting & Advisory': 54,
+  'Healthcare & Life Sciences': 78,   'B2B SaaS / Enterprise Software': 84,
+  'AI & Machine Learning': 84,        'Cybersecurity': 84,
+  'Cloud Infrastructure': 84,         'Marketing Technology': 63,
+  'Aviation & Aerospace': 41,         'Defense': 41,
+  'Education & Training': 52,         'Media & Publishing': 58,
+  'Real Estate & Property': 35,       'Retail & E-commerce': 48,
+  'Hospitality & Travel': 42,         'Manufacturing & Industrial': 38,
 };
 
 function getIndustryBenchmark(industry: string): number {
@@ -105,6 +94,38 @@ function getPercentile(score: number, avg: number): number {
 
 function getUplift(score: number): number {
   return Math.round((100 - score) * 0.58);
+}
+
+// ─── Data helpers ─────────────────────────────────────────────────────────────
+
+function getFirstCompetitor(competitors: string | null | undefined): string | null {
+  if (!competitors?.trim()) return null;
+  return competitors.split(/[,;/\n]/)[0].trim() || null;
+}
+
+function deriveQueries(
+  entityName: string,
+  positioning: string | null | undefined,
+  targetQueries: string | null | undefined,
+): string[] {
+  if (targetQueries?.trim()) {
+    const qs = targetQueries.split(/[,;\n]/).map((q) => q.trim()).filter(Boolean);
+    if (qs.length) return qs.slice(0, 3);
+  }
+  const results: string[] = [entityName];
+  if (positioning?.trim()) results.push(positioning.trim().slice(0, 80));
+  return results;
+}
+
+function getAwarenessResultLabel(awareness: string): string {
+  switch (awareness) {
+    case 'Yes — and the results were accurate':         return 'Cited ✓';
+    case "Yes — but I wasn't mentioned at all":         return 'Not cited';
+    case 'Yes — but details about me were wrong':       return 'Inaccurate';
+    case 'Yes — competitors were cited instead of me':  return 'Competitor cited';
+    case 'Yes — but old/outdated info appeared':        return 'Stale / outdated';
+    default:                                             return 'Not tested';
+  }
 }
 
 // ─── Platform matrix ──────────────────────────────────────────────────────────
@@ -152,8 +173,8 @@ export default async function ResultsPage({ params }: Props) {
   const lead = await getLeadById(id);
   if (!lead) notFound();
 
-  const plan        = { steps: lead.plan_steps, quickWin: lead.plan_quick_win };
-  const calendlyUrl = process.env.CALENDLY_URL ?? '#';
+  const plan         = { steps: lead.plan_steps, quickWin: lead.plan_quick_win };
+  const calendlyUrl  = process.env.CALENDLY_URL ?? '#';
   const contactEmail = process.env.MAXIFI_CONTACT_EMAIL ?? 'letsgetstarted@maxifidigital.com';
 
   const score       = getVisibilityScore(lead.awareness);
@@ -164,12 +185,19 @@ export default async function ResultsPage({ params }: Props) {
   const platforms   = getPlatformStatuses(lead.awareness, lead.platform, lead.platform_other);
 
   const challenges      = lead.challenge.split(';').map((c) => c.trim()).filter(Boolean);
-  const hasDisplacement = challenges.some((c) => c.includes("My competitors show up"));
+  const hasDisplacement = challenges.some((c) => c.includes('My competitors show up'));
   const hasTopicGoal    = challenges.some((c) => c.includes('specific topics'));
   const queryCount      = hasTopicGoal ? 4 : 3;
   const fixCount        = plan.steps.length;
 
-  const entityName = lead.company_name ?? lead.first_name;
+  const entityName      = lead.company_name ?? lead.first_name;
+  const competitor      = getFirstCompetitor(lead.competitors);
+  const derivedQueries  = deriveQueries(entityName, lead.positioning, lead.target_queries);
+  const primaryQuery    = derivedQueries[0];
+  const snapshotDate    = new Date(lead.created_at).toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' });
+  const searchedOn      = [lead.platform, lead.platform_other].filter(Boolean).join(', ');
+  const checkedPlatforms = ALL_PLATFORMS.filter((p) => platforms[p] !== 'unknown');
+  const logResultLabel  = getAwarenessResultLabel(lead.awareness);
 
   return (
     <div className="min-h-screen bg-gray-50 py-10 px-4">
@@ -186,6 +214,10 @@ export default async function ResultsPage({ params }: Props) {
           </h1>
           <p className="mt-1 text-gray-500">
             {lead.occupation} · {lead.industry}
+          </p>
+          <p className="mt-2 text-xs text-gray-400">
+            Snapshot generated {snapshotDate}
+            {searchedOn && ` · Searched on: ${searchedOn}`}
           </p>
         </div>
 
@@ -235,7 +267,7 @@ export default async function ResultsPage({ params }: Props) {
             {failureMode.label}
           </span>
           <p className={`text-sm leading-relaxed ${failureMode.textClass}`}>
-            {failureMode.description}
+            {getSpecificFailureDescription(lead.awareness, entityName, lead.positioning, competitor, lead.platform)}
           </p>
         </div>
 
@@ -246,12 +278,17 @@ export default async function ResultsPage({ params }: Props) {
           </p>
           <div className="space-y-3">
             {ALL_PLATFORMS.map((platform) => {
-              const s = PLATFORM_STATUS_STYLES[platforms[platform]];
+              const status = platforms[platform];
+              const s = PLATFORM_STATUS_STYLES[status];
+              const displayLabel =
+                status === 'displaced' && competitor
+                  ? competitor.length > 20 ? competitor.slice(0, 20) + '…' : competitor
+                  : s.label;
               return (
                 <div key={platform} className="flex items-center justify-between">
                   <span className="text-sm text-gray-700">{platform}</span>
                   <span className={`text-[11px] font-medium px-2 py-0.5 rounded border ${s.cls}`}>
-                    {s.label}
+                    {displayLabel}
                   </span>
                 </div>
               );
@@ -260,7 +297,59 @@ export default async function ResultsPage({ params }: Props) {
           <p className="text-xs text-gray-400 mt-4 pt-4 border-t border-gray-100">
             Status reflects platforms you identified. The full report includes a live crawl across all 5 engines.
           </p>
+          {checkedPlatforms.length > 0 && (
+            <div className="mt-3">
+              <p className="text-xs text-gray-500 leading-relaxed">
+                <span className="font-semibold text-gray-700">Verify this yourself:</span>{' '}
+                Search{' '}
+                <span className="inline font-mono bg-gray-100 px-1.5 py-0.5 rounded text-[10px] text-gray-700">
+                  &ldquo;{primaryQuery}&rdquo;
+                </span>{' '}
+                in {checkedPlatforms[0]} and check whether {entityName} is cited.
+              </p>
+            </div>
+          )}
         </div>
+
+        {/* What we searched — query log */}
+        {checkedPlatforms.length > 0 && (
+          <div className="bg-white rounded-xl border border-gray-100 shadow-sm p-6 mb-4">
+            <p className="text-xs font-semibold text-gray-400 uppercase tracking-wide mb-4">
+              What we searched
+            </p>
+            <div className="overflow-x-auto">
+              <table className="w-full text-xs min-w-[400px]">
+                <thead>
+                  <tr className="border-b border-gray-100 text-gray-400">
+                    <th className="text-left pb-2 font-medium pr-4">Query</th>
+                    <th className="text-left pb-2 font-medium pr-4">Platform</th>
+                    <th className="text-left pb-2 font-medium pr-4">Result</th>
+                    <th className="text-left pb-2 font-medium">Date</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {checkedPlatforms.map((platform) => (
+                    <tr key={platform} className="border-b border-gray-50 last:border-0">
+                      <td className="py-2.5 pr-4 text-gray-700 font-mono max-w-[160px] truncate">
+                        &ldquo;{primaryQuery}&rdquo;
+                      </td>
+                      <td className="py-2.5 pr-4 text-gray-700 whitespace-nowrap">{platform}</td>
+                      <td className="py-2.5 pr-4">
+                        <span className={`inline-block font-medium px-1.5 py-0.5 rounded border text-[10px] ${PLATFORM_STATUS_STYLES[platforms[platform]].cls}`}>
+                          {logResultLabel}
+                        </span>
+                      </td>
+                      <td className="py-2.5 text-gray-400 whitespace-nowrap">{snapshotDate}</td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+            <p className="text-[10px] text-gray-400 mt-3">
+              Queries are representative searches derived from your stated positioning and industry.
+            </p>
+          </div>
+        )}
 
         {/* Benchmark percentile */}
         <div className="bg-white rounded-xl border border-gray-100 shadow-sm p-6 mb-4">
