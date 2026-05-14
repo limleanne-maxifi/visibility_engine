@@ -1,36 +1,21 @@
 export type Occupation =
-  | 'Individual / Personal brand'
-  | 'Business owner'
-  | 'Organisation leader'
-  | 'Conference speaker'
-  | 'Sales professional'
-  | 'Conference delegate'
-  | 'Independent consultant'
-  | 'Academic or researcher'
-  | 'Coach or trainer'
+  | 'Executive / Founder'
+  | 'Marketing & Communications'
+  | 'Sales & Business Development'
+  | 'Operations & Strategy'
+  | 'Technology & Digital'
+  | 'Finance'
+  | 'Product & Innovation'
   | 'Other'
   | '';
 
 export type AiPresence =
-  | 'Yes — and the results were accurate'
-  | 'Yes — but results were wrong or missing'
   | "No, I haven't tried this yet"
-  | '';
-
-export type AiPlatform =
-  | 'ChatGPT'
-  | 'Google AI Overviews'
-  | 'Perplexity'
-  | 'Microsoft Copilot'
-  | 'Other'
-  | '';
-
-export type AeoChallenge =
-  | "AI systems don't mention me at all"
-  | 'AI gets my details wrong'
-  | "My competitors show up, I don't"
-  | "I don't know where to start"
-  | 'I want to appear for specific topics'
+  | 'Yes — and the results were accurate'
+  | 'Yes — but I wasn\'t mentioned at all'
+  | 'Yes — but details about me were wrong'
+  | 'Yes — competitors were cited instead of me'
+  | 'Yes — but old/outdated info appeared'
   | '';
 
 export type AeoOutcome =
@@ -39,13 +24,20 @@ export type AeoOutcome =
   | 'Career visibility and personal brand'
   | 'Protecting my reputation online'
   | 'Winning more deals by being findable'
+  | 'Understanding where I currently stand in AI search'
+  | 'Beating a specific competitor'
   | '';
+
+export interface Platform {
+  value: string;
+  priority: 'primary' | 'secondary';
+}
 
 export interface FormData {
   // Step 1 — Identity
   firstName: string;
   email: string;
-  website: string;
+  websiteUrl: string;
 
   // Step 2 — Professional Context
   occupation: Occupation;
@@ -54,12 +46,15 @@ export interface FormData {
 
   // Step 3 — AEO Awareness
   aiPresence: AiPresence;
-  aiPlatform: AiPlatform;
-  aiPlatformOther: string;
+  platforms: Platform[];
 
   // Step 4 — Goals
-  aeoChallenge: AeoChallenge;
+  challenges: string[];
   aeoOutcome: AeoOutcome;
+  competitors: string;
+  positioning: string;
+  recommendationFocus: string[];
+  targetQueries: string;
 
   // Step 5 — Consent
   consent: boolean;
@@ -75,15 +70,18 @@ export interface FormData {
 export const initialFormData: FormData = {
   firstName: '',
   email: '',
-  website: '',
+  websiteUrl: '',
   occupation: '',
   industry: '',
   company: '',
   aiPresence: '',
-  aiPlatform: '',
-  aiPlatformOther: '',
-  aeoChallenge: '',
+  platforms: [],
+  challenges: [],
   aeoOutcome: '',
+  competitors: '',
+  positioning: '',
+  recommendationFocus: [],
+  targetQueries: '',
   consent: false,
   utmSource: '',
   utmMedium: '',

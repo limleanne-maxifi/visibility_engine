@@ -26,20 +26,22 @@ function validateStep(step: number, data: FormData): Errors {
     } else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(data.email)) {
       errors.email = 'Please enter a valid email address.';
     }
+    if (!data.websiteUrl.trim()) errors.websiteUrl = 'Website URL is required.';
   }
 
   if (step === 2) {
-    if (!data.occupation) errors.occupation = 'Please select your occupation.';
-    if (!data.industry.trim()) errors.industry = 'Industry is required.';
+    if (!data.occupation) errors.occupation = 'Please select your role.';
+    if (!data.industry.trim()) errors.industry = 'Please select your industry.';
+    if (!data.company.trim()) errors.company = 'Company name is required.';
   }
 
   if (step === 3) {
     if (!data.aiPresence) errors.aiPresence = 'Please select an option.';
-    if (!data.aiPlatform) errors.aiPlatform = 'Please select a platform.';
+    if (data.platforms.length === 0) errors.platforms = 'Please select at least one platform.';
   }
 
   if (step === 4) {
-    if (!data.aeoChallenge) errors.aeoChallenge = 'Please select your biggest challenge.';
+    if (data.challenges.length === 0) errors.challenges = 'Please select at least one challenge.';
     if (!data.aeoOutcome) errors.aeoOutcome = 'Please select your desired outcome.';
   }
 
@@ -179,6 +181,7 @@ export default function MultiStepForm() {
               onNext={goNext}
               onBack={goBack}
               errors={errors}
+              industry={formData.industry}
             />
           )}
           {step === 5 && (

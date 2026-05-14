@@ -24,7 +24,7 @@ export default function Step1Identity({ data, onChange, onNext, errors }: Props)
 
       <div className="space-y-4">
         <div>
-          <label htmlFor="firstName" className="block text-sm font-medium text-gray-700 mb-1">
+          <label htmlFor="firstName" className="block text-[17px] font-semibold text-gray-700 mb-1">
             First name <span className="text-red-500">*</span>
           </label>
           <input
@@ -46,7 +46,7 @@ export default function Step1Identity({ data, onChange, onNext, errors }: Props)
         </div>
 
         <div>
-          <label htmlFor="email" className="block text-sm font-medium text-gray-700 mb-1">
+          <label htmlFor="email" className="block text-[17px] font-semibold text-gray-700 mb-1">
             Business email <span className="text-red-500">*</span>
           </label>
           <input
@@ -68,18 +68,27 @@ export default function Step1Identity({ data, onChange, onNext, errors }: Props)
         </div>
 
         <div>
-          <label htmlFor="website" className="block text-sm font-medium text-gray-700 mb-1">
-            Website URL <span className="text-gray-400 font-normal">(optional)</span>
+          <label htmlFor="websiteUrl" className="block text-[17px] font-semibold text-gray-700 mb-1">
+            Website URL <span className="text-red-500">*</span>
           </label>
           <input
-            id="website"
+            id="websiteUrl"
             type="text"
             autoComplete="url"
-            value={data.website}
-            onChange={(e) => onChange({ website: e.target.value })}
+            value={data.websiteUrl}
+            onChange={(e) => onChange({ websiteUrl: e.target.value })}
             placeholder="yourwebsite.com"
-            className="w-full px-4 py-3 rounded-lg border border-gray-200 text-sm outline-none focus:border-[#534AB7] transition-colors"
+            className={`w-full px-4 py-3 rounded-lg border text-sm outline-none transition-colors ${
+              errors.websiteUrl
+                ? 'border-red-400 focus:border-red-500'
+                : 'border-gray-200 focus:border-[#534AB7]'
+            }`}
           />
+          {errors.websiteUrl ? (
+            <p className="mt-1 text-xs text-red-500">{errors.websiteUrl}</p>
+          ) : (
+            <p className="mt-1 text-xs text-gray-400">Needed for your site-level AEO audit.</p>
+          )}
         </div>
       </div>
 

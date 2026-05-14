@@ -39,19 +39,22 @@ export async function insertLead(
   formData: FormData,
   plan: Plan
 ): Promise<AeoLeadRow> {
+  const primaryPlatform = formData.platforms.find((p) => p.priority === 'primary')?.value ?? '';
+  const secondaryPlatform = formData.platforms.find((p) => p.priority === 'secondary')?.value ?? null;
+
   const { data, error } = await supabase
     .from('aeo_leads')
     .insert({
       first_name: formData.firstName,
       email: formData.email,
-      website: formData.website || null,
+      website: formData.websiteUrl || null,
       occupation: formData.occupation,
       industry: formData.industry,
       company_name: formData.company || null,
       awareness: formData.aiPresence,
-      platform: formData.aiPlatform,
-      platform_other: formData.aiPlatformOther || null,
-      challenge: formData.aeoChallenge,
+      platform: primaryPlatform,
+      platform_other: secondaryPlatform,
+      challenge: formData.challenges.join('; ') || '',
       outcome: formData.aeoOutcome,
       utm_source: formData.utmSource || null,
       utm_medium: formData.utmMedium || null,

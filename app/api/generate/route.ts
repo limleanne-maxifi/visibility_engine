@@ -85,7 +85,7 @@ export async function POST(
 
     // Fire emails non-blocking — errors logged, never surfaced to user
     Promise.allSettled([
-      sendUserPlanEmail(lead.email, lead.first_name, plan),
+      sendUserPlanEmail(lead),
       sendInternalNotification(lead),
     ]).then((results) => {
       results.forEach((r, i) => {

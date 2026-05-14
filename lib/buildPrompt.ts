@@ -4,21 +4,30 @@ export function buildUserMessage(data: FormData): string {
   const stepCount =
     data.aiPresence === "No, I haven't tried this yet" ? 3 : 5;
 
-  const platform =
-    data.aiPlatform === 'Other' && data.aiPlatformOther
-      ? data.aiPlatformOther
-      : data.aiPlatform;
+  const primaryPlatform = data.platforms.find((p) => p.priority === 'primary')?.value ?? 'Not specified';
+  const secondaryPlatform = data.platforms.find((p) => p.priority === 'secondary')?.value;
 
-  return `Write a personalised AEO action plan for:
-Name: ${data.firstName}
-Occupation: ${data.occupation}
-Industry: ${data.industry}
-Company: ${data.company || 'not provided'}
-Website: ${data.website || 'none provided'}
-AI awareness: ${data.aiPresence}
-Platform they care about: ${platform}
-Biggest challenge: ${data.aeoChallenge}
-Most important outcome: ${data.aeoOutcome}
+  const lines = [
+    `Write a personalised AEO action plan for:`,
+    `Name: ${data.firstName}`,
+    `Occupation: ${data.occupation}`,
+    `Industry: ${data.industry}`,
+    `Company: ${data.company || 'not provided'}`,
+    `Website: ${data.websiteUrl || 'none provided'}`,
+    `AI awareness: ${data.aiPresence}`,
+    `Primary AI platform: ${primaryPlatform}`,
+    secondaryPlatform ? `Secondary AI platform: ${secondaryPlatform}` : null,
+    `Biggest challenges: ${data.challenges.join('; ') || 'not specified'}`,
+    `Most important outcome: ${data.aeoOutcome}`,
+    data.competitors ? `Competitors: ${data.competitors}` : null,
+    data.positioning ? `Positioning / differentiation: ${data.positioning}` : null,
+    data.recommendationFocus.length
+      ? `Wants to be recommended for: ${data.recommendationFocus.join(', ')}`
+      : null,
+    data.targetQueries ? `Target queries: ${data.targetQueries}` : null,
+  ].filter(Boolean);
+
+  return `${lines.join('\n')}
 
 Write ${stepCount} steps.
 

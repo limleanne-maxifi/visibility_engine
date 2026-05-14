@@ -1,6 +1,6 @@
 'use client';
 
-import { FormData, AiPresence, AiPlatform } from '@/lib/types';
+import { FormData, AiPresence } from '@/lib/types';
 import ChoiceCard from '@/components/ChoiceCard';
 
 interface Props {
@@ -12,16 +12,21 @@ interface Props {
 }
 
 const AI_PRESENCE_OPTIONS: AiPresence[] = [
-  'Yes — and the results were accurate',
-  'Yes — but results were wrong or missing',
   "No, I haven't tried this yet",
+  'Yes — and the results were accurate',
+  "Yes — but I wasn't mentioned at all",
+  'Yes — but details about me were wrong',
+  'Yes — competitors were cited instead of me',
+  'Yes — but old/outdated info appeared',
 ];
 
-const AI_PLATFORMS: AiPlatform[] = [
+const PLATFORM_OPTIONS = [
   'ChatGPT',
   'Google AI Overviews',
   'Perplexity',
   'Microsoft Copilot',
+  'Claude',
+  'Gemini',
   'Other',
 ];
 
@@ -31,13 +36,34 @@ export default function Step3Awareness({ data, onChange, onNext, onBack, errors 
     onNext();
   };
 
+  const togglePlatform = (value: string) => {
+    const current = [...data.platforms];
+    const idx = current.findIndex((p) => p.value === value);
+
+    if (idx === -1) {
+      // Unselected → primary (if no primary exists), else secondary
+      const hasPrimary = current.some((p) => p.priority === 'primary');
+      onChange({
+        platforms: [...current, { value, priority: hasPrimary ? 'secondary' : 'primary' }],
+      });
+    } else if (current[idx].priority === 'primary') {
+      // Primary → secondary
+      const updated = [...current];
+      updated[idx] = { value, priority: 'secondary' };
+      onChange({ platforms: updated });
+    } else {
+      // Secondary → deselect
+      onChange({ platforms: current.filter((p) => p.value !== value) });
+    }
+  };
+
   return (
     <form onSubmit={handleSubmit} noValidate>
       <h1 className="text-2xl font-semibold text-gray-900 mb-6">Your AI presence today</h1>
 
       {/* Group A */}
       <fieldset className="mb-6">
-        <legend className="text-sm font-medium text-gray-700 mb-3">
+        <legend className="text-[17px] font-semibold text-gray-700 mb-3">
           Have you ever searched for yourself or your business in an AI tool like ChatGPT or Perplexity?{' '}
           <span className="text-red-500">*</span>
         </legend>
@@ -58,34 +84,59 @@ export default function Step3Awareness({ data, onChange, onNext, onBack, errors 
 
       {/* Group B */}
       <fieldset>
-        <legend className="text-sm font-medium text-gray-700 mb-3">
-          Which AI platform matters most to you?{' '}
+        <legend className="text-[17px] font-semibold text-gray-700 mb-1">
+          Which AI platforms matter to you?{' '}
           <span className="text-red-500">*</span>
         </legend>
+        <p className="text-xs text-gray-400 mb-3">
+          Click once for PRIMARY, again for 2nd, again to deselect.
+        </p>
         <div className="space-y-2">
-          {AI_PLATFORMS.map((platform) => (
-            <ChoiceCard
-              key={platform}
-              label={platform}
-              selected={data.aiPlatform === platform}
-              onSelect={() => onChange({ aiPlatform: platform })}
-            />
-          ))}
-        </div>
-        {errors.aiPlatform && (
-          <p className="mt-1 text-xs text-red-500">{errors.aiPlatform}</p>
-        )}
+          {PLATFORM_OPTIONS.map((platform) => {
+            const entry = data.platforms.find((p) => p.value === platform);
+            const rank = entry ? data.platforms.indexOf(entry) + 1 : null;
+            const isSelected = !!entry;
+            const isDisabled = !isSelected && data.platforms.length >= 2;
 
-        {/* Inline "Other" text input */}
-        {data.aiPlatform === 'Other' && (
-          <input
-            type="text"
-            value={data.aiPlatformOther}
-            onChange={(e) => onChange({ aiPlatformOther: e.target.value })}
-            placeholder="Which platform?"
-            className="mt-2 w-full px-4 py-3 rounded-lg border border-[#534AB7] bg-[#EEEDFE] text-sm outline-none focus:border-[#534AB7] transition-colors"
-            autoFocus
-          />
+            return (
+              <button
+                key={platform}
+                type="button"
+                onClick={() => togglePlatform(platform)}
+                disabled={isDisabled}
+                className={`w-full text-left px-4 py-3 rounded-lg border text-sm transition-all duration-150 ${
+                  isSelected
+                    ? 'border-[#534AB7] bg-[#EEEDFE] text-[#3C3489] font-medium'
+                    : isDisabled
+                    ? 'border-gray-100 bg-gray-50 text-gray-300 cursor-not-allowed'
+                    : 'border-gray-200 bg-white text-gray-700 hover:border-gray-300 hover:bg-gray-50'
+                }`}
+              >
+                <span className="flex items-center justify-between gap-2">
+                  <span className="flex items-center gap-2">
+                    <span
+                      className={`flex-shrink-0 w-4 h-4 rounded-full border-2 flex items-center justify-center text-[10px] font-bold ${
+                        isSelected
+                          ? 'border-[#534AB7] bg-[#534AB7] text-white'
+                          : 'border-gray-300'
+                      }`}
+                    >
+                      {isSelected && rank}
+                    </span>
+                    {platform}
+                  </span>
+                  {isSelected && (
+                    <span className="text-xs text-[#534AB7] font-semibold tracking-wide uppercase">
+                      {rank === 1 ? 'PRIMARY' : '2nd'}
+                    </span>
+                  )}
+                </span>
+              </button>
+            );
+          })}
+        </div>
+        {errors.platforms && (
+          <p className="mt-1 text-xs text-red-500">{errors.platforms}</p>
         )}
       </fieldset>
 
