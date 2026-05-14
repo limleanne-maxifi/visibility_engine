@@ -1,13 +1,21 @@
-import { createClient } from '@supabase/supabase-js';
+import { createClient, SupabaseClient } from '@supabase/supabase-js';
 import type { FormData } from '@/lib/types';
 import type { Plan, PlanStep } from '@/lib/planTypes';
 
-// ─── Client singleton ────────────────────────────────────────────────────────
+// ─── Client singleton (lazy — avoids build-time crash when env vars are absent)
 
-const supabaseUrl = process.env.SUPABASE_URL!;
-const supabaseKey = process.env.SUPABASE_ANON_KEY!;
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+let _supabase: SupabaseClient<any> | null = null;
 
-export const supabase = createClient(supabaseUrl, supabaseKey);
+function getClient() {
+  if (!_supabase) {
+    _supabase = createClient(
+      process.env.SUPABASE_URL!,
+      process.env.SUPABASE_ANON_KEY!,
+    );
+  }
+  return _supabase;
+}
 
 // ─── Row type (mirrors aeo_leads schema) ─────────────────────────────────────
 
@@ -42,7 +50,7 @@ export async function insertLead(
   const primaryPlatform = formData.platforms.find((p) => p.priority === 'primary')?.value ?? '';
   const secondaryPlatform = formData.platforms.find((p) => p.priority === 'secondary')?.value ?? null;
 
-  const { data, error } = await supabase
+  const { data, error } = await getClient()
     .from('aeo_leads')
     .insert({
       first_name: formData.firstName,
@@ -73,7 +81,7 @@ export async function insertLead(
 // ─── Fetch a lead by id ───────────────────────────────────────────────────────
 
 export async function getLeadById(id: string): Promise<AeoLeadRow | null> {
-  const { data, error } = await supabase
+  const { data, error } = await getClient()
     .from('aeo_leads')
     .select('*')
     .eq('id', id)
@@ -90,7 +98,7 @@ export async function getLeadById(id: string): Promise<AeoLeadRow | null> {
 // ─── Fetch all leads ──────────────────────────────────────────────────────────
 
 export async function getAllLeads(): Promise<AeoLeadRow[]> {
-  const { data, error } = await supabase
+  const { data, error } = await getClient()
     .from('aeo_leads')
     .select('*')
     .order('created_at', { ascending: false });

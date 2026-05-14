@@ -1,10 +1,18 @@
 import { Resend } from 'resend';
 import type { AeoLeadRow } from '@/lib/supabase';
 
-const resend      = new Resend(process.env.RESEND_API_KEY);
-const CALENDLY    = process.env.CALENDLY_URL ?? 'https://maxifidigital.com';
-const REPORT_URL  = process.env.REPORT_CHECKOUT_URL ?? CALENDLY;
-const MONITOR_URL = process.env.MONITOR_CHECKOUT_URL ?? CALENDLY;
+function getResend() {
+  return new Resend(process.env.RESEND_API_KEY);
+}
+
+function getUrls() {
+  const calendly = process.env.CALENDLY_URL ?? 'https://maxifidigital.com';
+  return {
+    CALENDLY: calendly,
+    REPORT_URL: process.env.REPORT_CHECKOUT_URL ?? calendly,
+    MONITOR_URL: process.env.MONITOR_CHECKOUT_URL ?? calendly,
+  };
+}
 
 // ─── Score helpers ────────────────────────────────────────────────────────────
 
@@ -53,6 +61,7 @@ function getPercentile(score: number, industry: string): number {
 // ─── Email 1: User snapshot email ────────────────────────────────────────────
 
 export async function sendUserPlanEmail(lead: AeoLeadRow): Promise<void> {
+  const { CALENDLY, REPORT_URL } = getUrls();
   const fromEmail  = process.env.FROM_EMAIL ?? 'hello@maxifidigital.com';
   const score      = getScore(lead.awareness);
   const failLabel  = getFailureLabel(lead.awareness);
@@ -176,7 +185,7 @@ export async function sendUserPlanEmail(lead: AeoLeadRow): Promise<void> {
 </body>
 </html>`;
 
-  const { error } = await resend.emails.send({
+  const { error } = await getResend().emails.send({
     from: fromEmail,
     to: lead.email,
     subject,
@@ -230,7 +239,7 @@ export async function sendInternalNotification(lead: AeoLeadRow): Promise<void> 
     `quick_win:     ${lead.plan_quick_win}`,
   ].join('\n');
 
-  const { error } = await resend.emails.send({
+  const { error } = await getResend().emails.send({
     from: fromEmail,
     to: notifyEmail,
     subject: `New AEO lead: ${lead.first_name} — ${lead.occupation} in ${lead.industry}`,
