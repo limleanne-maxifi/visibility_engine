@@ -147,16 +147,16 @@ export async function sendUserPlanEmail(lead: AeoLeadRow): Promise<void> {
       <p style="margin:0 0 20px;font-size:14px;color:#ddd6fe;line-height:1.7;">
         Your free snapshot shows the gap. Your Visibility Engine Report shows exactly why &mdash;
         and gives you a prioritised fix queue to close it.
-        One report. $250. No subscription, no sales call.
+        One report. No subscription, no sales call.
       </p>
       <a href="${REPORT_URL}"
          style="display:inline-block;background:#ffffff;color:#6B5DD3;font-size:14px;font-weight:700;
                 text-decoration:none;padding:13px 24px;border-radius:8px;margin-bottom:16px;">
-        Get My Visibility Engine Report &mdash; $250 &rarr;
+        Get My Full Visibility Engine Report &rarr;
       </a>
       <p style="margin:0;font-size:12px;color:#c4b5fd;line-height:1.6;">
         Once the gaps are closed, citations shift 40&ndash;60% monthly. Visibility Monitor keeps you
-        ahead of changes your competitors don&rsquo;t see coming. $500/month, cancel anytime.
+        ahead of changes your competitors don&rsquo;t see coming. Cancel anytime.
       </p>
     </div>
   </td></tr>

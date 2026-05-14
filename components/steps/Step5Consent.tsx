@@ -115,7 +115,7 @@ export default function Step5Consent({ data, onChange, onSubmit, onBack, errors,
           ))}
         </ul>
         <p className="text-xs text-gray-400">
-          Unlock the full report for $250 after your free snapshot is delivered.
+          Unlock the full report after your free snapshot is delivered.
         </p>
 
       </div>

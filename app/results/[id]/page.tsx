@@ -315,7 +315,7 @@ export default async function ResultsPage({ params }: Props) {
             Your competitors are winning {queryCount} of your priority queries. Your free snapshot shows the gap — your Visibility Engine Report shows exactly why, and gives you a step-by-step fix queue to close it.
           </h2>
           <p className="text-sm text-gray-500 mb-5">
-            One report. $250. No subscription, no sales call, no guesswork. Most clients recover their first query position within 30 days of implementing the fixes.
+            One report. No subscription, no sales call, no guesswork. Most clients recover their first query position within 30 days of implementing the fixes.
           </p>
           <a
             href={calendlyUrl}
@@ -323,11 +323,11 @@ export default async function ResultsPage({ params }: Props) {
             rel="noopener noreferrer"
             className="block w-full text-center py-3 px-5 bg-[#6B5DD3] hover:bg-[#5a4ec2] text-white text-sm font-semibold rounded-lg transition-colors mb-4"
           >
-            Get My Visibility Engine Report — $250
+            Get My Full Visibility Engine Report
           </a>
           <p className="text-xs text-gray-400 leading-relaxed">
             Once the gaps are closed, AI citations shift 40–60% every month — your competitors are already tracking theirs. Visibility Monitor keeps you ahead.{' '}
-            <span className="font-medium text-gray-500">$500/month, cancel anytime.</span>{' '}
+            <span className="font-medium text-gray-500">Cancel anytime.</span>{' '}
             <a href={calendlyUrl} target="_blank" rel="noopener noreferrer" className="text-[#6B5DD3] underline">
               Learn about Visibility Monitor →
             </a>
@@ -377,7 +377,7 @@ export default async function ResultsPage({ params }: Props) {
                 rel="noopener noreferrer"
                 className="block w-full py-2.5 px-5 bg-[#6B5DD3] hover:bg-[#5a4ec2] text-white text-sm font-semibold rounded-lg transition-colors"
               >
-                Unlock Full Report — $250
+                Unlock Full Report
               </a>
             </div>
           </div>
