@@ -33,9 +33,20 @@ export async function POST(
     );
   }
 
+  console.log('[generate] submission received:', {
+    firstName: formData.firstName,
+    occupation: formData.occupation,
+    industry: formData.industry,
+    aiPresence: formData.aiPresence,
+    platformCount: formData.platforms?.length ?? 0,
+    primaryPlatform: formData.platforms?.find((p) => p.priority === 'primary')?.value ?? 'none',
+    challengeCount: formData.challenges?.length ?? 0,
+  });
+
   // Call Claude
   let rawText: string;
   try {
+    console.log('[generate] calling Anthropic API...');
     const message = await getAnthropicClient().messages.create({
       model: 'claude-sonnet-4-6',
       max_tokens: 1000,
@@ -50,6 +61,7 @@ export async function POST(
       throw new Error('Unexpected content block type from Claude');
     }
     rawText = firstBlock.text;
+    console.log('[generate] Anthropic response received, length:', rawText.length);
   } catch (err) {
     console.error('[generate] Claude API error:', err);
     return NextResponse.json(
@@ -65,6 +77,7 @@ export async function POST(
   let plan;
   try {
     plan = parsePlan(rawText);
+    console.log('[generate] plan parsed successfully:', { stepCount: plan.steps.length, hasQuickWin: !!plan.quickWin });
   } catch (err) {
     console.error('[generate] Parse error. Raw response:\n', rawText);
     console.error('[generate] Parse error detail:', err);
@@ -80,8 +93,10 @@ export async function POST(
   // Persist to Supabase — graceful degradation on failure
   let id: string;
   try {
+    console.log('[generate] inserting lead to Supabase...');
     const lead = await insertLead(formData, plan);
     id = lead.id;
+    console.log('[generate] lead inserted, id:', id, '| awareness stored:', lead.awareness, '| platform stored:', lead.platform);
 
     // Fire emails non-blocking — errors logged, never surfaced to user
     Promise.allSettled([
@@ -99,5 +114,6 @@ export async function POST(
     id = generateSessionId();
   }
 
+  console.log('[generate] returning id:', id);
   return NextResponse.json({ id, plan }, { status: 200 });
 }
