@@ -41,6 +41,9 @@ export async function POST(
     platformCount: formData.platforms?.length ?? 0,
     primaryPlatform: formData.platforms?.find((p) => p.priority === 'primary')?.value ?? 'none',
     challengeCount: formData.challenges?.length ?? 0,
+    competitors: formData.competitors || null,
+    positioning: formData.positioning || null,
+    targetQueries: formData.targetQueries || null,
   });
 
   // Call Claude
@@ -93,6 +96,7 @@ export async function POST(
   // Persist to Supabase — graceful degradation on failure
   let id: string;
   try {
+    console.log('[generate] competitors being saved:', formData.competitors || null);
     console.log('[generate] inserting lead to Supabase...');
     const lead = await insertLead(formData, plan);
     id = lead.id;
