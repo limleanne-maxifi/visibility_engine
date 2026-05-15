@@ -222,7 +222,6 @@ function getGap3Specific(
 function getScoringRows(
   awareness: string,
   competitor: string | null,
-  hasDisplacement: boolean,
   queryCount: number,
 ): Array<{ signal: string; measured: string; result: string; weight: string; bad?: boolean }> {
   const platformEntry =
@@ -238,13 +237,13 @@ function getScoringRows(
       ? { result: 'Cited with outdated information', bad: true }
       : { result: 'Not yet tested', bad: false };
 
-  const displacementEntry = !competitor
+  const displacementEntry = !competitor || !competitor.trim()
     ? { result: 'Not assessed — no competitor entered', bad: false }
-    : awareness === 'Yes — competitors were cited instead of me' || hasDisplacement
-    ? { result: `Yes — ${competitor} cited on checked platforms`, bad: true }
     : awareness === 'Yes — and the results were accurate'
     ? { result: 'No displacement detected', bad: false }
-    : { result: 'Not assessed on checked platforms', bad: false };
+    : awareness.startsWith('Yes —')
+    ? { result: `Yes — ${competitor} cited on checked platforms`, bad: true }
+    : { result: 'Not yet assessed', bad: false };
 
   const queryEntry =
     awareness === "No, I haven't tried this yet"
@@ -327,9 +326,6 @@ export default async function ResultsPage({ params }: Props) {
   const benchAvg  = getIndustryBenchmark(lead.industry);
   const platforms = getPlatformStatuses(lead.awareness, lead.platform, lead.platform_other);
 
-  const challenges      = lead.challenge.split(';').map((c) => c.trim()).filter(Boolean);
-  const hasDisplacement = challenges.some((c) => c.includes('My competitors show up'));
-
   const entityName       = lead.company_name ?? lead.first_name;
   const competitor       = getFirstCompetitor(lead.competitors);
   const derivedQueries   = deriveQueries(entityName, lead.positioning, lead.target_queries);
@@ -342,7 +338,7 @@ export default async function ResultsPage({ params }: Props) {
   const { x: buyerX, y: buyerY } = buyerConversations(score, benchAvg);
 
   const rootCauses   = getRootCauses(lead.awareness, entityName, lead.industry, competitor);
-  const scoringRows  = getScoringRows(lead.awareness, competitor, hasDisplacement, derivedQueries.length);
+  const scoringRows  = getScoringRows(lead.awareness, competitor, derivedQueries.length);
   const opportunity  = getOpportunityContent(lead.awareness, entityName, competitor);
 
   const gap1Text = getGap1Specific(lead.awareness, entityName, lead.industry, competitor, lead.platform);
