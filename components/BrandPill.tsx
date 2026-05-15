@@ -15,10 +15,10 @@ export default function BrandPill() {
       </div>
 
       {/* Centre — text truly centred in remaining space */}
-      <div className="flex-1 flex justify-center">
+      <div className="flex-1 flex justify-center min-w-0">
         <p
-          className="text-2xl text-gray-900 font-normal tracking-widest"
-          style={{ fontFamily: 'var(--font-orbitron)' }}
+          className="text-2xl whitespace-nowrap"
+          style={{ fontFamily: 'Georgia, serif', color: '#1a2744', fontWeight: 300, letterSpacing: '0.05em' }}
         >
           AEO Visibility Check
         </p>
