@@ -274,7 +274,7 @@ function getScoringRows(
   return [
     { signal: 'Platform presence', measured: 'Are you cited on any AI platform your buyers use?', ...platformEntry, weight: '30%' },
     { signal: 'Competitor displacement', measured: 'Do competitors appear instead of you on your core queries?', ...displacementEntry, weight: '30%' },
-    { signal: 'Query coverage', measured: `How many of your target ${queryCount === 1 ? 'query returns' : 'queries return'} your brand?`, ...queryEntry, weight: '25%' },
+    { signal: 'Query coverage', measured: 'How many of your target queries return your brand?', ...queryEntry, weight: '25%' },
     { signal: 'Awareness consistency', measured: 'Does AI produce consistent, accurate information about your brand when asked directly?', ...consistencyEntry, weight: '15%' },
   ];
 }
@@ -358,13 +358,15 @@ export default async function ResultsPage({ params }: Props) {
   const gap2Text = getGap2Specific(entityName, lead.industry, competitor, score, benchAvg);
   const gap3Text = getGap3Specific(entityName, lead.industry, competitor, hasDisplacement);
 
+  console.log('[results] lead.target_queries:', lead.target_queries, '| lead.positioning:', lead.positioning);
+
   const buyerQuery = (() => {
     if (lead.target_queries?.trim()) {
       const q = lead.target_queries.split(/[,;\n]/)[0].trim();
       if (q) return q;
     }
     if (lead.positioning?.trim()) return lead.positioning.trim().slice(0, 120);
-    return `${entityName} ${lead.industry} services`;
+    return `${lead.industry} services`;
   })();
 
   const isPlatformEmbeddable = lead.platform === 'Perplexity';
@@ -497,7 +499,7 @@ export default async function ResultsPage({ params }: Props) {
             <p className="text-sm text-gray-700 leading-relaxed">
               AI-referred traffic converts at 3.4× the rate of traditional organic search.
               At {score > 0 ? `${score}%` : 'undiagnosed'} visibility,{' '}
-              your brand is accessing approximately{' '}
+              your brand is accessing{' '}
               <strong>{fractionText}</strong>{' '}
               of the AI discovery opportunity available in your category.
             </p>
@@ -673,7 +675,7 @@ export default async function ResultsPage({ params }: Props) {
             <div className="rounded-lg bg-amber-50 border border-amber-100 px-4 py-3">
               <p className="text-sm text-amber-800 leading-relaxed">
                 <strong>Business consequence:</strong>{' '}
-                If AI can&rsquo;t extract a clear description of what {entityName} does, it won&rsquo;t recommend you — even when buyers are searching for exactly what you offer.
+                If AI can&rsquo;t extract a clear description of what{' '}{entityName}{' '}does, it won&rsquo;t recommend you — even when buyers are searching for exactly what you offer.
               </p>
             </div>
           </div>
@@ -694,7 +696,7 @@ export default async function ResultsPage({ params }: Props) {
             <div className="rounded-lg bg-amber-50 border border-amber-100 px-4 py-3">
               <p className="text-sm text-amber-800 leading-relaxed">
                 <strong>Business consequence:</strong>{' '}
-                Until AI engines can describe {entityName} accurately and with confidence, your reputation won&rsquo;t translate into AI-generated referrals — regardless of how strong your actual work is.
+                Until AI engines can describe{' '}{entityName}{' '}accurately and with confidence, your reputation won&rsquo;t translate into AI-generated referrals — regardless of how strong your actual work is.
               </p>
             </div>
           </div>
