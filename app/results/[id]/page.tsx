@@ -371,9 +371,9 @@ export default async function ResultsPage({ params }: Props) {
             <Image
               src="/maxifi-logo-black.png"
               alt="Maxifi Digital"
-              height={38}
-              width={190}
-              className="h-[38px] w-auto"
+              height={46}
+              width={230}
+              className="h-[46px] w-auto"
             />
           </div>
           <h1 className="text-2xl font-bold text-gray-900 leading-snug mb-2">
