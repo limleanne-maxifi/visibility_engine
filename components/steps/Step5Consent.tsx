@@ -19,7 +19,7 @@ const FREE_SECTIONS = [
   'Current citation snapshot',
   'Failure mode diagnosis',
   'Platform visibility overview',
-  'Vertical benchmark percentile',
+  'Industry benchmark comparison',
 ];
 
 const LOCKED_SECTIONS = [

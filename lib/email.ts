@@ -51,13 +51,6 @@ const BENCHMARKS: Record<string, number> = {
   'Hospitality & Travel': 42,         'Manufacturing & Industrial': 38,
 };
 
-function getPercentile(score: number, industry: string): number {
-  const avg = BENCHMARKS[industry] ?? 38;
-  if (score === 0) return 8;
-  if (score >= avg) return Math.min(95, Math.round(50 + ((score - avg) / (100 - avg)) * 45));
-  return Math.max(5, Math.round((score / avg) * 45));
-}
-
 // ─── Email 1: User snapshot email ────────────────────────────────────────────
 
 export async function sendUserPlanEmail(lead: AeoLeadRow): Promise<void> {
@@ -65,7 +58,6 @@ export async function sendUserPlanEmail(lead: AeoLeadRow): Promise<void> {
   const fromEmail  = process.env.FROM_EMAIL ?? 'hello@maxifidigital.com';
   const score      = getScore(lead.awareness);
   const failLabel  = getFailureLabel(lead.awareness);
-  const percentile = getPercentile(score, lead.industry);
   const entity     = lead.company_name ?? lead.first_name;
   const challenges = lead.challenge.split(';').map((c) => c.trim()).filter(Boolean);
   const displaced  = challenges.some((c) => c.includes('My competitors show up'));
@@ -75,9 +67,10 @@ export async function sendUserPlanEmail(lead: AeoLeadRow): Promise<void> {
   const scoreDisplay = score > 0 ? `${score}%` : '—';
   const subject      = `Your AEO Visibility Snapshot — ${entity} is at ${score > 0 ? `${score}%` : 'an undiagnosed'} visibility`;
 
+  const benchAvg      = BENCHMARKS[lead.industry] ?? 38;
   const benchmarkLine = score > 0
-    ? `You are in the <strong>${percentile}th percentile</strong> for ${lead.industry || 'your industry'}.
-       ${percentile < 33 ? 'Significantly below average for your vertical.' : percentile < 60 ? 'Below average for your vertical.' : 'At or above average for your vertical.'}`
+    ? `Your score of <strong>${score}%</strong> compares to an industry average of <strong>${benchAvg}%</strong> for ${lead.industry || 'your industry'}.
+       ${score < benchAvg ? 'You are currently below the industry benchmark.' : 'You are at or above the industry benchmark.'}`
     : `Your AI visibility baseline is undiagnosed. Search for ${entity} in ChatGPT or Perplexity to see where you stand.`;
 
   const competitorSection = displaced ? `
