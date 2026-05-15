@@ -367,20 +367,38 @@ export default async function ResultsPage({ params }: Props) {
 
         {/* 1. Header */}
         <div className="mb-8">
-          <div className="relative flex items-center w-full mb-4 pb-4 border-b border-gray-100">
-            <Image
-              src="/maxifi-logo-black.png"
-              alt="Maxifi Digital"
-              height={60}
-              width={300}
-              className="h-[60px] w-auto"
-            />
-            <p
-              className="absolute left-1/2 -translate-x-1/2 text-2xl text-gray-900 font-light tracking-widest"
-              style={{ fontFamily: 'var(--font-exo2)' }}
-            >
-              AEO Visibility Check
-            </p>
+          <div className="flex items-center w-full mb-4 pb-4 border-b border-gray-100">
+            {/* Logo — flush left */}
+            <div className="flex-none">
+              <Image
+                src="/maxifi-logo-black.png"
+                alt="Maxifi Digital"
+                height={60}
+                width={300}
+                className="h-[60px] w-auto"
+              />
+            </div>
+
+            {/* Centre — text truly centred in remaining space */}
+            <div className="flex-1 flex justify-center">
+              <p
+                className="text-2xl text-gray-900 font-light tracking-widest"
+                style={{ fontFamily: 'var(--font-exo2)' }}
+              >
+                AEO Visibility Check
+              </p>
+            </div>
+
+            {/* Spacer — mirrors logo div to balance layout */}
+            <div className="flex-none invisible" aria-hidden="true">
+              <Image
+                src="/maxifi-logo-black.png"
+                alt=""
+                height={60}
+                width={300}
+                className="h-[60px] w-auto"
+              />
+            </div>
           </div>
           <h1 className="text-2xl font-bold text-gray-900 leading-snug mb-2">
             {toTitleCase(lead.first_name)}&rsquo;s AEO Visibility Snapshot
