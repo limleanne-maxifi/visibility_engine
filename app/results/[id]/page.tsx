@@ -137,20 +137,18 @@ function getRootCauses(
   industry: string,
   competitor: string | null,
 ): string[] {
-  const comp = competitor ?? 'the market leader in your category';
-
   switch (awareness) {
     case "Yes — but I wasn't mentioned at all":
       return [
         `Your website doesn't clearly identify what category ${entityName} belongs to — so AI engines can't place you when a buyer searches for it.`,
         `Your brand isn't referenced consistently across the external directories, publications, and review platforms that AI engines use to verify businesses.`,
-        `${comp} has formatted their online presence to match how buyers phrase questions in ${industry} — ${entityName}'s content hasn't been set up that way yet.`,
+        `${competitor ? `${competitor} has` : 'Leading brands in your category have'} formatted their online presence to match how buyers phrase questions in ${industry} — ${entityName}'s content hasn't been set up that way yet.`,
       ];
     case 'Yes — competitors were cited instead of me':
       return [
-        `${comp} has built a clearer, more consistent presence in the sources AI engines rely on — which is why they appear first.`,
+        `${competitor ? `${competitor} has` : 'Leading brands in your category have'} built a clearer, more consistent presence in the sources AI engines rely on — which is why they appear first.`,
         `Your content covers the right topics, but it isn't formatted in a way that AI engines can extract a recommendation from.`,
-        `Third-party sources in the ${industry} sector — directories, review platforms, publications — reference ${comp} more consistently than ${entityName}.`,
+        `Third-party sources in the ${industry} sector — directories, review platforms, publications — reference ${competitor ?? 'competing brands in your category'} more consistently than ${entityName}.`,
       ];
     case 'Yes — but details about me were wrong':
       return [
@@ -528,7 +526,7 @@ export default async function ResultsPage({ params }: Props) {
             ) : checkedPlatforms.length > 0 ? (
               <>
                 <p className="text-sm text-gray-600 mb-3">
-                  Searched on {snapshotDate} · Query: &ldquo;{primaryQuery}&rdquo;
+                  Searched on {snapshotDate} · Query: &ldquo;{buyerQuery}&rdquo;
                 </p>
                 <div className="rounded-lg bg-gray-50 divide-y divide-gray-100 overflow-hidden border border-gray-100">
                   {checkedPlatforms.map((platform) => {
