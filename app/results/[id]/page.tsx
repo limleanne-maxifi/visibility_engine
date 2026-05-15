@@ -382,8 +382,8 @@ export default async function ResultsPage({ params }: Props) {
             {/* Centre — text truly centred in remaining space */}
             <div className="flex-1 flex justify-center">
               <p
-                className="text-2xl text-gray-900 font-light tracking-widest"
-                style={{ fontFamily: 'var(--font-exo2)' }}
+                className="text-2xl text-gray-900 font-normal tracking-widest"
+                style={{ fontFamily: 'var(--font-orbitron)' }}
               >
                 AEO Visibility Check
               </p>

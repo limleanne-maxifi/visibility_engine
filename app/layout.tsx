@@ -1,11 +1,11 @@
 import type { Metadata } from "next";
-import { Exo_2 } from "next/font/google";
+import { Orbitron } from "next/font/google";
 import "./globals.css";
 
-const exo2 = Exo_2({
+const orbitron = Orbitron({
   subsets: ['latin'],
-  weight: ['100', '300'],
-  variable: '--font-exo2',
+  weight: ['400'],
+  variable: '--font-orbitron',
 });
 
 export const metadata: Metadata = {
@@ -22,7 +22,7 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en" className={exo2.variable}>
+    <html lang="en" className={orbitron.variable}>
       <body className="antialiased">
         {children}
       </body>
