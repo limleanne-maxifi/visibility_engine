@@ -188,7 +188,7 @@ function getGap1Specific(
     case "Yes — but I wasn't mentioned at all":
       return `When a buyer asks for a ${industry} specialist on ${plat}, AI engines don't have a clear enough description of ${entityName} to include it in the answer. Your website covers the right territory, but it isn't signalling the right category clearly enough for AI to surface you.`;
     case 'Yes — competitors were cited instead of me':
-      return `${entityName}'s website covers the right topics, but ${competitor ? `${competitor} has` : 'your competitors have'} formatted theirs to more closely match how buyers phrase questions in ${industry}. That formatting gap is why AI surfaces them and not you.`;
+      return `${entityName}'s website covers the right topics, but ${competitor ? `${competitor} has formatted theirs` : 'leading brands in your category have formatted their content'} to more closely match how buyers phrase questions in ${industry}. That formatting gap is why AI surfaces them and not you.`;
     case 'Yes — but details about me were wrong':
       return `AI engines are pulling inconsistent descriptions of ${entityName} from different sources. Your own website isn't giving them a reliable, clear alternative to draw from.`;
     case 'Yes — but old/outdated info appeared':
@@ -205,13 +205,11 @@ function getGap2Specific(
   score: number,
   benchAvg: number,
 ): string {
-  const comp = competitor ?? 'the leading businesses in your category';
-
   if (score > 0 && score >= benchAvg) {
     return `Your brand has a reasonable footprint across public sources, but there are gaps preventing AI engines from citing you as consistently as they could. ${competitor ? `${competitor} has a stronger presence in key directories and publications in ${industry}.` : `There are specific source types in ${industry} that aren't yet referencing ${entityName} reliably.`}`;
   }
   if (score > 0) {
-    return `Right now, ${entityName}'s presence across the sources AI engines rely on in the ${industry} sector is weaker than your competitors'. ${competitor ? `In particular, ${competitor}'s authority signals are stronger in this category — which is why they're cited first.` : `${comp} have built stronger authority signals across these sources.`}`;
+    return `Right now, ${entityName}'s presence across the sources AI engines rely on in the ${industry} sector is weaker than your competitors'. ${competitor ? `In particular, ${competitor}'s authority signals are stronger in this category — which is why they're cited first.` : `Competing brands in your category have stronger authority signals across these sources.`}`;
   }
   return `Without testing, it's unclear how consistently AI engines can describe ${entityName} or what information they're drawing from. ${competitor ? `${competitor} has had more time to build their presence in the ${industry} sector.` : `The established businesses in ${industry} have built clearer footprints across the sources AI engines rely on.`}`;
 }
@@ -222,12 +220,10 @@ function getGap3Specific(
   competitor: string | null,
   hasDisplacement: boolean,
 ): string {
-  const comp = competitor ?? 'your competitors';
-
-  if (hasDisplacement) {
-    return `The publications, directories, and analyst platforms covering the ${industry} sector are currently referencing ${comp} more consistently than ${entityName}. This is a key reason AI engines surface them before you when buyers are researching.`;
+  if (hasDisplacement && competitor) {
+    return `The publications, directories, and analyst platforms covering the ${industry} sector are currently referencing ${competitor} more consistently than ${entityName}. This is a key reason AI engines surface them before you when buyers are researching.`;
   }
-  return `The publications, directories, and analyst platforms in the ${industry} sector don't yet reference ${entityName} with enough consistency for AI engines to treat it as a recommended source. The relevant sources in ${industry} are well-defined — this is addressable.`;
+  return `The publications, directories, and analyst platforms in the ${industry} sector don't yet reference ${entityName} consistently enough for AI engines to treat it as a recommended source. The relevant sources in ${industry} are well-defined — this is addressable.`;
 }
 
 // ─── Scoring methodology helpers ─────────────────────────────────────────────
@@ -251,12 +247,13 @@ function getScoringRows(
       ? { result: 'Cited with outdated information', bad: true }
       : { result: 'Not yet tested', bad: false };
 
-  const displacementEntry =
-    awareness === 'Yes — competitors were cited instead of me' || hasDisplacement
-      ? { result: competitor ? `Yes — ${competitor} cited on checked platforms` : 'Yes — competitors cited instead', bad: true }
-      : awareness === 'Yes — and the results were accurate'
-      ? { result: 'No displacement detected', bad: false }
-      : { result: 'Not assessed on checked platforms', bad: false };
+  const displacementEntry = !competitor
+    ? { result: 'Not assessed — no competitor entered', bad: false }
+    : awareness === 'Yes — competitors were cited instead of me' || hasDisplacement
+    ? { result: `Yes — ${competitor} cited on checked platforms`, bad: true }
+    : awareness === 'Yes — and the results were accurate'
+    ? { result: 'No displacement detected', bad: false }
+    : { result: 'Not assessed on checked platforms', bad: false };
 
   const queryEntry =
     awareness === "No, I haven't tried this yet"
@@ -293,7 +290,7 @@ function getOpportunityContent(
     case 'Yes — competitors were cited instead of me':
       return {
         headline: 'You are visible — but not being chosen.',
-        body: `AI systems know about ${entityName}. When buyers search for what you do, your brand exists in the information these systems draw from. The problem is not invisibility — it is that ${competitor ? `${competitor} is` : 'your competitors are'} being selected as the authoritative answer instead of you. This is actually good news. Brands that are completely unknown to AI face a much longer road. Your starting point is strong — what needs to change is how your content is structured so AI systems choose to cite you, not just know about you.`,
+        body: `AI systems know about ${entityName}. When buyers search for what you do, your brand exists in the information these systems draw from. The problem is not invisibility — it is that ${competitor ? `${competitor} is` : 'other brands in your category are'} being selected as the authoritative answer instead of you. This is actually good news. Brands that are completely unknown to AI face a much longer road. Your starting point is strong — what needs to change is how your content is structured so AI systems choose to cite you, not just know about you.`,
         displaced: true,
       };
     case "Yes — but I wasn't mentioned at all":
@@ -445,8 +442,13 @@ export default async function ResultsPage({ params }: Props) {
             <tbody>
               <tr className="border-b border-gray-50">
                 <td className="py-3 pr-4 text-xs text-gray-400 whitespace-nowrap">Category leader</td>
-                <td className="py-3 pr-4 text-gray-900 font-medium">{competitor ?? 'Leading competitor'} *</td>
-                <td className="py-3 text-right font-bold text-gray-900">{competitorScore}%</td>
+                <td className="py-3 pr-4 font-medium">
+                  {competitor
+                    ? <span className="text-gray-900">{competitor} *</span>
+                    : <span className="text-gray-400 italic">Category leader (unidentified)</span>
+                  }
+                </td>
+                <td className="py-3 text-right font-bold text-gray-900">{competitor ? `${competitorScore}%` : '—'}</td>
               </tr>
               <tr className="border-b border-gray-50">
                 <td className="py-3 pr-4 text-xs text-gray-400 whitespace-nowrap">Industry median</td>
@@ -471,7 +473,12 @@ export default async function ResultsPage({ params }: Props) {
               )}
             </tbody>
           </table>
-          <p className="text-[10px] text-gray-400 mt-3">* Estimated from industry benchmark data. Maxifi Digital research.</p>
+          {competitor && (
+            <p className="text-[10px] text-gray-400 mt-3">* Estimated from industry benchmark data. Maxifi Digital research.</p>
+          )}
+          {!competitor && (
+            <p className="text-[10px] text-gray-400 mt-3">Add your closest competitors to your profile to see who is leading in your category.</p>
+          )}
 
           <div className="mt-4 pt-4 border-t border-gray-100">
             <p className="text-sm text-gray-700 leading-relaxed">
