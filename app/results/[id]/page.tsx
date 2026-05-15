@@ -200,25 +200,21 @@ function getGap2Specific(
   score: number,
   benchAvg: number,
 ): string {
+  const opening = `AI engines build confidence in a brand by checking how consistently it appears across public sources — company directories, news coverage, review platforms. Where that consistency is lower, citations happen less frequently, regardless of the brand's actual quality or reputation.`;
   if (score > 0 && score >= benchAvg) {
-    return `Your brand has a reasonable footprint across public sources, but there are gaps preventing AI engines from citing you as consistently as they could. ${competitor ? `${competitor} has a stronger presence in key directories and publications in ${industry}.` : `There are specific source types in ${industry} that aren't yet referencing ${entityName} reliably.`}`;
+    return `${opening} ${competitor ? `${competitor} has a stronger presence in key directories and publications in ${industry}.` : `There are specific source types in ${industry} that aren't yet referencing ${entityName} reliably.`}`;
   }
   if (score > 0) {
-    return `Right now, ${entityName}'s presence across the sources AI engines rely on in the ${industry} sector is weaker than your competitors'. ${competitor ? `In particular, ${competitor}'s authority signals are stronger in this category — which is why they're cited first.` : `Competing brands in your category have stronger authority signals across these sources.`}`;
+    return `${opening} ${competitor ? `In particular, ${competitor}'s authority signals are stronger in this category — which is why they're cited first.` : `Competing brands in your category have stronger authority signals across these sources.`}`;
   }
-  return `Without testing, it's unclear how consistently AI engines can describe ${entityName} or what information they're drawing from. ${competitor ? `${competitor} has had more time to build their presence in the ${industry} sector.` : `The established businesses in ${industry} have built clearer footprints across the sources AI engines rely on.`}`;
+  return `${opening} ${competitor ? `${competitor} has had more time to build their presence in the ${industry} sector.` : `The established businesses in ${industry} have built clearer footprints across the sources AI engines rely on.`}`;
 }
 
 function getGap3Specific(
   entityName: string,
   industry: string,
-  competitor: string | null,
-  hasDisplacement: boolean,
 ): string {
-  if (hasDisplacement && competitor) {
-    return `The publications, directories, and analyst platforms covering the ${industry} sector are currently referencing ${competitor} more consistently than ${entityName}. This is a key reason AI engines surface them before you when buyers are researching.`;
-  }
-  return `The publications, directories, and analyst platforms in the ${industry} sector don't yet reference ${entityName} consistently enough for AI engines to treat it as a recommended source. The relevant sources in ${industry} are well-defined — this is addressable.`;
+  return `Third-party references from recognised sources in ${industry} — directories, analyst platforms, review sites — increase the likelihood of AI citation. When AI encounters a brand name, it checks whether trusted external sources confirm it. This snapshot suggests that gap exists for ${entityName} — the full report maps the specific sources to address.`;
 }
 
 // ─── Scoring methodology helpers ─────────────────────────────────────────────
@@ -337,7 +333,7 @@ export default async function ResultsPage({ params }: Props) {
   const entityName       = lead.company_name ?? lead.first_name;
   const competitor       = getFirstCompetitor(lead.competitors);
   const derivedQueries   = deriveQueries(entityName, lead.positioning, lead.target_queries);
-  const primaryQuery     = derivedQueries[0];
+
   const snapshotDate     = new Date(lead.created_at).toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' });
   const checkedPlatforms = ALL_PLATFORMS.filter((p) => platforms[p] !== 'unknown');
 
@@ -351,7 +347,7 @@ export default async function ResultsPage({ params }: Props) {
 
   const gap1Text = getGap1Specific(lead.awareness, entityName, lead.industry, competitor, lead.platform);
   const gap2Text = getGap2Specific(entityName, lead.industry, competitor, score, benchAvg);
-  const gap3Text = getGap3Specific(entityName, lead.industry, competitor, hasDisplacement);
+  const gap3Text = getGap3Specific(entityName, lead.industry);
 
   console.log('[results] id:', lead.id, '| awareness:', lead.awareness, '| competitors:', lead.competitors, '| company_name:', lead.company_name, '| target_queries:', lead.target_queries, '| positioning:', lead.positioning, '| platform:', lead.platform);
 
