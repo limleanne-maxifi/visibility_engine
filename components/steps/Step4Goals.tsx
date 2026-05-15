@@ -226,6 +226,7 @@ export default function Step4Goals({ data, onChange, onNext, onBack, errors, ind
         <input
           id="competitors"
           type="text"
+          name="x-competitors"
           value={data.competitors}
           onChange={(e) => onChange({ competitors: e.target.value })}
           placeholder="Your closest competitors by name"
@@ -248,6 +249,7 @@ export default function Step4Goals({ data, onChange, onNext, onBack, errors, ind
         </p>
         <textarea
           id="positioning"
+          name="x-positioning"
           rows={2}
           value={data.positioning}
           onChange={(e) => onChange({ positioning: e.target.value })}
@@ -273,6 +275,7 @@ export default function Step4Goals({ data, onChange, onNext, onBack, errors, ind
           </label>
           <textarea
             id="targetQueries"
+            name="x-target-queries"
             rows={3}
             value={data.targetQueries}
             onChange={(e) => onChange({ targetQueries: e.target.value })}

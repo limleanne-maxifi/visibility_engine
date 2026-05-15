@@ -7,3 +7,22 @@ body {
     Ubuntu, Cantarell, 'Helvetica Neue', sans-serif;
   background: #f9fafb;
 }
+
+/* Prevent iOS Safari and Firefox from overriding input/select/textarea styling */
+input,
+textarea,
+select {
+  -webkit-appearance: none;
+  appearance: none;
+  border-radius: 0;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+}

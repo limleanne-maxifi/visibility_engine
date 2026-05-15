@@ -4,6 +4,9 @@ import "./globals.css";
 export const metadata: Metadata = {
   title: "AEO Visibility Check — Maxifi Digital",
   description: "Find out how visible your brand is in AI search — and get a free personalised action plan.",
+  other: {
+    "format-detection": "telephone=no",
+  },
 };
 
 export default function RootLayout({

@@ -433,6 +433,7 @@ export default async function ResultsPage({ params }: Props) {
           <p className="text-xs font-semibold text-gray-400 uppercase tracking-wide mb-4">
             Competitive position
           </p>
+          <div className="overflow-x-auto">
           <table className="w-full text-sm">
             <thead>
               <tr className="border-b border-gray-100 text-xs text-gray-400">
@@ -475,6 +476,7 @@ export default async function ResultsPage({ params }: Props) {
               )}
             </tbody>
           </table>
+          </div>
           {competitor && (
             <p className="text-[10px] text-gray-400 mt-3">* Estimated from industry benchmark data. Maxifi Digital research.</p>
           )}
