@@ -17,14 +17,14 @@ export default function Step1Identity({ data, onChange, onNext, errors }: Props)
 
   return (
     <form onSubmit={handleSubmit} noValidate>
-      <h1 className="text-2xl font-semibold text-gray-900 mb-1">Let&apos;s get started</h1>
+      <h1 className="text-2xl text-gray-900 mb-1">Let&apos;s get started</h1>
       <p className="text-sm text-gray-500 mb-6">
         Takes about 2 minutes. You&apos;ll get a free personalised action plan straight away — no sales call required.
       </p>
 
       <div className="space-y-4">
         <div>
-          <label htmlFor="firstName" className="block text-[17px] font-semibold text-gray-700 mb-1">
+          <label htmlFor="firstName" className="block text-[17px] text-gray-700 mb-1">
             First name <span className="text-red-500">*</span>
           </label>
           <input
@@ -46,7 +46,7 @@ export default function Step1Identity({ data, onChange, onNext, errors }: Props)
         </div>
 
         <div>
-          <label htmlFor="email" className="block text-[17px] font-semibold text-gray-700 mb-1">
+          <label htmlFor="email" className="block text-[17px] text-gray-700 mb-1">
             Business email <span className="text-red-500">*</span>
           </label>
           <input
@@ -68,7 +68,7 @@ export default function Step1Identity({ data, onChange, onNext, errors }: Props)
         </div>
 
         <div>
-          <label htmlFor="websiteUrl" className="block text-[17px] font-semibold text-gray-700 mb-1">
+          <label htmlFor="websiteUrl" className="block text-[17px] text-gray-700 mb-1">
             Website URL <span className="text-red-500">*</span>
           </label>
           <input

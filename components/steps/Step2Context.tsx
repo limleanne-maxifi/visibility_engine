@@ -58,7 +58,7 @@ export default function Step2Context({ data, onChange, onNext, onBack, errors }:
 
   return (
     <form onSubmit={handleSubmit} noValidate>
-      <h1 className="text-2xl font-semibold text-gray-900 mb-1">About you</h1>
+      <h1 className="text-2xl text-gray-900 mb-1">About you</h1>
       <p className="text-sm text-gray-500 mb-6">
         This helps us tailor your action plan to your specific situation.
       </p>
@@ -66,7 +66,7 @@ export default function Step2Context({ data, onChange, onNext, onBack, errors }:
       <div className="space-y-4">
         {/* Industry */}
         <div>
-          <label htmlFor="industry" className="block text-[17px] font-semibold text-gray-700 mb-1">
+          <label htmlFor="industry" className="block text-[17px] text-gray-700 mb-1">
             Industry <span className="text-red-500">*</span>
           </label>
           <select
@@ -87,7 +87,7 @@ export default function Step2Context({ data, onChange, onNext, onBack, errors }:
 
         {/* Role */}
         <div>
-          <label htmlFor="occupation" className="block text-[17px] font-semibold text-gray-700 mb-1">
+          <label htmlFor="occupation" className="block text-[17px] text-gray-700 mb-1">
             Role <span className="text-red-500">*</span>
           </label>
           <select
@@ -108,7 +108,7 @@ export default function Step2Context({ data, onChange, onNext, onBack, errors }:
 
         {/* Company */}
         <div>
-          <label htmlFor="company" className="block text-[17px] font-semibold text-gray-700 mb-1">
+          <label htmlFor="company" className="block text-[17px] text-gray-700 mb-1">
             Company or organisation <span className="text-red-500">*</span>
           </label>
           <input

@@ -59,11 +59,11 @@ export default function Step3Awareness({ data, onChange, onNext, onBack, errors 
 
   return (
     <form onSubmit={handleSubmit} noValidate>
-      <h1 className="text-2xl font-semibold text-gray-900 mb-6">Your AI presence today</h1>
+      <h1 className="text-2xl text-gray-900 mb-6">Your AI presence today</h1>
 
       {/* Group A */}
       <fieldset className="mb-6">
-        <legend className="text-[17px] font-semibold text-gray-700 mb-3">
+        <legend className="text-[17px] text-gray-700 mb-3">
           Have you ever searched for yourself or your business in an AI tool like ChatGPT or Perplexity?{' '}
           <span className="text-red-500">*</span>
         </legend>
@@ -84,7 +84,7 @@ export default function Step3Awareness({ data, onChange, onNext, onBack, errors 
 
       {/* Group B */}
       <fieldset>
-        <legend className="text-[17px] font-semibold text-gray-700 mb-1">
+        <legend className="text-[17px] text-gray-700 mb-1">
           Which AI platforms matter to you?{' '}
           <span className="text-red-500">*</span>
         </legend>

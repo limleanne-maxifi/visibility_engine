@@ -157,14 +157,14 @@ export default function Step4Goals({ data, onChange, onNext, onBack, errors, ind
 
   return (
     <form onSubmit={handleSubmit} noValidate>
-      <h1 className="text-2xl font-semibold text-gray-900 mb-1">Your goals</h1>
+      <h1 className="text-2xl text-gray-900 mb-1">Your goals</h1>
       <p className="text-sm text-gray-500 mb-6">
         This shapes the whole plan — take 30 seconds to be specific.
       </p>
 
       {/* Challenges */}
       <fieldset className="mb-6">
-        <legend className="text-[17px] font-semibold text-gray-700 mb-1">
+        <legend className="text-[17px] text-gray-700 mb-1">
           What are your biggest AEO challenges?{' '}
           <span className="text-red-500">*</span>
         </legend>
@@ -219,7 +219,7 @@ export default function Step4Goals({ data, onChange, onNext, onBack, errors, ind
 
       {/* Competitors */}
       <div className="mb-5">
-        <label htmlFor="competitors" className="block text-[17px] font-semibold text-gray-700 mb-1">
+        <label htmlFor="competitors" className="block text-[17px] text-gray-700 mb-1">
           Who shows up when your customers search for what you do?{' '}
           <span className="text-gray-400 font-normal">(optional)</span>
         </label>
@@ -240,7 +240,7 @@ export default function Step4Goals({ data, onChange, onNext, onBack, errors, ind
 
       {/* Positioning phrase */}
       <div className="mb-5 border-l-4 border-green-500 bg-green-50 rounded-r-lg px-4 pt-4 pb-3">
-        <label htmlFor="positioning" className="block text-[17px] font-semibold text-gray-800 mb-1">
+        <label htmlFor="positioning" className="block text-[17px] text-gray-800 mb-1">
           In one phrase, what do you want to be known for in AI answers?
         </label>
         <p className="text-xs text-gray-500 mb-2">
@@ -269,7 +269,7 @@ export default function Step4Goals({ data, onChange, onNext, onBack, errors, ind
       {/* Target queries — conditional on 'I want to appear for specific topics' */}
       {showTargetQueries && (
         <div className="mb-5">
-          <label htmlFor="targetQueries" className="block text-[17px] font-semibold text-gray-700 mb-1">
+          <label htmlFor="targetQueries" className="block text-[17px] text-gray-700 mb-1">
             Which 2–3 queries or topics do you most want to win?{' '}
             <span className="text-gray-400 font-normal">(optional)</span>
           </label>
@@ -295,7 +295,7 @@ export default function Step4Goals({ data, onChange, onNext, onBack, errors, ind
 
       {/* Outcome */}
       <fieldset className="mb-6">
-        <legend className="text-[17px] font-semibold text-gray-700 mb-3">
+        <legend className="text-[17px] text-gray-700 mb-3">
           What outcome matters most to you?{' '}
           <span className="text-red-500">*</span>
         </legend>

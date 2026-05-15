@@ -39,7 +39,7 @@ export default function Step5Consent({ data, onChange, onSubmit, onBack, errors,
     return (
       <div className="flex flex-col items-center justify-center py-12 text-center">
         <div className="w-10 h-10 border-4 border-[#EEEDFE] border-t-[#534AB7] rounded-full animate-spin mb-4" />
-        <p className="text-lg font-semibold text-gray-900">
+        <p className="text-lg text-gray-900">
           Hang tight — we&apos;re building your personalised snapshot…
         </p>
       </div>
@@ -48,7 +48,7 @@ export default function Step5Consent({ data, onChange, onSubmit, onBack, errors,
 
   return (
     <form onSubmit={handleSubmit} noValidate>
-      <h1 className="text-2xl font-semibold text-gray-900 mb-1">
+      <h1 className="text-2xl text-gray-900 mb-1">
         Almost there, {data.firstName ? toTitleCase(data.firstName) : 'there'} — you&apos;re 10 seconds away
       </h1>
       <p className="text-sm text-gray-500 mb-6">
