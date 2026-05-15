@@ -28,16 +28,6 @@ function getScore(awareness: string): number {
   return map[awareness] ?? 0;
 }
 
-function getFailureLabel(awareness: string): string {
-  switch (awareness) {
-    case "Yes — but I wasn't mentioned at all":         return 'INVISIBILITY';
-    case 'Yes — but details about me were wrong':       return 'HALLUCINATION';
-    case 'Yes — competitors were cited instead of me':  return 'DISPLACEMENT';
-    case 'Yes — but old/outdated info appeared':        return 'STALENESS';
-    default:                                             return 'UNDIAGNOSED';
-  }
-}
-
 const BENCHMARKS: Record<string, number> = {
   'Financial Services & Banking': 47, 'Fintech / Financial Technology': 47,
   'Accounting & Finance': 47,         'Legal': 62,
@@ -57,7 +47,6 @@ export async function sendUserPlanEmail(lead: AeoLeadRow): Promise<void> {
   const { CALENDLY, REPORT_URL } = getUrls();
   const fromEmail  = process.env.FROM_EMAIL ?? 'hello@maxifidigital.com';
   const score      = getScore(lead.awareness);
-  const failLabel  = getFailureLabel(lead.awareness);
   const entity     = lead.company_name ?? lead.first_name;
   const challenges = lead.challenge.split(';').map((c) => c.trim()).filter(Boolean);
   const displaced  = challenges.some((c) => c.includes('My competitors show up'));
@@ -67,7 +56,9 @@ export async function sendUserPlanEmail(lead: AeoLeadRow): Promise<void> {
   const scoreDisplay = score > 0 ? `${score}%` : '—';
   const subject      = `Your AEO Visibility Snapshot — ${entity} is at ${score > 0 ? `${score}%` : 'an undiagnosed'} visibility`;
 
-  const benchAvg      = BENCHMARKS[lead.industry] ?? 38;
+  const benchAvg = BENCHMARKS[lead.industry] ?? 38;
+  const buyerX   = Math.max(0, Math.min(9, Math.round((score / (benchAvg || 1)) * 10)));
+  const buyerY   = Math.max(1, Math.min(10, Math.round((benchAvg / 100) * 10)));
   const benchmarkLine = score > 0
     ? `Your score of <strong>${score}%</strong> compares to an industry average of <strong>${benchAvg}%</strong> for ${lead.industry || 'your industry'}.
        ${score < benchAvg ? 'You are currently below the industry benchmark.' : 'You are at or above the industry benchmark.'}`
@@ -107,26 +98,29 @@ export async function sendUserPlanEmail(lead: AeoLeadRow): Promise<void> {
     <p style="margin:0;font-size:14px;color:#6b7280;">${lead.occupation} &middot; ${lead.industry}</p>
   </td></tr>
 
-  <!-- Score + failure mode -->
+  <!-- Score card -->
   <tr><td style="padding-bottom:20px;">
     <div style="background:#f3f4f6;border-radius:12px;padding:24px 28px;">
       <p style="margin:0 0 4px;font-size:11px;font-weight:600;color:#9ca3af;text-transform:uppercase;letter-spacing:0.08em;">
         Your AI Visibility Score
       </p>
-      <p style="margin:0 0 12px;font-size:56px;font-weight:700;color:#111827;line-height:1.1;">
+      <p style="margin:0 0 16px;font-size:56px;font-weight:700;color:#111827;line-height:1.1;">
         ${scoreDisplay}
       </p>
-      <div style="display:inline-block;background:#fef2f2;border:1px solid #fecaca;border-radius:4px;padding:2px 8px;margin-bottom:10px;">
-        <span style="font-size:11px;font-weight:700;color:#dc2626;letter-spacing:0.05em;">${failLabel}</span>
-      </div>
-      <p style="margin:0;font-size:14px;color:#374151;line-height:1.6;">${benchmarkLine}</p>
+      <p style="margin:0 0 12px;font-size:14px;color:#374151;line-height:1.6;">${benchmarkLine}</p>
+      ${score > 0 ? `<p style="margin:0;font-size:14px;color:#374151;line-height:1.6;">If 10 potential buyers in your category asked an AI tool for a recommendation today, your brand would appear in approximately <strong>${buyerX}</strong> of those conversations. Your closest competitors appear in <strong>${buyerY}</strong> or more.</p>` : ''}
     </div>
   </td></tr>
 
-  <!-- Benchmark standalone line -->
+  <!-- Opportunity -->
+  ${lead.awareness === 'Yes — competitors were cited instead of me' ? `
   <tr><td style="padding-bottom:20px;">
-    <p style="margin:0;font-size:15px;color:#374151;line-height:1.7;">${benchmarkLine}</p>
-  </td></tr>
+    <p style="margin:0;font-size:15px;color:#374151;line-height:1.7;">
+      This is fixable &mdash; and faster to address than starting from zero.
+      Your AI presence already exists, which is a good starting point.
+      What needs to change is how your presence is structured, not whether you have one.
+    </p>
+  </td></tr>` : ''}
 
   <!-- Competitor line -->
   ${competitorSection}
