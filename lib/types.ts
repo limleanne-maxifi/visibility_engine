@@ -23,7 +23,7 @@ export type AeoOutcome =
   | 'Credibility and thought leadership'
   | 'Career visibility and personal brand'
   | 'Protecting my reputation online'
-  | 'Winning more deals by being findable'
+  | 'Winning more business by being found by AI engines'
   | 'Understanding where I currently stand in AI search'
   | 'Beating a specific competitor'
   | '';
