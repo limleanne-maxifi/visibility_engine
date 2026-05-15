@@ -367,7 +367,7 @@ export default async function ResultsPage({ params }: Props) {
 
         {/* 1. Header */}
         <div className="mb-8">
-          <div className="flex items-center gap-[50px] w-full mb-4 pb-4 border-b border-gray-100">
+          <div className="flex items-center w-full mb-4 pb-4 border-b border-gray-100">
             {/* Logo — flush left */}
             <div className="flex-none">
               <Image
@@ -379,25 +379,14 @@ export default async function ResultsPage({ params }: Props) {
               />
             </div>
 
-            {/* Centre — text truly centred in remaining space */}
-            <div className="flex-1 flex justify-center min-w-0">
+            {/* Title — 50px from logo, centred in remaining space */}
+            <div className="flex-1 flex justify-center min-w-0 pl-[50px]">
               <p
                 className="text-2xl whitespace-nowrap"
                 style={{ fontFamily: 'var(--font-dm-sans)', fontWeight: 300, whiteSpace: 'nowrap', color: '#1a2744', letterSpacing: '0.05em' }}
               >
                 AEO Visibility Check
               </p>
-            </div>
-
-            {/* Spacer — mirrors logo div to balance layout */}
-            <div className="flex-none invisible" aria-hidden="true">
-              <Image
-                src="/maxifi-logo-black.png"
-                alt=""
-                height={60}
-                width={300}
-                className="h-[60px] w-auto"
-              />
             </div>
           </div>
           <h1 className="text-2xl font-bold text-gray-900 leading-snug mb-2">
