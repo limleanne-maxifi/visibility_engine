@@ -353,7 +353,7 @@ export default async function ResultsPage({ params }: Props) {
   const gap2Text = getGap2Specific(entityName, lead.industry, competitor, score, benchAvg);
   const gap3Text = getGap3Specific(entityName, lead.industry, competitor, hasDisplacement);
 
-  console.log('[results] lead.target_queries:', lead.target_queries, '| lead.positioning:', lead.positioning);
+  console.log('[results] id:', lead.id, '| awareness:', lead.awareness, '| competitors:', lead.competitors, '| company_name:', lead.company_name, '| target_queries:', lead.target_queries, '| positioning:', lead.positioning, '| platform:', lead.platform);
 
   const buyerQuery = (() => {
     if (lead.target_queries?.trim()) {
