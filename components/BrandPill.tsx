@@ -18,7 +18,7 @@ export default function BrandPill() {
       <div className="flex-1 flex justify-start min-w-0 pl-[40px]">
         <p
           className="text-2xl whitespace-nowrap"
-          style={{ fontFamily: 'var(--font-dm-sans)', fontWeight: 300, whiteSpace: 'nowrap', color: '#1a2744', letterSpacing: '0.05em' }}
+          style={{ fontFamily: 'var(--font-dm-sans)', fontWeight: 700, whiteSpace: 'nowrap', color: '#1a2744', letterSpacing: '0.05em' }}
         >
           AEO Visibility Snapshot
         </p>
