@@ -62,13 +62,20 @@ function deriveQueries(
 
 function toApproximateFraction(score: number, avg: number): string {
   if (avg === 0 || score === 0) return 'none';
-  const ratio = score / avg;
-  if (ratio >= 0.95) return 'nearly all';
-  if (ratio >= 0.75) return 'roughly three quarters';
-  if (ratio >= 0.55) return 'roughly half';
-  if (ratio >= 0.38) return 'roughly one third';
-  if (ratio >= 0.22) return 'roughly one quarter';
-  return 'less than one fifth';
+  const pct = Math.round((score / avg) * 100);
+  if (pct >= 50) return 'more than half';
+  if (pct >= 40) return 'just under half';
+  if (pct >= 30) return 'roughly one third';
+  if (pct >= 20) return 'roughly one quarter';
+  return 'roughly one fifth';
+}
+
+function toTitleCase(str: string): string {
+  return str
+    .toLowerCase()
+    .split(/(\s+|-)/)
+    .map(part => part.match(/[a-z]/) ? part.charAt(0).toUpperCase() + part.slice(1) : part)
+    .join('');
 }
 
 function getPlatformSearchUrl(platform: string, query: string): string {
@@ -176,13 +183,12 @@ function getGap1Specific(
   platform: string,
 ): string {
   const plat = platform || 'AI search';
-  const comp = competitor ?? 'your competitors';
 
   switch (awareness) {
     case "Yes — but I wasn't mentioned at all":
       return `When a buyer asks for a ${industry} specialist on ${plat}, AI engines don't have a clear enough description of ${entityName} to include it in the answer. Your website covers the right territory, but it isn't signalling the right category clearly enough for AI to surface you.`;
     case 'Yes — competitors were cited instead of me':
-      return `${entityName}'s website covers the right topics, but ${comp} have formatted theirs to more closely match how buyers phrase questions in ${industry}. That formatting gap is why AI surfaces them and not you.`;
+      return `${entityName}'s website covers the right topics, but ${competitor ? `${competitor} has` : 'your competitors have'} formatted theirs to more closely match how buyers phrase questions in ${industry}. That formatting gap is why AI surfaces them and not you.`;
     case 'Yes — but details about me were wrong':
       return `AI engines are pulling inconsistent descriptions of ${entityName} from different sources. Your own website isn't giving them a reliable, clear alternative to draw from.`;
     case 'Yes — but old/outdated info appeared':
@@ -287,7 +293,7 @@ function getOpportunityContent(
     case 'Yes — competitors were cited instead of me':
       return {
         headline: 'You are visible — but not being chosen.',
-        body: `AI systems know about ${entityName}. When buyers search for what you do, your brand exists in the information these systems draw from. The problem is not invisibility — it is that ${competitor ? competitor : 'your competitors are'} being selected as the authoritative answer instead of you. This is actually good news. Brands that are completely unknown to AI face a much longer road. Your starting point is strong — what needs to change is how your content is structured so AI systems choose to cite you, not just know about you.`,
+        body: `AI systems know about ${entityName}. When buyers search for what you do, your brand exists in the information these systems draw from. The problem is not invisibility — it is that ${competitor ? `${competitor} is` : 'your competitors are'} being selected as the authoritative answer instead of you. This is actually good news. Brands that are completely unknown to AI face a much longer road. Your starting point is strong — what needs to change is how your content is structured so AI systems choose to cite you, not just know about you.`,
         displaced: true,
       };
     case "Yes — but I wasn't mentioned at all":
@@ -355,8 +361,17 @@ export default async function ResultsPage({ params }: Props) {
   const gap2Text = getGap2Specific(entityName, lead.industry, competitor, score, benchAvg);
   const gap3Text = getGap3Specific(entityName, lead.industry, competitor, hasDisplacement);
 
+  const buyerQuery = (() => {
+    if (lead.target_queries?.trim()) {
+      const q = lead.target_queries.split(/[,;\n]/)[0].trim();
+      if (q) return q;
+    }
+    if (lead.positioning?.trim()) return lead.positioning.trim().slice(0, 120);
+    return `${entityName} ${lead.industry} services`;
+  })();
+
   const isPlatformEmbeddable = lead.platform === 'Perplexity';
-  const platformSearchUrl    = getPlatformSearchUrl(lead.platform, primaryQuery);
+  const platformSearchUrl    = getPlatformSearchUrl(lead.platform, buyerQuery);
   const verifyPlatformName   = lead.platform || 'ChatGPT';
 
   return (
@@ -370,7 +385,7 @@ export default async function ResultsPage({ params }: Props) {
             Maxifi Digital · AI Visibility Snapshot
           </div>
           <h1 className="text-2xl font-bold text-gray-900 leading-snug mb-2">
-            {lead.first_name}&rsquo;s AEO Visibility Snapshot
+            {toTitleCase(lead.first_name)}&rsquo;s AEO Visibility Snapshot
           </h1>
           <p className="text-sm text-gray-500">
             {entityName} · {lead.industry} · {lead.occupation} · Generated {snapshotDate}
@@ -576,7 +591,7 @@ export default async function ResultsPage({ params }: Props) {
             Open {verifyPlatformName} right now and search this exact query:
           </p>
           <div className="bg-gray-800 rounded-lg px-4 py-3 mb-5 font-mono text-sm text-emerald-400 break-all select-all">
-            &ldquo;{primaryQuery}&rdquo;
+            &ldquo;{buyerQuery}&rdquo;
           </div>
 
           {isPlatformEmbeddable ? (
@@ -586,7 +601,7 @@ export default async function ResultsPage({ params }: Props) {
                   Live result on Perplexity · {snapshotDate}
                 </div>
                 <iframe
-                  src={`https://www.perplexity.ai/search?q=${encodeURIComponent(primaryQuery)}`}
+                  src={`https://www.perplexity.ai/search?q=${encodeURIComponent(buyerQuery)}`}
                   width="100%"
                   height="440"
                   title="Live Perplexity result"
