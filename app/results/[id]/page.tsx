@@ -137,7 +137,7 @@ function getRootCauses(
   switch (awareness) {
     case "Yes — but I wasn't mentioned at all":
       return [
-        `Your website doesn't clearly identify what category ${entityName} belongs to — so AI engines can't place you when a buyer searches for it.`,
+        `When buyers searched for what you do, ${entityName} did not appear in the AI response. This most commonly happens when a brand's online presence hasn't yet been structured in a way that AI engines can extract a clear category recommendation from.`,
         `Your brand isn't referenced consistently across the external directories, publications, and review platforms that AI engines use to verify businesses.`,
         `${competitor ? `${competitor} has` : 'Leading brands in your category have'} formatted their online presence to match how buyers phrase questions in ${industry} — ${entityName}'s content hasn't been set up that way yet.`,
       ];
@@ -181,7 +181,7 @@ function getGap1Specific(
 
   switch (awareness) {
     case "Yes — but I wasn't mentioned at all":
-      return `When a buyer asks for a ${industry} specialist on ${plat}, AI engines don't have a clear enough description of ${entityName} to include it in the answer. Your website covers the right territory, but it isn't signalling the right category clearly enough for AI to surface you.`;
+      return `Based on this snapshot, ${entityName} is not being surfaced when buyers search for ${industry} recommendations on ${plat}. Content structure is one of the most common reasons — the full report analyses the specific cause.`;
     case 'Yes — competitors were cited instead of me':
       return `${entityName}'s website covers the right topics, but ${competitor ? `${competitor} has formatted theirs` : 'leading brands in your category have formatted their content'} to more closely match how buyers phrase questions in ${industry}. That formatting gap is why AI surfaces them and not you.`;
     case 'Yes — but details about me were wrong':
@@ -361,7 +361,7 @@ export default async function ResultsPage({ params }: Props) {
       if (q) return q;
     }
     if (lead.positioning?.trim()) return lead.positioning.trim().slice(0, 120);
-    return `${lead.industry} services`;
+    return `best ${lead.industry} firms`;
   })();
 
   const isPlatformEmbeddable = lead.platform === 'Perplexity';
