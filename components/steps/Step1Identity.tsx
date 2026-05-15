@@ -52,7 +52,7 @@ export default function Step1Identity({ data, onChange, onNext, errors }: Props)
           <input
             id="email"
             type="email"
-            autoComplete="email"
+            autoComplete="off"
             value={data.email}
             onChange={(e) => onChange({ email: e.target.value })}
             placeholder="you@yourcompany.com"
