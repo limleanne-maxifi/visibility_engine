@@ -2,7 +2,7 @@ import Image from 'next/image';
 
 export default function BrandPill() {
   return (
-    <div className="flex items-center w-full">
+    <div className="flex items-center gap-[50px] w-full">
       {/* Logo — flush left */}
       <div className="flex-none">
         <Image
