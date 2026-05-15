@@ -280,7 +280,7 @@ function getOpportunityContent(
     case 'Yes — competitors were cited instead of me':
       return {
         headline: 'You are visible — but not being chosen.',
-        body: `AI systems know about ${entityName}. When buyers search for what you do, your brand exists in the information these systems draw from. The problem is not invisibility — it is that ${competitor && competitor.trim().length > 0 ? `${competitor} is` : 'other brands in your category are'} being selected as the authoritative answer instead of you. This is actually good news. Brands that are completely unknown to AI face a much longer road. Your starting point is strong — what needs to change is how your content is structured so AI systems choose to cite you, not just know about you.`,
+        body: `AI systems know about ${entityName}. When buyers search for what you do, your brand exists in the information these systems draw from. The problem is not invisibility — it is that ${competitor && competitor.trim().length > 0 ? `${competitor} is` : 'other brands in your category are'} being selected as the authoritative answer instead of you. This is fixable — and faster to address than starting from zero. Your AI presence already exists, which is a good starting point. What needs to change is how your presence is structured, not whether you have one.`,
         displaced: true,
       };
     case "Yes — but I wasn't mentioned at all":
