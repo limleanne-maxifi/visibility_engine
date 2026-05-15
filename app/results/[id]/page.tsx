@@ -20,25 +20,6 @@ function getVisibilityScore(awareness: string): number {
   return map[awareness] ?? 0;
 }
 
-function getStrategicVerdict(awareness: string, entityName: string, competitor: string | null): string {
-  const comp = competitor
-    ? `while ${competitor} consolidates authority across the same queries your buyers are asking`
-    : 'while your competitors consolidate authority in your category';
-
-  switch (awareness) {
-    case "Yes — but I wasn't mentioned at all":
-      return `${entityName} is currently invisible in AI-generated buyer journeys for its core category — ${comp}.`;
-    case 'Yes — competitors were cited instead of me':
-      return `${entityName} is being displaced in AI-generated buyer journeys for its core category — ${comp}.`;
-    case 'Yes — but details about me were wrong':
-      return `${entityName} is being misrepresented in AI-generated buyer journeys — ${comp}.`;
-    case 'Yes — but old/outdated info appeared':
-      return `${entityName} is appearing with outdated information in AI-generated answers — ${comp}.`;
-    default:
-      return `${entityName} has not yet established a clear presence in AI-generated buyer journeys — ${comp}.`;
-  }
-}
-
 // ─── Benchmark helpers ────────────────────────────────────────────────────────
 
 const INDUSTRY_BENCHMARKS: Record<string, number> = {
@@ -142,28 +123,6 @@ const PLATFORM_STATUS_STYLES: Record<PlatformStatus, { label: string; cls: strin
 
 // ─── Finding block helpers ────────────────────────────────────────────────────
 
-function getFindingSentence(
-  awareness: string,
-  entityName: string,
-  competitor: string | null,
-  platform: string,
-): string {
-  const plat = platform || 'the AI platform you tested';
-  const comp = competitor ?? 'a competitor';
-
-  switch (awareness) {
-    case "Yes — but I wasn't mentioned at all":
-      return `${entityName} was not cited by ${plat} when queried for its category — ${comp} appeared in its place.`;
-    case 'Yes — competitors were cited instead of me':
-      return `${comp} was cited by ${plat} instead of ${entityName} when buyers searched for your category.`;
-    case 'Yes — but details about me were wrong':
-      return `${plat} cited ${entityName} but returned inaccurate details — a sign of conflated or incomplete source material.`;
-    case 'Yes — but old/outdated info appeared':
-      return `${plat} cited ${entityName} using outdated information that no longer reflects your current offer.`;
-    default:
-      return `${entityName}'s AI visibility position has not yet been tested on a live platform.`;
-  }
-}
 
 function getRootCauses(
   awareness: string,
@@ -265,6 +224,99 @@ function getGap3Specific(
   return `The publications, directories, and analyst platforms in the ${industry} sector don't yet reference ${entityName} with enough consistency for AI engines to treat it as a recommended source. The relevant sources in ${industry} are well-defined — this is addressable.`;
 }
 
+// ─── Scoring methodology helpers ─────────────────────────────────────────────
+
+function getScoringRows(
+  awareness: string,
+  competitor: string | null,
+  hasDisplacement: boolean,
+  queryCount: number,
+): Array<{ signal: string; measured: string; result: string; weight: string; bad?: boolean }> {
+  const platformEntry =
+    awareness === 'Yes — and the results were accurate'
+      ? { result: 'Cited on primary platform', bad: false }
+      : awareness === "Yes — but I wasn't mentioned at all"
+      ? { result: 'Not cited on primary platform', bad: true }
+      : awareness === 'Yes — competitors were cited instead of me'
+      ? { result: 'Competitor cited instead', bad: true }
+      : awareness === 'Yes — but details about me were wrong'
+      ? { result: 'Cited with inaccurate details', bad: true }
+      : awareness === 'Yes — but old/outdated info appeared'
+      ? { result: 'Cited with outdated information', bad: true }
+      : { result: 'Not yet tested', bad: false };
+
+  const displacementEntry =
+    awareness === 'Yes — competitors were cited instead of me' || hasDisplacement
+      ? { result: competitor ? `Yes — ${competitor} cited on checked platforms` : 'Yes — competitors cited instead', bad: true }
+      : awareness === 'Yes — and the results were accurate'
+      ? { result: 'No displacement detected', bad: false }
+      : { result: 'Not assessed on checked platforms', bad: false };
+
+  const queryEntry =
+    awareness === "No, I haven't tried this yet"
+      ? { result: 'Not yet assessed', bad: false }
+      : awareness === 'Yes — and the results were accurate'
+      ? { result: `${queryCount} of ${queryCount} checked ${queryCount === 1 ? 'query' : 'queries'} returned your brand`, bad: false }
+      : { result: `0 of ${queryCount} checked ${queryCount === 1 ? 'query' : 'queries'} returned your brand`, bad: true };
+
+  const consistencyEntry =
+    awareness === 'Yes — and the results were accurate'
+      ? { result: 'Consistent and accurate', bad: false }
+      : awareness === 'Yes — but details about me were wrong'
+      ? { result: 'Inconsistent — inaccurate details returned', bad: true }
+      : awareness === 'Yes — but old/outdated info appeared'
+      ? { result: 'Partially consistent — outdated information', bad: true }
+      : { result: 'Based on self-reported assessment', bad: false };
+
+  return [
+    { signal: 'Platform presence', measured: 'Are you cited on any AI platform your buyers use?', ...platformEntry, weight: '30%' },
+    { signal: 'Competitor displacement', measured: 'Do competitors appear instead of you on your core queries?', ...displacementEntry, weight: '30%' },
+    { signal: 'Query coverage', measured: `How many of your target ${queryCount === 1 ? 'query returns' : 'queries return'} your brand?`, ...queryEntry, weight: '25%' },
+    { signal: 'Awareness consistency', measured: 'Does AI produce consistent, accurate information about your brand when asked directly?', ...consistencyEntry, weight: '15%' },
+  ];
+}
+
+// ─── Opportunity framing helpers ──────────────────────────────────────────────
+
+function getOpportunityContent(
+  awareness: string,
+  entityName: string,
+  competitor: string | null,
+): { headline: string; body: string; displaced: boolean } {
+  switch (awareness) {
+    case 'Yes — competitors were cited instead of me':
+      return {
+        headline: 'You are visible — but not being chosen.',
+        body: `AI systems know about ${entityName}. When buyers search for what you do, your brand exists in the information these systems draw from. The problem is not invisibility — it is that ${competitor ? competitor : 'your competitors are'} being selected as the authoritative answer instead of you. This is actually good news. Brands that are completely unknown to AI face a much longer road. Your starting point is strong — what needs to change is how your content is structured so AI systems choose to cite you, not just know about you.`,
+        displaced: true,
+      };
+    case "Yes — but I wasn't mentioned at all":
+      return {
+        headline: 'You are findable — but not yet being cited.',
+        body: `AI systems have the building blocks to describe ${entityName}. The challenge is that your content isn't yet structured in a way that signals to AI engines which questions you should be the answer to. This is a content architecture problem, not a credibility one — and it is directly addressable.`,
+        displaced: false,
+      };
+    case 'Yes — but details about me were wrong':
+      return {
+        headline: 'AI knows you exist — but is getting the details wrong.',
+        body: `AI systems are drawing on information about ${entityName} from multiple sources — and those sources are inconsistent. When AI encounters conflicting information, it blends them into an inaccurate description. Your starting point is strong: you are known. The work is standardising how your brand is described across the sources AI engines rely on.`,
+        displaced: false,
+      };
+    case 'Yes — but old/outdated info appeared':
+      return {
+        headline: 'You are cited — but for who you were, not who you are.',
+        body: `AI systems have established information about ${entityName}, but they are drawing on older content rather than your current work. This is a signal strength problem: your recent content isn't formatted in a way that tells AI engines it supersedes the older material. The fix is specific and addressable.`,
+        displaced: false,
+      };
+    default:
+      return {
+        headline: 'Your starting position is better than it may feel.',
+        body: `Without a live test, it is not yet clear whether ${entityName} is invisible, cited inaccurately, or simply being displaced by a competitor. Each scenario requires a different fix — but none requires starting from zero. The AEO landscape is still early enough that a focused effort in the right areas creates measurable results within a quarter.`,
+        displaced: false,
+      };
+  }
+}
+
 // ─── Page ─────────────────────────────────────────────────────────────────────
 
 export default async function ResultsPage({ params }: Props) {
@@ -289,16 +341,15 @@ export default async function ResultsPage({ params }: Props) {
   const derivedQueries   = deriveQueries(entityName, lead.positioning, lead.target_queries);
   const primaryQuery     = derivedQueries[0];
   const snapshotDate     = new Date(lead.created_at).toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' });
-  const searchedOn       = [lead.platform, lead.platform_other].filter(Boolean).join(', ');
   const checkedPlatforms = ALL_PLATFORMS.filter((p) => platforms[p] !== 'unknown');
 
   const competitorScore = Math.min(95, Math.round(benchAvg * 1.4));
   const gap             = benchAvg - score;
   const fractionText    = score > 0 ? toApproximateFraction(score, benchAvg) : 'an unknown share';
 
-  const verdict    = getStrategicVerdict(lead.awareness, entityName, competitor);
-  const finding    = getFindingSentence(lead.awareness, entityName, competitor, lead.platform);
-  const rootCauses = getRootCauses(lead.awareness, entityName, lead.industry, competitor);
+  const rootCauses   = getRootCauses(lead.awareness, entityName, lead.industry, competitor);
+  const scoringRows  = getScoringRows(lead.awareness, competitor, hasDisplacement, derivedQueries.length);
+  const opportunity  = getOpportunityContent(lead.awareness, entityName, competitor);
 
   const gap1Text = getGap1Specific(lead.awareness, entityName, lead.industry, competitor, lead.platform);
   const gap2Text = getGap2Specific(entityName, lead.industry, competitor, score, benchAvg);
@@ -312,25 +363,58 @@ export default async function ResultsPage({ params }: Props) {
     <div className="min-h-screen bg-gray-50 py-10 px-4">
       <div className="max-w-[640px] mx-auto">
 
-        {/* 1. Header — strategic verdict */}
+        {/* 1. Header */}
         <div className="mb-8">
           <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-[#EEEDFE] text-[#3C3489] text-xs font-medium mb-4">
             <span className="w-2 h-2 rounded-full bg-[#534AB7]" />
             Maxifi Digital · AI Visibility Snapshot
           </div>
-          <h1 className="text-2xl font-bold text-gray-900 leading-snug mb-3">
-            {verdict}
+          <h1 className="text-2xl font-bold text-gray-900 leading-snug mb-2">
+            {lead.first_name}&rsquo;s AEO Visibility Snapshot
           </h1>
           <p className="text-sm text-gray-500">
-            {lead.occupation} · {lead.industry}
-          </p>
-          <p className="mt-1 text-xs text-gray-400">
-            Snapshot generated {snapshotDate}
-            {searchedOn && ` · Searched on: ${searchedOn}`}
+            {entityName} · {lead.industry} · {lead.occupation} · Generated {snapshotDate}
           </p>
         </div>
 
-        {/* 2. Competitive position table */}
+        {/* 2. Scoring methodology */}
+        <div className="bg-white rounded-xl border border-gray-100 shadow-sm p-6 mb-4">
+          <p className="text-xs font-semibold text-gray-400 uppercase tracking-wide mb-4">
+            How your score was calculated
+          </p>
+          <div className="overflow-x-auto">
+            <table className="w-full text-sm">
+              <thead>
+                <tr className="border-b border-gray-100 text-xs text-gray-400">
+                  <th className="text-left pb-2 font-medium pr-3">Signal</th>
+                  <th className="text-left pb-2 font-medium pr-3">What we measured</th>
+                  <th className="text-left pb-2 font-medium pr-3">Your result</th>
+                  <th className="text-right pb-2 font-medium">Weight</th>
+                </tr>
+              </thead>
+              <tbody>
+                {scoringRows.map((row) => (
+                  <tr key={row.signal} className="border-b border-gray-50">
+                    <td className="py-3 pr-3 text-xs font-semibold text-gray-700 whitespace-nowrap align-top">{row.signal}</td>
+                    <td className="py-3 pr-3 text-xs text-gray-500 align-top">{row.measured}</td>
+                    <td className={`py-3 pr-3 text-xs font-medium align-top ${row.bad ? 'text-amber-700' : 'text-gray-700'}`}>{row.result}</td>
+                    <td className="py-3 text-right text-xs font-bold text-[#534AB7] whitespace-nowrap align-top">{row.weight}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+          <div className="mt-4 pt-4 border-t border-gray-100">
+            <p className="text-sm text-gray-700 leading-relaxed">
+              This score reflects how consistently your brand appears in AI-generated responses across the platforms your buyers use.
+              It is not a vanity metric — it is a direct measure of how much of your buyers&rsquo; AI-assisted research journey you are currently present for.
+              The industry average for {lead.industry || 'your sector'} is <strong>{benchAvg}%</strong>.
+              Brands scoring below 30% are effectively invisible in AI buyer journeys.
+            </p>
+          </div>
+        </div>
+
+        {/* 3. Competitive position table */}
         <div className="bg-white rounded-xl border border-gray-100 shadow-sm p-6 mb-4">
           <p className="text-xs font-semibold text-gray-400 uppercase tracking-wide mb-4">
             Competitive position
@@ -388,16 +472,23 @@ export default async function ResultsPage({ params }: Props) {
         {/* 3. Structured finding block */}
         <div className="bg-white rounded-xl border border-gray-100 shadow-sm overflow-hidden mb-4">
 
-          {/* Finding */}
-          <div className="p-6 border-b border-gray-100">
-            <p className="text-xs font-semibold text-gray-400 uppercase tracking-wide mb-2">Finding</p>
-            <p className="text-base font-semibold text-gray-900 leading-snug">{finding}</p>
+          {/* Opportunity framing */}
+          <div className={`p-6 border-b border-gray-100 ${opportunity.displaced ? 'bg-blue-50/50' : ''}`}>
+            <p className="text-xs font-semibold text-[#534AB7] uppercase tracking-wide mb-3">
+              Where your biggest opportunity lies right now
+            </p>
+            <p className="text-base font-bold text-gray-900 leading-snug mb-3">{opportunity.headline}</p>
+            <p className="text-sm text-gray-700 leading-relaxed">{opportunity.body}</p>
           </div>
 
-          {/* Evidence */}
+          {/* Evidence / citation status by platform */}
           <div className="p-6 border-b border-gray-100">
-            <p className="text-xs font-semibold text-gray-400 uppercase tracking-wide mb-3">Evidence</p>
-            {checkedPlatforms.length > 0 ? (
+            <p className="text-xs font-semibold text-gray-400 uppercase tracking-wide mb-3">Citation status by platform</p>
+            {lead.awareness === "No, I haven't tried this yet" ? (
+              <p className="text-sm text-gray-600 leading-relaxed">
+                Run a quick test: open ChatGPT and search for what you do. Note which brands appear. Those are your citation competitors.
+              </p>
+            ) : checkedPlatforms.length > 0 ? (
               <>
                 <p className="text-sm text-gray-600 mb-3">
                   Searched on {snapshotDate} · Query: &ldquo;{primaryQuery}&rdquo;
@@ -406,20 +497,38 @@ export default async function ResultsPage({ params }: Props) {
                   {checkedPlatforms.map((platform) => {
                     const status = platforms[platform];
                     const s = PLATFORM_STATUS_STYLES[status];
-                    const displayLabel =
-                      status === 'displaced' && competitor
-                        ? competitor.length > 20 ? competitor.slice(0, 20) + '…' : competitor
-                        : s.label;
+                    let displayLabel = s.label;
+                    let badgeCls = s.cls;
+                    if (status === 'displaced') {
+                      if (competitor) {
+                        displayLabel = competitor.length > 20 ? competitor.slice(0, 20) + '…' : competitor;
+                      } else {
+                        displayLabel = 'Competitor not named';
+                        badgeCls = 'bg-gray-100 text-gray-500 border-gray-200';
+                      }
+                    }
                     return (
                       <div key={platform} className="flex items-center justify-between px-3 py-2.5">
                         <span className="text-sm text-gray-700">{platform}</span>
-                        <span className={`text-[11px] font-medium px-2 py-0.5 rounded border ${s.cls}`}>
+                        <span className={`text-[11px] font-medium px-2 py-0.5 rounded border ${badgeCls}`}>
                           {displayLabel}
                         </span>
                       </div>
                     );
                   })}
                 </div>
+                {!competitor && lead.awareness === 'Yes — competitors were cited instead of me' && (
+                  <p className="text-xs text-gray-500 mt-3 leading-relaxed">
+                    You indicated competitors are appearing instead of you but didn&rsquo;t name them.
+                    Your full AEO Visibility Report identifies exactly which brands are displacing you on each platform.{' '}
+                    <a href={reportUrl} target="_blank" rel="noopener noreferrer" className="text-[#534AB7] font-medium hover:underline">Get the full report →</a>
+                  </p>
+                )}
+                {!competitor && lead.awareness !== 'Yes — competitors were cited instead of me' && (
+                  <p className="text-xs text-gray-500 mt-3 leading-relaxed">
+                    Add your closest competitors to see who is appearing instead of you on each platform.
+                  </p>
+                )}
               </>
             ) : (
               <p className="text-sm text-gray-500">
