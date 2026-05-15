@@ -40,7 +40,7 @@ export default function Step5Consent({ data, onChange, onSubmit, onBack, errors,
       <div className="flex flex-col items-center justify-center py-12 text-center">
         <div className="w-10 h-10 border-4 border-[#EEEDFE] border-t-[#534AB7] rounded-full animate-spin mb-4" />
         <p className="text-lg font-semibold text-gray-900">
-          Hang tight — we&apos;re building your personalised plan…
+          Hang tight — we&apos;re building your personalised snapshot…
         </p>
       </div>
     );

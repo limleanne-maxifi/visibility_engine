@@ -6,11 +6,11 @@ export default function BrandPill() {
       <Image
         src="/maxifi-logo-black.png"
         alt="Maxifi Digital"
-        height={28}
-        width={140}
-        className="h-7 w-auto"
+        height={34}
+        width={170}
+        className="h-[34px] w-auto"
       />
-      <p className="text-xs text-gray-400 mt-1.5">AEO Visibility Check</p>
+      <p className="text-sm text-gray-700 mt-1.5">AEO Visibility Check</p>
     </div>
   );
 }
