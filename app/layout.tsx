@@ -9,7 +9,7 @@ const dmSans = DM_Sans({
 });
 
 export const metadata: Metadata = {
-  title: "AEO Visibility Check — Maxifi Digital",
+  title: "AEO Visibility Snapshot — Maxifi Digital",
   description: "Find out how visible your brand is in AI search — and get a free personalised action plan.",
   other: {
     "format-detection": "telephone=no",

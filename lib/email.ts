@@ -197,7 +197,7 @@ export async function sendInternalNotification(lead: AeoLeadRow): Promise<void> 
   }
 
   const body = [
-    `New AEO Visibility Check submission`,
+    `New AEO Visibility Snapshot submission`,
     ``,
     `── Lead details ──────────────────────────────`,
     `first_name:    ${lead.first_name}`,
