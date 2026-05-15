@@ -1,8 +1,16 @@
+import Image from 'next/image';
+
 export default function BrandPill() {
   return (
-    <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-[#EEEDFE] text-[#3C3489] text-xs font-medium">
-      <span className="w-2 h-2 rounded-full bg-[#534AB7]" />
-      Maxifi Digital · AEO Visibility Check
+    <div>
+      <Image
+        src="/maxifi-logo-black.png"
+        alt="Maxifi Digital"
+        height={28}
+        width={140}
+        className="h-7 w-auto"
+      />
+      <p className="text-xs text-gray-400 mt-1.5">AEO Visibility Check</p>
     </div>
   );
 }

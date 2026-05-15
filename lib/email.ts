@@ -77,7 +77,10 @@ export async function sendUserPlanEmail(lead: AeoLeadRow): Promise<void> {
 <html lang="en">
 <head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1"></head>
 <body style="margin:0;padding:0;background:#f9fafb;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;">
-<table width="100%" cellpadding="0" cellspacing="0" style="background:#f9fafb;padding:40px 16px;">
+<div style="text-align:center;padding:24px 0 16px;">
+  <img src="https://visibilityview.netlify.app/maxifi-logo-black.png" alt="Maxifi Digital" style="display:block;margin:0 auto 24px;width:140px;height:auto;" />
+</div>
+<table width="100%" cellpadding="0" cellspacing="0" style="background:#f9fafb;padding:0 16px 40px;">
 <tr><td align="center">
 <table width="600" cellpadding="0" cellspacing="0" style="max-width:600px;width:100%;">
 
