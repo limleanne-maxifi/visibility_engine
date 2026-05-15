@@ -367,7 +367,7 @@ export default async function ResultsPage({ params }: Props) {
 
         {/* 1. Header */}
         <div className="mb-8">
-          <div className="flex items-center w-full mb-4 pb-4 border-b border-gray-100">
+          <div className="flex items-center gap-6 w-full mb-4 pb-4 border-b border-gray-100">
             {/* Logo — flush left */}
             <div className="flex-none">
               <Image
