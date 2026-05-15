@@ -10,7 +10,7 @@ export default function BrandPill() {
         width={170}
         className="h-[34px] w-auto"
       />
-      <p className="text-sm text-gray-700 mt-1.5">AEO Visibility Check</p>
+      <p className="text-[15px] text-gray-900 mt-1.5">AEO Visibility Check</p>
     </div>
   );
 }
