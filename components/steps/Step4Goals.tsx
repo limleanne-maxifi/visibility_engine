@@ -251,7 +251,7 @@ export default function Step4Goals({ data, onChange, onNext, onBack, errors, ind
           value={data.competitors}
           onChange={(e) => onChange({ competitors: e.target.value })}
           placeholder="Your closest competitors by name"
-          autoComplete="off"
+          autoComplete="new-password"
           className="w-full px-4 py-3 rounded-lg border border-gray-200 text-sm outline-none focus:border-[#534AB7] transition-colors"
         />
         <p className="mt-1 text-xs text-gray-400">
@@ -274,7 +274,7 @@ export default function Step4Goals({ data, onChange, onNext, onBack, errors, ind
           value={data.positioning}
           onChange={(e) => onChange({ positioning: e.target.value })}
           placeholder="Your positioning phrase…"
-          autoComplete="off"
+          autoComplete="new-password"
           className="w-full px-3 py-2 rounded-lg border border-green-200 bg-white text-sm outline-none focus:border-green-500 transition-colors resize-none"
         />
         <p
@@ -331,7 +331,7 @@ export default function Step4Goals({ data, onChange, onNext, onBack, errors, ind
             value={data.targetQueries}
             onChange={(e) => onChange({ targetQueries: e.target.value })}
             placeholder="Your target queries…"
-            autoComplete="off"
+            autoComplete="new-password"
             className="w-full px-4 py-3 rounded-lg border border-gray-200 text-sm outline-none focus:border-[#534AB7] transition-colors resize-none"
           />
           <p
