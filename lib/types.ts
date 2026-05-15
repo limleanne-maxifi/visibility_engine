@@ -53,7 +53,6 @@ export interface FormData {
   aeoOutcome: AeoOutcome;
   competitors: string;
   positioning: string;
-  recommendationFocus: string[];
   targetQueries: string;
 
   // Step 5 — Consent
@@ -80,7 +79,6 @@ export const initialFormData: FormData = {
   aeoOutcome: '',
   competitors: '',
   positioning: '',
-  recommendationFocus: [],
   targetQueries: '',
   consent: false,
   utmSource: '',

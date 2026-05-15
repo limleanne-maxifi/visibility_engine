@@ -33,19 +33,6 @@ const AEO_OUTCOMES: AeoOutcome[] = [
   'Beating a specific competitor',
 ];
 
-const RECOMMENDATION_FOCUS_OPTIONS = [
-  'Speed / time-to-value',
-  'Affordability / price-performance',
-  'Ease of use / fast onboarding',
-  'Scalability / enterprise-readiness',
-  'Depth of features / specialisation',
-  'Industry-specific fit',
-  'Integration ecosystem',
-  'Customer support',
-  'Compliance / security',
-  'Innovation / cutting-edge',
-];
-
 // ─── Industry family mapping ──────────────────────────────────────────────────
 
 type IndustryFamily = 'aviation' | 'tech' | 'b2b';
@@ -168,15 +155,6 @@ export default function Step4Goals({ data, onChange, onNext, onBack, errors, ind
     }
   };
 
-  const toggleRecommendationFocus = (focus: string) => {
-    const current = data.recommendationFocus;
-    if (current.includes(focus)) {
-      onChange({ recommendationFocus: current.filter((f) => f !== focus) });
-    } else if (current.length < 3) {
-      onChange({ recommendationFocus: [...current, focus] });
-    }
-  };
-
   return (
     <form onSubmit={handleSubmit} noValidate>
       <h1 className="text-2xl font-semibold text-gray-900 mb-1">Your goals</h1>
@@ -285,38 +263,6 @@ export default function Step4Goals({ data, onChange, onNext, onBack, errors, ind
           e.g. &ldquo;{POSITIONING_EXAMPLES[family][posIdx]}&rdquo;
         </p>
       </div>
-
-      {/* Recommendation focus */}
-      <fieldset className="mb-5">
-        <legend className="text-[17px] font-semibold text-gray-700 mb-1">
-          What do you want AI engines to recommend you for?{' '}
-          <span className="text-gray-400 font-normal">(optional)</span>
-        </legend>
-        <p className="text-xs text-gray-400 mb-3">Select up to 3.</p>
-        <div className="grid grid-cols-2 gap-2">
-          {RECOMMENDATION_FOCUS_OPTIONS.map((focus) => {
-            const isSelected = data.recommendationFocus.includes(focus);
-            const isDisabled = !isSelected && data.recommendationFocus.length >= 3;
-            return (
-              <button
-                key={focus}
-                type="button"
-                onClick={() => toggleRecommendationFocus(focus)}
-                disabled={isDisabled}
-                className={`text-left px-3 py-2.5 rounded-lg border text-xs transition-all duration-150 ${
-                  isSelected
-                    ? 'border-[#534AB7] bg-[#EEEDFE] text-[#3C3489] font-medium'
-                    : isDisabled
-                    ? 'border-gray-100 bg-gray-50 text-gray-300 cursor-not-allowed'
-                    : 'border-gray-200 bg-white text-gray-600 hover:border-gray-300 hover:bg-gray-50'
-                }`}
-              >
-                {focus}
-              </button>
-            );
-          })}
-        </div>
-      </fieldset>
 
       {/* Target queries — conditional on 'I want to appear for specific topics' */}
       {showTargetQueries && (

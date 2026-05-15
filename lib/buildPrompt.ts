@@ -21,9 +21,6 @@ export function buildUserMessage(data: FormData): string {
     `Most important outcome: ${data.aeoOutcome}`,
     data.competitors ? `Competitors: ${data.competitors}` : null,
     data.positioning ? `Positioning / differentiation: ${data.positioning}` : null,
-    data.recommendationFocus.length
-      ? `Wants to be recommended for: ${data.recommendationFocus.join(', ')}`
-      : null,
     data.targetQueries ? `Target queries: ${data.targetQueries}` : null,
   ].filter(Boolean);
 
