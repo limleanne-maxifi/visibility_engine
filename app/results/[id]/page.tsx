@@ -60,14 +60,11 @@ function deriveQueries(
   return results;
 }
 
-function toApproximateFraction(score: number, avg: number): string {
-  if (avg === 0 || score === 0) return 'none';
-  const pct = Math.round((score / avg) * 100);
-  if (pct >= 50) return 'more than half';
-  if (pct >= 40) return 'just under half';
-  if (pct >= 30) return 'roughly one third';
-  if (pct >= 20) return 'roughly one quarter';
-  return 'roughly one fifth';
+function buyerConversations(score: number, benchAvg: number): { x: number; y: number } {
+  const base = benchAvg || 1;
+  const x = Math.max(0, Math.min(9, Math.round((score / base) * 10)));
+  const y = Math.max(1, Math.min(10, Math.round((benchAvg / 100) * 10)));
+  return { x, y };
 }
 
 function toTitleCase(str: string): string {
@@ -346,7 +343,7 @@ export default async function ResultsPage({ params }: Props) {
 
   const competitorScore = Math.min(95, Math.round(benchAvg * 1.4));
   const gap             = benchAvg - score;
-  const fractionText    = score > 0 ? toApproximateFraction(score, benchAvg) : 'an unknown share';
+  const { x: buyerX, y: buyerY } = buyerConversations(score, benchAvg);
 
   const rootCauses   = getRootCauses(lead.awareness, entityName, lead.industry, competitor);
   const scoringRows  = getScoringRows(lead.awareness, competitor, hasDisplacement, derivedQueries.length);
@@ -426,7 +423,7 @@ export default async function ResultsPage({ params }: Props) {
           </div>
           <p className="text-sm text-gray-800 leading-relaxed mt-4">
             {score > 0
-              ? <>Your score of <strong>{score}%</strong> means AI systems are present for <strong>{fractionText}</strong> of the buyer research conversations happening in your category.</>
+              ? <>Put another way: if 10 potential buyers in your category asked an AI tool for a recommendation today, your brand would appear in approximately <strong>{buyerX}</strong> of those conversations. Your closest competitors appear in <strong>{buyerY}</strong> or more.</>
               : <>Your visibility score is undiagnosed — run a search in ChatGPT or Perplexity to establish your baseline.</>
             }
           </p>
@@ -496,10 +493,10 @@ export default async function ResultsPage({ params }: Props) {
           <div className="mt-4 pt-4 border-t border-gray-100">
             <p className="text-sm text-gray-700 leading-relaxed">
               AI-referred traffic converts at 3.4× the rate of traditional organic search.
-              At {score > 0 ? `${score}%` : 'undiagnosed'} visibility,{' '}
-              your brand is accessing{' '}
-              <strong>{fractionText}</strong>{' '}
-              of the AI discovery opportunity available in your category.
+              {score > 0
+                ? <> If 10 potential buyers in your category asked an AI tool for a recommendation today, your brand would appear in approximately <strong>{buyerX}</strong> of those conversations — your closest competitors appear in <strong>{buyerY}</strong> or more.</>
+                : <> Your visibility in AI buyer journeys is currently undiagnosed.</>
+              }
             </p>
           </div>
         </div>
