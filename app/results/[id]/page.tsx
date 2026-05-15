@@ -138,19 +138,19 @@ function getRootCauses(
     case "Yes — but I wasn't mentioned at all":
       return [
         `When buyers searched for what you do, ${entityName} did not appear in the AI response. This most commonly happens when a brand's online presence hasn't yet been structured in a way that AI engines can extract a clear category recommendation from.`,
-        `Your brand isn't referenced consistently across the external directories, publications, and review platforms that AI engines use to verify businesses.`,
-        `${competitor ? `${competitor} has` : 'Leading brands in your category have'} formatted their online presence to match how buyers phrase questions in ${industry} — ${entityName}'s content hasn't been set up that way yet.`,
+        `AI engines typically cross-reference a brand against external sources — directories, publications, review platforms — before citing it. Brands that appear consistently across these sources tend to be cited more reliably.`,
+        `${competitor ? `${competitor} has` : 'Leading brands in your category have'} formatted their online presence to match how buyers phrase questions in ${industry} — structuring content to match how buyers phrase questions is one of the most reliable ways to improve AI citation rates.`,
       ];
     case 'Yes — competitors were cited instead of me':
       return [
         `${competitor ? `${competitor} has` : 'Leading brands in your category have'} built a clearer, more consistent presence in the sources AI engines rely on — which is why they appear first.`,
-        `Your content covers the right topics, but it isn't formatted in a way that AI engines can extract a recommendation from.`,
+        `AI engines extract recommendations most reliably from content that is structured to answer specific buyer questions directly. This is one of the most common reasons a brand is present in AI data but not cited in responses.`,
         `Third-party sources in the ${industry} sector — directories, review platforms, publications — reference ${competitor ?? 'competing brands in your category'} more consistently than ${entityName}.`,
       ];
     case 'Yes — but details about me were wrong':
       return [
         `Different sources online describe ${entityName} differently — AI engines blend these into a single answer that ends up inaccurate.`,
-        `Your brand hasn't been clearly identified across the major directories and publications that AI engines rely on to verify facts.`,
+        `AI engines verify facts about a brand by cross-referencing multiple external sources. Where those sources are inconsistent or sparse, the AI fills gaps — sometimes incorrectly.`,
         `There isn't enough consistent, authoritative information about ${entityName} for AI engines to get the details right.`,
       ];
     case 'Yes — but old/outdated info appeared':
@@ -183,7 +183,7 @@ function getGap1Specific(
     case "Yes — but I wasn't mentioned at all":
       return `Based on this snapshot, ${entityName} is not being surfaced when buyers search for ${industry} recommendations on ${plat}. Content structure is one of the most common reasons — the full report analyses the specific cause.`;
     case 'Yes — competitors were cited instead of me':
-      return `${entityName}'s website covers the right topics, but ${competitor ? `${competitor} has formatted theirs` : 'leading brands in your category have formatted their content'} to more closely match how buyers phrase questions in ${industry}. That formatting gap is why AI surfaces them and not you.`;
+      return `${entityName}'s website covers the right topics, but ${competitor ? `${competitor} has formatted theirs` : 'leading brands in your category have formatted their content'} to more closely match how buyers phrase questions in ${industry}. This is one of the most common structural reasons AI surfaces a competitor ahead of you — the full report identifies the specific gap.`;
     case 'Yes — but details about me were wrong':
       return `AI engines are pulling inconsistent descriptions of ${entityName} from different sources. Your own website isn't giving them a reliable, clear alternative to draw from.`;
     case 'Yes — but old/outdated info appeared':
