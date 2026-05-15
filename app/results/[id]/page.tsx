@@ -367,7 +367,7 @@ export default async function ResultsPage({ params }: Props) {
 
         {/* 1. Header */}
         <div className="mb-8">
-          <div className="mb-4 pb-4 border-b border-gray-100 flex items-center justify-between w-full">
+          <div className="mb-4 pb-4 border-b border-gray-100 flex justify-center items-center gap-4 w-full">
             <Image
               src="/maxifi-logo-black.png"
               alt="Maxifi Digital"
@@ -375,7 +375,7 @@ export default async function ResultsPage({ params }: Props) {
               width={300}
               className="h-[60px] w-auto"
             />
-            <p className="text-xl font-semibold text-gray-900">AEO Visibility Check</p>
+            <p className="text-2xl text-gray-900">AEO Visibility Check</p>
           </div>
           <h1 className="text-2xl font-bold text-gray-900 leading-snug mb-2">
             {toTitleCase(lead.first_name)}&rsquo;s AEO Visibility Snapshot

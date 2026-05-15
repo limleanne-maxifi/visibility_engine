@@ -2,7 +2,7 @@ import Image from 'next/image';
 
 export default function BrandPill() {
   return (
-    <div className="flex items-center justify-between w-full">
+    <div className="flex justify-center items-center gap-4 w-full">
       <Image
         src="/maxifi-logo-black.png"
         alt="Maxifi Digital"
@@ -10,7 +10,7 @@ export default function BrandPill() {
         width={265}
         className="h-[53px] w-auto"
       />
-      <p className="text-xl font-semibold text-gray-900">AEO Visibility Check</p>
+      <p className="text-2xl text-gray-900">AEO Visibility Check</p>
     </div>
   );
 }
