@@ -139,13 +139,13 @@ function getRootCauses(
       return [
         `When buyers searched for what you do, ${entityName} did not appear in the AI response. This most commonly happens when a brand's online presence hasn't yet been structured in a way that AI engines can extract a clear category recommendation from.`,
         `AI engines typically cross-reference a brand against external sources — directories, publications, review platforms — before citing it. Brands that appear consistently across these sources tend to be cited more reliably.`,
-        `${competitor ? `${competitor} has` : 'Leading brands in your category have'} formatted their online presence to match how buyers phrase questions in ${industry} — structuring content to match how buyers phrase questions is one of the most reliable ways to improve AI citation rates.`,
+        `${competitor && competitor.trim().length > 0 ? `${competitor} has` : 'Leading brands in your category have'} formatted their online presence to match how buyers phrase questions in ${industry} — structuring content to match how buyers phrase questions is one of the most reliable ways to improve AI citation rates.`,
       ];
     case 'Yes — competitors were cited instead of me':
       return [
-        `${competitor ? `${competitor} has` : 'Leading brands in your category have'} built a clearer, more consistent presence in the sources AI engines rely on — which is why they appear first.`,
+        `${competitor && competitor.trim().length > 0 ? `${competitor} has` : 'Leading brands in your category have'} built a clearer, more consistent presence in the sources AI engines rely on — which is why they appear first.`,
         `AI engines extract recommendations most reliably from content that is structured to answer specific buyer questions directly. This is one of the most common reasons a brand is present in AI data but not cited in responses.`,
-        `Third-party sources in the ${industry} sector — directories, review platforms, publications — reference ${competitor ?? 'competing brands in your category'} more consistently than ${entityName}.`,
+        `Third-party sources in the ${industry} sector — directories, review platforms, publications — reference ${competitor && competitor.trim().length > 0 ? competitor : 'competing brands in your category'} more consistently than ${entityName}.`,
       ];
     case 'Yes — but details about me were wrong':
       return [
@@ -183,7 +183,7 @@ function getGap1Specific(
     case "Yes — but I wasn't mentioned at all":
       return `Based on this snapshot, ${entityName} is not being surfaced when buyers search for ${industry} recommendations on ${plat}. Content structure is one of the most common reasons — the full report analyses the specific cause.`;
     case 'Yes — competitors were cited instead of me':
-      return `${entityName}'s website covers the right topics, but ${competitor ? `${competitor} has formatted theirs` : 'leading brands in your category have formatted their content'} to more closely match how buyers phrase questions in ${industry}. This is one of the most common structural reasons AI surfaces a competitor ahead of you — the full report identifies the specific gap.`;
+      return `${entityName}'s website covers the right topics, but ${competitor && competitor.trim().length > 0 ? `${competitor} has formatted theirs` : 'leading brands in your category have formatted their content'} to more closely match how buyers phrase questions in ${industry}. This is one of the most common structural reasons AI surfaces a competitor ahead of you — the full report identifies the specific gap.`;
     case 'Yes — but details about me were wrong':
       return `AI engines are pulling inconsistent descriptions of ${entityName} from different sources. Your own website isn't giving them a reliable, clear alternative to draw from.`;
     case 'Yes — but old/outdated info appeared':
@@ -202,12 +202,12 @@ function getGap2Specific(
 ): string {
   const opening = `AI engines build confidence in a brand by checking how consistently it appears across public sources — company directories, news coverage, review platforms. Where that consistency is lower, citations happen less frequently, regardless of the brand's actual quality or reputation.`;
   if (score > 0 && score >= benchAvg) {
-    return `${opening} ${competitor ? `${competitor} has a stronger presence in key directories and publications in ${industry}.` : `There are specific source types in ${industry} that aren't yet referencing ${entityName} reliably.`}`;
+    return `${opening} ${competitor && competitor.trim().length > 0 ? `${competitor} has a stronger presence in key directories and publications in ${industry}.` : `There are specific source types in ${industry} that aren't yet referencing ${entityName} reliably.`}`;
   }
   if (score > 0) {
-    return `${opening} ${competitor ? `In particular, ${competitor}'s authority signals are stronger in this category — which is why they're cited first.` : `Competing brands in your category have stronger authority signals across these sources.`}`;
+    return `${opening} ${competitor && competitor.trim().length > 0 ? `In particular, ${competitor}'s authority signals are stronger in this category — which is why they're cited first.` : `Competing brands in your category have stronger authority signals across these sources.`}`;
   }
-  return `${opening} ${competitor ? `${competitor} has had more time to build their presence in the ${industry} sector.` : `The established businesses in ${industry} have built clearer footprints across the sources AI engines rely on.`}`;
+  return `${opening} ${competitor && competitor.trim().length > 0 ? `${competitor} has had more time to build their presence in the ${industry} sector.` : `The established businesses in ${industry} have built clearer footprints across the sources AI engines rely on.`}`;
 }
 
 function getGap3Specific(
@@ -281,7 +281,7 @@ function getOpportunityContent(
     case 'Yes — competitors were cited instead of me':
       return {
         headline: 'You are visible — but not being chosen.',
-        body: `AI systems know about ${entityName}. When buyers search for what you do, your brand exists in the information these systems draw from. The problem is not invisibility — it is that ${competitor ? `${competitor} is` : 'other brands in your category are'} being selected as the authoritative answer instead of you. This is actually good news. Brands that are completely unknown to AI face a much longer road. Your starting point is strong — what needs to change is how your content is structured so AI systems choose to cite you, not just know about you.`,
+        body: `AI systems know about ${entityName}. When buyers search for what you do, your brand exists in the information these systems draw from. The problem is not invisibility — it is that ${competitor && competitor.trim().length > 0 ? `${competitor} is` : 'other brands in your category are'} being selected as the authoritative answer instead of you. This is actually good news. Brands that are completely unknown to AI face a much longer road. Your starting point is strong — what needs to change is how your content is structured so AI systems choose to cite you, not just know about you.`,
         displaced: true,
       };
     case "Yes — but I wasn't mentioned at all":
