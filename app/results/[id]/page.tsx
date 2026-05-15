@@ -426,7 +426,7 @@ export default async function ResultsPage({ params }: Props) {
           </div>
           <p className="text-sm text-gray-800 leading-relaxed mt-4">
             {score > 0
-              ? <>Your score of <strong>{score}%</strong> means AI systems are present for approximately <strong>{fractionText}</strong> of the buyer research conversations happening in your category.</>
+              ? <>Your score of <strong>{score}%</strong> means AI systems are present for <strong>{fractionText}</strong> of the buyer research conversations happening in your category.</>
               : <>Your visibility score is undiagnosed — run a search in ChatGPT or Perplexity to establish your baseline.</>
             }
           </p>
