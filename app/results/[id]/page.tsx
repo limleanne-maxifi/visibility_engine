@@ -413,13 +413,26 @@ export default async function ResultsPage({ params }: Props) {
                     <td className="py-3 text-right text-xs font-bold text-[#534AB7] whitespace-nowrap align-top">{row.weight}</td>
                   </tr>
                 ))}
+                <tr className="bg-[#EEEDFE]">
+                  <td className="py-3 pr-3 text-xs font-bold text-[#3C3489] whitespace-nowrap">Your AEO Visibility Score</td>
+                  <td className="py-3 pr-3 text-xs text-[#534AB7]">Weighted total across all four signals</td>
+                  <td className="py-3 pr-3 text-xs text-[#534AB7]">—</td>
+                  <td className="py-3 text-right font-bold text-[#3C3489] text-base whitespace-nowrap">
+                    {score > 0 ? `${score}%` : 'Undiagnosed'}
+                  </td>
+                </tr>
               </tbody>
             </table>
           </div>
-          <div className="mt-4 pt-4 border-t border-gray-100">
-            <p className="text-sm text-gray-700 leading-relaxed">
+          <p className="text-sm text-gray-800 leading-relaxed mt-4">
+            {score > 0
+              ? <>Your score of <strong>{score}%</strong> means AI systems are present for approximately <strong>{fractionText}</strong> of the buyer research conversations happening in your category.</>
+              : <>Your visibility score is undiagnosed — run a search in ChatGPT or Perplexity to establish your baseline.</>
+            }
+          </p>
+          <div className="mt-3 pt-3 border-t border-gray-100">
+            <p className="text-xs text-gray-500 leading-relaxed">
               This score reflects how consistently your brand appears in AI-generated responses across the platforms your buyers use.
-              It is not a vanity metric — it is a direct measure of how much of your buyers&rsquo; AI-assisted research journey you are currently present for.
               The industry average for {lead.industry || 'your sector'} is <strong>{benchAvg}%</strong>.
               Brands scoring below 30% are effectively invisible in AI buyer journeys.
             </p>
