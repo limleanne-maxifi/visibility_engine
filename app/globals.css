@@ -8,7 +8,7 @@ body {
 }
 
 /* Prevent iOS Safari and Firefox from overriding input/select/textarea styling */
-input,
+input:not([type="checkbox"]):not([type="radio"]),
 textarea,
 select {
   -webkit-appearance: none;
