@@ -557,9 +557,12 @@ export default async function ResultsPage({ params }: Props) {
                     <a href={reportUrl} target="_blank" rel="noopener noreferrer" className="text-[#534AB7] font-medium hover:underline">Get the full report →</a>
                   </p>
                 )}
-                {competitors.length === 0 && lead.awareness !== 'Yes — competitors were cited instead of me' && (
+                {competitors.length === 0 && lead.awareness !== 'Yes — competitors were cited instead of me' && lead.awareness !== "No, I haven't tried this yet" && (
                   <p className="text-xs text-gray-500 mt-3 leading-relaxed">
-                    Add your closest competitors to see who is appearing instead of you on each platform.
+                    {lead.awareness === "Yes — but I wasn't mentioned at all"
+                      ? 'No brands were returned for you on the platforms you tested. Enter your closest competitors to see how their visibility compares to yours.'
+                      : 'Enter your closest competitors to see how their AI visibility compares to yours across these platforms.'
+                    }
                   </p>
                 )}
               </>
