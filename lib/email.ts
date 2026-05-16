@@ -156,7 +156,7 @@ export async function sendUserPlanEmail(lead: AeoLeadRow): Promise<void> {
   <!-- Footer -->
   <tr><td style="border-top:1px solid #e5e7eb;padding-top:20px;">
     <p style="margin:0;font-size:12px;color:#9ca3af;text-align:center;line-height:1.6;">
-      Maxifi Digital &middot; London, United Kingdom &middot;
+      Maxifi Digital &middot; Singapore &middot;
       <a href="mailto:hello@maxifidigital.com" style="color:#9ca3af;text-decoration:underline;">Unsubscribe</a>
     </p>
   </td></tr>
