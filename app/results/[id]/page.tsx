@@ -9,16 +9,56 @@ interface Props {
 
 // ─── Score + style helpers ────────────────────────────────────────────────────
 
-function getVisibilityScore(awareness: string): number {
-  const map: Record<string, number> = {
-    "No, I haven't tried this yet":                   0,
-    'Yes — and the results were accurate':            72,
-    "Yes — but I wasn't mentioned at all":             8,
-    'Yes — but details about me were wrong':          24,
-    'Yes — competitors were cited instead of me':     17,
-    'Yes — but old/outdated info appeared':           31,
-  };
-  return map[awareness] ?? 0;
+function getAllCompetitors(raw: string | null | undefined): string[] {
+  if (!raw?.trim()) return [];
+  return raw.split(/[,;/\n&]/).map(c => c.replace(/\band\b/gi, '').trim()).filter(Boolean);
+}
+
+function formatCompetitors(list: string[]): string {
+  if (list.length === 0) return '';
+  if (list.length === 1) return list[0];
+  if (list.length === 2) return `${list[0]} and ${list[1]}`;
+  return `${list.slice(0, -1).join(', ')}, and ${list[list.length - 1]}`;
+}
+
+function getVisibilityScore(awareness: string, competitorList: string[]): number {
+  const n = competitorList.length;
+  const hasComp = n > 0;
+
+  // Signal 1 — Platform presence (30%)
+  const platform =
+    awareness === 'Yes — and the results were accurate'        ? 90 :
+    awareness === 'Yes — but old/outdated info appeared'       ? 40 :
+    awareness === 'Yes — but details about me were wrong'      ? 30 :
+    awareness === 'Yes — competitors were cited instead of me' ? 15 :
+    awareness === "Yes — but I wasn't mentioned at all"        ? 0  : 0;
+
+  // Signal 2 — Competitor displacement (30%)
+  // More named competitors + displaced = lower score
+  const displacement =
+    awareness === "No, I haven't tried this yet"               ? 0  :
+    awareness === 'Yes — and the results were accurate'        ? (hasComp ? 80 : 45) :
+    awareness === 'Yes — competitors were cited instead of me' ? Math.max(0, 10 - n * 10) :
+    awareness === "Yes — but I wasn't mentioned at all"        ? (hasComp ? 10 : 20) :
+    hasComp ? 25 : 30; // outdated / wrong details
+
+  // Signal 3 — Query coverage (25%)
+  const query =
+    awareness === 'Yes — and the results were accurate'        ? 90 :
+    awareness === 'Yes — but old/outdated info appeared'       ? 35 :
+    awareness === 'Yes — but details about me were wrong'      ? 25 :
+    awareness === 'Yes — competitors were cited instead of me' ? 15 :
+    awareness === "Yes — but I wasn't mentioned at all"        ? 0  : 0;
+
+  // Signal 4 — Awareness consistency (15%)
+  const consistency =
+    awareness === 'Yes — and the results were accurate'        ? 100 :
+    awareness === 'Yes — but old/outdated info appeared'       ? 40  :
+    awareness === 'Yes — but details about me were wrong'      ? 20  :
+    awareness === 'Yes — competitors were cited instead of me' ? 25  :
+    awareness === "Yes — but I wasn't mentioned at all"        ? 0   : 0;
+
+  return Math.round(platform * 0.30 + displacement * 0.30 + query * 0.25 + consistency * 0.15);
 }
 
 // ─── Benchmark helpers ────────────────────────────────────────────────────────
@@ -42,10 +82,6 @@ function getIndustryBenchmark(industry: string): number {
 
 // ─── Data helpers ─────────────────────────────────────────────────────────────
 
-function getFirstCompetitor(competitors: string | null | undefined): string | null {
-  if (!competitors?.trim()) return null;
-  return competitors.split(/[,;/\n]/)[0].trim() || null;
-}
 
 function deriveQueries(
   entityName: string,
@@ -133,20 +169,25 @@ function getRootCauses(
   awareness: string,
   entityName: string,
   industry: string,
-  competitor: string | null,
+  competitors: string[],
 ): string[] {
+  const hasComp = competitors.length > 0;
+  const compStr = formatCompetitors(competitors);
+  const plural = competitors.length > 1;
+  const compVerb = hasComp ? `${compStr} ${plural ? 'have' : 'has'}` : 'Leading brands in your category have';
+
   switch (awareness) {
     case "Yes — but I wasn't mentioned at all":
       return [
         `When buyers searched for what you do, ${entityName} did not appear in the AI response. This most commonly happens when a brand's online presence hasn't yet been structured in a way that AI engines can extract a clear category recommendation from.`,
         `AI engines typically cross-reference a brand against external sources — directories, publications, review platforms — before citing it. Brands that appear consistently across these sources tend to be cited more reliably.`,
-        `${competitor && competitor.trim().length > 0 ? `${competitor} has` : 'Leading brands in your category have'} formatted their online presence to match how buyers phrase questions in ${industry} — structuring content to match how buyers phrase questions is one of the most reliable ways to improve AI citation rates.`,
+        `${compVerb} formatted their online presence to match how buyers phrase questions in ${industry} — structuring content to match how buyers phrase questions is one of the most reliable ways to improve AI citation rates.`,
       ];
     case 'Yes — competitors were cited instead of me':
       return [
-        `${competitor && competitor.trim().length > 0 ? `${competitor} has` : 'Leading brands in your category have'} built a clearer, more consistent presence in the sources AI engines rely on — which is why they appear first.`,
+        `${compVerb} built a clearer, more consistent presence in the sources AI engines rely on — which is why they appear first.`,
         `AI engines extract recommendations most reliably from content that is structured to answer specific buyer questions directly. This is one of the most common reasons a brand is present in AI data but not cited in responses.`,
-        `Third-party sources in the ${industry} sector — directories, review platforms, publications — reference ${competitor && competitor.trim().length > 0 ? competitor : 'competing brands in your category'} more consistently than ${entityName}.`,
+        `Third-party sources in the ${industry} sector — directories, review platforms, publications — reference ${hasComp ? compStr : 'competing brands in your category'} more consistently than ${entityName}.`,
       ];
     case 'Yes — but details about me were wrong':
       return [
@@ -175,16 +216,19 @@ function getGap1Specific(
   awareness: string,
   entityName: string,
   industry: string,
-  competitor: string | null,
+  competitors: string[],
   platform: string,
 ): string {
   const plat = platform || 'AI search';
+  const hasComp = competitors.length > 0;
+  const compStr = formatCompetitors(competitors);
+  const plural = competitors.length > 1;
 
   switch (awareness) {
     case "Yes — but I wasn't mentioned at all":
       return `Based on this snapshot, ${entityName} is not being surfaced when buyers search for ${industry} recommendations on ${plat}. Content structure is one of the most common reasons — the full report analyses the specific cause.`;
     case 'Yes — competitors were cited instead of me':
-      return `${entityName}'s website covers the right topics, but ${competitor && competitor.trim().length > 0 ? `${competitor} has formatted theirs` : 'leading brands in your category have formatted their content'} to more closely match how buyers phrase questions in ${industry}. This is one of the most common structural reasons AI surfaces a competitor ahead of you — the full report identifies the specific gap.`;
+      return `${entityName}'s website covers the right topics, but ${hasComp ? `${compStr} ${plural ? 'have' : 'has'} formatted theirs` : 'leading brands in your category have formatted their content'} to more closely match how buyers phrase questions in ${industry}. This is one of the most common structural reasons AI surfaces a competitor ahead of you — the full report identifies the specific gap.`;
     case 'Yes — but details about me were wrong':
       return `AI engines are pulling inconsistent descriptions of ${entityName} from different sources. Your own website isn't giving them a reliable, clear alternative to draw from.`;
     case 'Yes — but old/outdated info appeared':
@@ -197,18 +241,21 @@ function getGap1Specific(
 function getGap2Specific(
   entityName: string,
   industry: string,
-  competitor: string | null,
+  competitors: string[],
   score: number,
   benchAvg: number,
 ): string {
   const opening = `AI engines build confidence in a brand by checking how consistently it appears across public sources — company directories, news coverage, review platforms. Where that consistency is lower, citations happen less frequently, regardless of the brand's actual quality or reputation.`;
+  const hasComp = competitors.length > 0;
+  const compStr = formatCompetitors(competitors);
+  const plural = competitors.length > 1;
   if (score > 0 && score >= benchAvg) {
-    return `${opening} ${competitor && competitor.trim().length > 0 ? `${competitor} has a stronger presence in key directories and publications in ${industry}.` : `There are specific source types in ${industry} that aren't yet referencing ${entityName} reliably.`}`;
+    return `${opening} ${hasComp ? `${compStr} ${plural ? 'have' : 'has'} a stronger presence in key directories and publications in ${industry}.` : `There are specific source types in ${industry} that aren't yet referencing ${entityName} reliably.`}`;
   }
   if (score > 0) {
-    return `${opening} ${competitor && competitor.trim().length > 0 ? `In particular, ${competitor}'s authority signals are stronger in this category — which is why they're cited first.` : `Competing brands in your category have stronger authority signals across these sources.`}`;
+    return `${opening} ${hasComp ? `In particular, ${compStr} ${plural ? 'have' : 'has'} stronger authority signals in this category — which is why ${plural ? 'they are' : 'it is'} cited first.` : `Competing brands in your category have stronger authority signals across these sources.`}`;
   }
-  return `${opening} ${competitor && competitor.trim().length > 0 ? `${competitor} has had more time to build their presence in the ${industry} sector.` : `The established businesses in ${industry} have built clearer footprints across the sources AI engines rely on.`}`;
+  return `${opening} ${hasComp ? `${compStr} ${plural ? 'have' : 'has'} had more time to build their presence in the ${industry} sector.` : `The established businesses in ${industry} have built clearer footprints across the sources AI engines rely on.`}`;
 }
 
 function getGap3Specific(
@@ -222,7 +269,7 @@ function getGap3Specific(
 
 function getScoringRows(
   awareness: string,
-  competitor: string | null,
+  competitors: string[],
   queryCount: number,
 ): Array<{ signal: string; measured: string; result: string; weight: string; bad?: boolean }> {
   const platformEntry =
@@ -238,12 +285,12 @@ function getScoringRows(
       ? { result: 'Cited with outdated information', bad: true }
       : { result: 'Not yet tested', bad: false };
 
-  const displacementEntry = !competitor || !competitor.trim()
+  const displacementEntry = competitors.length === 0
     ? { result: 'Not assessed — no competitor entered', bad: false }
     : awareness === 'Yes — and the results were accurate'
     ? { result: 'No displacement detected', bad: false }
     : awareness.startsWith('Yes —')
-    ? { result: `Yes — ${competitor} cited on checked platforms`, bad: true }
+    ? { result: `Yes — ${formatCompetitors(competitors)} cited on checked platforms`, bad: true }
     : { result: 'Not yet assessed', bad: false };
 
   const queryEntry =
@@ -275,13 +322,16 @@ function getScoringRows(
 function getOpportunityContent(
   awareness: string,
   entityName: string,
-  competitor: string | null,
+  competitors: string[],
 ): { headline: string; body: string; displaced: boolean } {
+  const hasComp = competitors.length > 0;
+  const compStr = formatCompetitors(competitors);
+  const plural = competitors.length > 1;
   switch (awareness) {
     case 'Yes — competitors were cited instead of me':
       return {
         headline: 'You are visible — but not being chosen.',
-        body: `AI systems know about ${entityName}. When buyers search for what you do, your brand exists in the information these systems draw from. The problem is not invisibility — it is that ${competitor && competitor.trim().length > 0 ? `${competitor} is` : 'other brands in your category are'} being selected as the authoritative answer instead of you. This is fixable — and faster to address than starting from zero. Your AI presence already exists, which is a good starting point. What needs to change is how your presence is structured, not whether you have one.`,
+        body: `AI systems know about ${entityName}. When buyers search for what you do, your brand exists in the information these systems draw from. The problem is not invisibility — it is that ${hasComp ? `${compStr} ${plural ? 'are' : 'is'}` : 'other brands in your category are'} being selected as the authoritative answer instead of you. This is fixable — and faster to address than starting from zero. Your AI presence already exists, which is a good starting point. What needs to change is how your presence is structured, not whether you have one.`,
         displaced: true,
       };
     case "Yes — but I wasn't mentioned at all":
@@ -323,27 +373,26 @@ export default async function ResultsPage({ params }: Props) {
   const calendlyUrl  = process.env.CALENDLY_URL ?? 'https://lunacal.ai/maxifidigital';
   const contactEmail = process.env.MAXIFI_CONTACT_EMAIL ?? 'letsgetstarted@maxifidigital.com';
 
-  const score     = getVisibilityScore(lead.awareness);
-  const benchAvg  = getIndustryBenchmark(lead.industry);
-  const platforms = getPlatformStatuses(lead.awareness, lead.platform, lead.platform_other);
+  const competitors  = getAllCompetitors(lead.competitors);
+  const score        = getVisibilityScore(lead.awareness, competitors);
+  const benchAvg     = getIndustryBenchmark(lead.industry);
+  const platforms    = getPlatformStatuses(lead.awareness, lead.platform, lead.platform_other);
 
   const entityName       = lead.company_name ?? lead.first_name;
-  const competitor       = getFirstCompetitor(lead.competitors);
   const derivedQueries   = deriveQueries(entityName, lead.positioning, lead.target_queries);
 
   const snapshotDate     = new Date(lead.created_at).toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' });
   const checkedPlatforms = ALL_PLATFORMS.filter((p) => platforms[p] !== 'unknown');
 
-  const competitorScore = Math.min(95, Math.round(benchAvg * 1.4));
   const gap             = benchAvg - score;
   const { x: buyerX, y: buyerY } = buyerConversations(score, benchAvg);
 
-  const rootCauses   = getRootCauses(lead.awareness, entityName, lead.industry, competitor);
-  const scoringRows  = getScoringRows(lead.awareness, competitor, derivedQueries.length);
-  const opportunity  = getOpportunityContent(lead.awareness, entityName, competitor);
+  const rootCauses   = getRootCauses(lead.awareness, entityName, lead.industry, competitors);
+  const scoringRows  = getScoringRows(lead.awareness, competitors, derivedQueries.length);
+  const opportunity  = getOpportunityContent(lead.awareness, entityName, competitors);
 
-  const gap1Text = getGap1Specific(lead.awareness, entityName, lead.industry, competitor, lead.platform);
-  const gap2Text = getGap2Specific(entityName, lead.industry, competitor, score, benchAvg);
+  const gap1Text = getGap1Specific(lead.awareness, entityName, lead.industry, competitors, lead.platform);
+  const gap2Text = getGap2Specific(entityName, lead.industry, competitors, score, benchAvg);
   const gap3Text = getGap3Specific(entityName, lead.industry);
 
   console.log('[results] id:', lead.id, '| awareness:', lead.awareness, '| competitors:', lead.competitors, '| company_name:', lead.company_name, '| target_queries:', lead.target_queries, '| positioning:', lead.positioning, '| platform:', lead.platform);
@@ -462,16 +511,22 @@ export default async function ResultsPage({ params }: Props) {
               </tr>
             </thead>
             <tbody>
-              <tr className="border-b border-gray-50">
-                <td className="py-3 pr-4 text-xs text-gray-400 whitespace-nowrap">Category leader</td>
-                <td className="py-3 pr-4 font-medium">
-                  {competitor
-                    ? <span className="text-gray-900">{competitor} *</span>
-                    : <span className="text-gray-400 italic">Category leader (unidentified)</span>
-                  }
-                </td>
-                <td className="py-3 text-right font-bold text-gray-900">{competitor ? `${competitorScore}%` : '—'}</td>
-              </tr>
+              {competitors.length > 0
+                ? competitors.map((comp, i) => (
+                    <tr key={comp} className="border-b border-gray-50">
+                      <td className="py-3 pr-4 text-xs text-gray-400 whitespace-nowrap">{i === 0 ? 'Competitor' : ''}</td>
+                      <td className="py-3 pr-4 font-medium text-gray-900">{comp}</td>
+                      <td className="py-3 text-right text-xs text-gray-400 whitespace-nowrap">Est. above median</td>
+                    </tr>
+                  ))
+                : (
+                    <tr className="border-b border-gray-50">
+                      <td className="py-3 pr-4 text-xs text-gray-400 whitespace-nowrap">Competitor</td>
+                      <td className="py-3 pr-4 text-gray-400 italic">No competitors entered</td>
+                      <td className="py-3 text-right text-gray-400">—</td>
+                    </tr>
+                  )
+              }
               <tr className="border-b border-gray-50">
                 <td className="py-3 pr-4 text-xs text-gray-400 whitespace-nowrap">Industry median</td>
                 <td className="py-3 pr-4 text-gray-600">{lead.industry || 'Your industry'}</td>
@@ -496,11 +551,8 @@ export default async function ResultsPage({ params }: Props) {
             </tbody>
           </table>
           </div>
-          {competitor && (
-            <p className="text-[10px] text-gray-400 mt-3">* Estimated from industry benchmark data. Maxifi Digital research.</p>
-          )}
-          {!competitor && (
-            <p className="text-[10px] text-gray-400 mt-3">Add your closest competitors to your profile to see who is leading in your category.</p>
+          {competitors.length === 0 && (
+            <p className="text-[10px] text-gray-400 mt-3">Add your closest competitors to see who is leading in your category.</p>
           )}
 
           <div className="mt-4 pt-4 border-t border-gray-100">
@@ -545,8 +597,11 @@ export default async function ResultsPage({ params }: Props) {
                     let displayLabel = s.label;
                     let badgeCls = s.cls;
                     if (status === 'displaced') {
-                      if (competitor) {
-                        displayLabel = competitor.length > 20 ? competitor.slice(0, 20) + '…' : competitor;
+                      if (competitors.length > 0) {
+                        const label = competitors.length === 1
+                          ? competitors[0]
+                          : `${competitors[0]} +${competitors.length - 1}`;
+                        displayLabel = label.length > 22 ? label.slice(0, 22) + '…' : label;
                       } else {
                         displayLabel = 'Competitor not named';
                         badgeCls = 'bg-gray-100 text-gray-500 border-gray-200';
@@ -562,14 +617,14 @@ export default async function ResultsPage({ params }: Props) {
                     );
                   })}
                 </div>
-                {!competitor && lead.awareness === 'Yes — competitors were cited instead of me' && (
+                {competitors.length === 0 && lead.awareness === 'Yes — competitors were cited instead of me' && (
                   <p className="text-xs text-gray-500 mt-3 leading-relaxed">
                     You indicated competitors are appearing instead of you but didn&rsquo;t name them.
                     Your full AEO Visibility Report identifies exactly which brands are displacing you on each platform.{' '}
                     <a href={reportUrl} target="_blank" rel="noopener noreferrer" className="text-[#534AB7] font-medium hover:underline">Get the full report →</a>
                   </p>
                 )}
-                {!competitor && lead.awareness !== 'Yes — competitors were cited instead of me' && (
+                {competitors.length === 0 && lead.awareness !== 'Yes — competitors were cited instead of me' && (
                   <p className="text-xs text-gray-500 mt-3 leading-relaxed">
                     Add your closest competitors to see who is appearing instead of you on each platform.
                   </p>
