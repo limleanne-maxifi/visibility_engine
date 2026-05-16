@@ -340,7 +340,7 @@ export default async function ResultsPage({ params }: Props) {
     return `best ${lead.industry} firms`;
   })();
 
-  const isPlatformEmbeddable = lead.platform === 'Perplexity';
+  const isPlatformEmbeddable = false; // Perplexity and all platforms block iframe embedding
   const platformSearchUrl    = getPlatformSearchUrl(lead.platform, buyerQuery);
   const verifyPlatformName   = lead.platform || 'ChatGPT';
 
@@ -612,40 +612,14 @@ export default async function ResultsPage({ params }: Props) {
             &ldquo;{buyerQuery}&rdquo;
           </div>
 
-          {isPlatformEmbeddable ? (
-            <div>
-              <div className="rounded-lg overflow-hidden border border-gray-700 mb-3">
-                <div className="bg-gray-800 px-3 py-2 text-xs text-gray-400 border-b border-gray-700">
-                  Live result on Perplexity · {snapshotDate}
-                </div>
-                <iframe
-                  src={`https://www.perplexity.ai/search?q=${encodeURIComponent(buyerQuery)}`}
-                  width="100%"
-                  height="440"
-                  title="Live Perplexity result"
-                  sandbox="allow-scripts allow-same-origin allow-forms allow-popups allow-popups-to-escape-sandbox"
-                  className="w-full bg-white"
-                />
-              </div>
-              <a
-                href={platformSearchUrl}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="inline-flex items-center gap-1 text-gray-400 hover:text-white text-xs transition-colors"
-              >
-                Open directly in Perplexity →
-              </a>
-            </div>
-          ) : (
-            <a
-              href={platformSearchUrl}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="inline-flex items-center gap-2 bg-white text-gray-900 font-semibold text-sm px-5 py-3 rounded-lg hover:bg-gray-100 transition-colors"
-            >
-              See the live result on {verifyPlatformName} →
-            </a>
-          )}
+          <a
+            href={platformSearchUrl}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="inline-flex items-center gap-2 bg-white text-gray-900 font-semibold text-sm px-5 py-3 rounded-lg hover:bg-gray-100 transition-colors"
+          >
+            See the live result on {verifyPlatformName} →
+          </a>
         </div>
 
         {/* 5. What this means for your business — three gaps */}
