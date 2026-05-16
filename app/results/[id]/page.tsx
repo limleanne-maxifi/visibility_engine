@@ -63,8 +63,8 @@ function deriveQueries(
 
 function buyerConversations(score: number, benchAvg: number): { x: number; y: number } {
   const base = benchAvg || 1;
-  const x = Math.max(0, Math.min(9, Math.round((score / base) * 10)));
-  const y = Math.max(1, Math.min(10, Math.round((benchAvg / 100) * 10)));
+  const x = Math.max(0, Math.min(9, Math.round(score / 10)));
+  const y = Math.max(1, Math.min(10, Math.round(base / 10)));
   return { x, y };
 }
 
