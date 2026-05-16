@@ -2,86 +2,19 @@ import Image from 'next/image';
 import { notFound } from 'next/navigation';
 import { getLeadById } from '@/lib/supabase';
 import CopyLinkButton from './CopyLinkButton';
+import {
+  getAllCompetitors,
+  formatCompetitors,
+  getVisibilityScore,
+  getIndustryBenchmark,
+  buyerConversations,
+} from '@/lib/scoring';
 
 interface Props {
   params: Promise<{ id: string }>;
 }
 
-// ─── Score + style helpers ────────────────────────────────────────────────────
-
-function getAllCompetitors(raw: string | null | undefined): string[] {
-  if (!raw?.trim()) return [];
-  return raw.split(/[,;/\n&]/).map(c => c.replace(/\band\b/gi, '').trim()).filter(Boolean);
-}
-
-function formatCompetitors(list: string[]): string {
-  if (list.length === 0) return '';
-  if (list.length === 1) return list[0];
-  if (list.length === 2) return `${list[0]} and ${list[1]}`;
-  return `${list.slice(0, -1).join(', ')}, and ${list[list.length - 1]}`;
-}
-
-function getVisibilityScore(awareness: string, competitorList: string[]): number {
-  const n = competitorList.length;
-  const hasComp = n > 0;
-
-  // Signal 1 — Platform presence (30%)
-  const platform =
-    awareness === 'Yes — and the results were accurate'        ? 90 :
-    awareness === 'Yes — but old/outdated info appeared'       ? 40 :
-    awareness === 'Yes — but details about me were wrong'      ? 30 :
-    awareness === 'Yes — competitors were cited instead of me' ? 15 :
-    awareness === "Yes — but I wasn't mentioned at all"        ? 0  : 0;
-
-  // Signal 2 — Competitor displacement (30%)
-  // More named competitors + displaced = lower score
-  const displacement =
-    awareness === "No, I haven't tried this yet"               ? 0  :
-    awareness === 'Yes — and the results were accurate'        ? (hasComp ? 80 : 45) :
-    awareness === 'Yes — competitors were cited instead of me' ? Math.max(0, 10 - n * 10) :
-    awareness === "Yes — but I wasn't mentioned at all"        ? (hasComp ? 10 : 20) :
-    hasComp ? 25 : 30; // outdated / wrong details
-
-  // Signal 3 — Query coverage (25%)
-  const query =
-    awareness === 'Yes — and the results were accurate'        ? 90 :
-    awareness === 'Yes — but old/outdated info appeared'       ? 35 :
-    awareness === 'Yes — but details about me were wrong'      ? 25 :
-    awareness === 'Yes — competitors were cited instead of me' ? 15 :
-    awareness === "Yes — but I wasn't mentioned at all"        ? 0  : 0;
-
-  // Signal 4 — Awareness consistency (15%)
-  const consistency =
-    awareness === 'Yes — and the results were accurate'        ? 100 :
-    awareness === 'Yes — but old/outdated info appeared'       ? 40  :
-    awareness === 'Yes — but details about me were wrong'      ? 20  :
-    awareness === 'Yes — competitors were cited instead of me' ? 25  :
-    awareness === "Yes — but I wasn't mentioned at all"        ? 0   : 0;
-
-  return Math.round(platform * 0.30 + displacement * 0.30 + query * 0.25 + consistency * 0.15);
-}
-
-// ─── Benchmark helpers ────────────────────────────────────────────────────────
-
-const INDUSTRY_BENCHMARKS: Record<string, number> = {
-  'Financial Services & Banking': 47, 'Fintech / Financial Technology': 47,
-  'Accounting & Finance': 47,         'Legal': 62,
-  'Professional Services': 54,        'Consulting & Advisory': 54,
-  'Healthcare & Life Sciences': 78,   'B2B SaaS / Enterprise Software': 84,
-  'AI & Machine Learning': 84,        'Cybersecurity': 84,
-  'Cloud Infrastructure': 84,         'Marketing Technology': 63,
-  'Aviation & Aerospace': 41,         'Defense': 41,
-  'Education & Training': 52,         'Media & Publishing': 58,
-  'Real Estate & Property': 35,       'Retail & E-commerce': 48,
-  'Hospitality & Travel': 42,         'Manufacturing & Industrial': 38,
-};
-
-function getIndustryBenchmark(industry: string): number {
-  return INDUSTRY_BENCHMARKS[industry] ?? 38;
-}
-
 // ─── Data helpers ─────────────────────────────────────────────────────────────
-
 
 function deriveQueries(
   entityName: string,
@@ -95,13 +28,6 @@ function deriveQueries(
   const results: string[] = [entityName];
   if (positioning?.trim()) results.push(positioning.trim().slice(0, 80));
   return results;
-}
-
-function buyerConversations(score: number, benchAvg: number): { x: number; y: number } {
-  const base = benchAvg || 1;
-  const x = Math.max(0, Math.min(9, Math.round(score / 10)));
-  const y = Math.max(1, Math.min(10, Math.round(base / 10)));
-  return { x, y };
 }
 
 function toTitleCase(str: string): string {
@@ -261,8 +187,12 @@ function getGap2Specific(
 function getGap3Specific(
   entityName: string,
   industry: string,
+  awareness: string,
 ): string {
-  return `Third-party references from recognised sources in ${industry} — directories, analyst platforms, review sites — increase the likelihood of AI citation. When AI encounters a brand name, it checks whether trusted external sources confirm it. This snapshot suggests that gap exists for ${entityName} — the full report maps the specific sources to address.`;
+  if (awareness === 'Yes — and the results were accurate') {
+    return `Third-party references from recognised sources in ${industry} — directories, analyst platforms, review sites — reinforce your current AI visibility. Maintaining and expanding your presence across these sources will help sustain your citation position as AI platforms update their data.`;
+  }
+  return `Third-party references from recognised sources in ${industry} — directories, analyst platforms, review sites — increase the likelihood of AI citation. When AI encounters a brand name, it checks whether trusted external sources confirm it. Based on what you've reported, building more consistent third-party references is likely a contributing factor to your current visibility position for ${entityName}.`;
 }
 
 // ─── Scoring methodology helpers ─────────────────────────────────────────────
@@ -289,15 +219,19 @@ function getScoringRows(
     ? { result: 'Not assessed — no competitor entered', bad: false }
     : awareness === 'Yes — and the results were accurate'
     ? { result: 'No displacement detected', bad: false }
-    : awareness.startsWith('Yes —')
+    : awareness === 'Yes — competitors were cited instead of me'
     ? { result: `Yes — ${formatCompetitors(competitors)} cited on checked platforms`, bad: true }
-    : { result: 'Not yet assessed', bad: false };
+    : awareness === "No, I haven't tried this yet"
+    ? { result: 'Not yet assessed', bad: false }
+    : { result: 'Presence confirmed — displacement not directly assessed', bad: false };
 
   const queryEntry =
     awareness === "No, I haven't tried this yet"
       ? { result: 'Not yet assessed', bad: false }
       : awareness === 'Yes — and the results were accurate'
       ? { result: `${queryCount} of ${queryCount} checked ${queryCount === 1 ? 'query' : 'queries'} returned your brand`, bad: false }
+      : awareness === 'Yes — but old/outdated info appeared' || awareness === 'Yes — but details about me were wrong'
+      ? { result: 'Brand appeared on checked queries, but with issues', bad: true }
       : { result: `0 of ${queryCount} checked ${queryCount === 1 ? 'query' : 'queries'} returned your brand`, bad: true };
 
   const consistencyEntry =
@@ -393,7 +327,7 @@ export default async function ResultsPage({ params }: Props) {
 
   const gap1Text = getGap1Specific(lead.awareness, entityName, lead.industry, competitors, lead.platform);
   const gap2Text = getGap2Specific(entityName, lead.industry, competitors, score, benchAvg);
-  const gap3Text = getGap3Specific(entityName, lead.industry);
+  const gap3Text = getGap3Specific(entityName, lead.industry, lead.awareness);
 
   console.log('[results] id:', lead.id, '| awareness:', lead.awareness, '| competitors:', lead.competitors, '| company_name:', lead.company_name, '| target_queries:', lead.target_queries, '| positioning:', lead.positioning, '| platform:', lead.platform);
 
@@ -490,8 +424,8 @@ export default async function ResultsPage({ params }: Props) {
           <div className="mt-3 pt-3 border-t border-gray-100">
             <p className="text-xs text-gray-500 leading-relaxed">
               This score reflects how consistently your brand appears in AI-generated responses across the platforms your buyers use.
-              The industry average for {lead.industry || 'your sector'} is <strong>{benchAvg}%</strong>.
-              Brands scoring below 30% are effectively invisible in AI buyer journeys.
+              The indicative benchmark for {lead.industry || 'your sector'} is <strong>{benchAvg}%</strong> — based on Maxifi Digital's analysis of citation patterns across industries.
+              Brands scoring below 30% are typically invisible in AI buyer journeys.
             </p>
           </div>
         </div>
@@ -557,10 +491,9 @@ export default async function ResultsPage({ params }: Props) {
 
           <div className="mt-4 pt-4 border-t border-gray-100">
             <p className="text-sm text-gray-700 leading-relaxed">
-              AI-referred traffic converts at 3.4× the rate of traditional organic search.
               {score > 0
-                ? <> If 10 potential buyers in your category asked an AI tool for a recommendation today, your brand would appear in approximately <strong>{buyerX}</strong> of those conversations — your closest competitors appear in <strong>{buyerY}</strong> or more.</>
-                : <> Your visibility in AI buyer journeys is currently undiagnosed.</>
+                ? <>If 10 potential buyers in your category asked an AI tool for a recommendation today, your brand would appear in approximately <strong>{buyerX}</strong> of those conversations. Your closest competitors appear in <strong>{buyerY}</strong> or more.</>
+                : <>Your visibility in AI buyer journeys is currently undiagnosed.</>
               }
             </p>
           </div>
@@ -588,7 +521,7 @@ export default async function ResultsPage({ params }: Props) {
             ) : checkedPlatforms.length > 0 ? (
               <>
                 <p className="text-sm text-gray-600 mb-3">
-                  Searched on {snapshotDate} · Query: &ldquo;{buyerQuery}&rdquo;
+                  Your reported test on {snapshotDate} · Query: &ldquo;{buyerQuery}&rdquo;
                 </p>
                 <div className="rounded-lg bg-gray-50 divide-y divide-gray-100 overflow-hidden border border-gray-100">
                   {checkedPlatforms.map((platform) => {
@@ -659,7 +592,7 @@ export default async function ResultsPage({ params }: Props) {
               Why this matters now
             </p>
             <p className="text-sm text-gray-700 leading-relaxed">
-              AI citation positions shift by 40–60% each quarter as these platforms update their information sources.
+              AI citation positions shift as these platforms update their information sources — sometimes significantly within a single quarter.
               A competitor gaining ground now becomes structurally harder to displace each month they hold the position.
               The businesses that act first in any category tend to hold those positions longest.
             </p>

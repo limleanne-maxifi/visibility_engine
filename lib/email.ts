@@ -1,5 +1,11 @@
 import { Resend } from 'resend';
 import type { AeoLeadRow } from '@/lib/supabase';
+import {
+  getAllCompetitors,
+  getVisibilityScore,
+  getIndustryBenchmark,
+  buyerConversations,
+} from '@/lib/scoring';
 
 function getResend() {
   return new Resend(process.env.RESEND_API_KEY);
@@ -14,64 +20,50 @@ function getUrls() {
   };
 }
 
-// ─── Score helpers ────────────────────────────────────────────────────────────
-
-function getScore(awareness: string): number {
-  const map: Record<string, number> = {
-    "No, I haven't tried this yet":                    0,
-    'Yes — and the results were accurate':             72,
-    "Yes — but I wasn't mentioned at all":              8,
-    'Yes — but details about me were wrong':           24,
-    'Yes — competitors were cited instead of me':      17,
-    'Yes — but old/outdated info appeared':            31,
-  };
-  return map[awareness] ?? 0;
-}
-
-const BENCHMARKS: Record<string, number> = {
-  'Financial Services & Banking': 47, 'Fintech / Financial Technology': 47,
-  'Accounting & Finance': 47,         'Legal': 62,
-  'Professional Services': 54,        'Consulting & Advisory': 54,
-  'Healthcare & Life Sciences': 78,   'B2B SaaS / Enterprise Software': 84,
-  'AI & Machine Learning': 84,        'Cybersecurity': 84,
-  'Cloud Infrastructure': 84,         'Marketing Technology': 63,
-  'Aviation & Aerospace': 41,         'Defense': 41,
-  'Education & Training': 52,         'Media & Publishing': 58,
-  'Real Estate & Property': 35,       'Retail & E-commerce': 48,
-  'Hospitality & Travel': 42,         'Manufacturing & Industrial': 38,
-};
-
 // ─── Email 1: User snapshot email ────────────────────────────────────────────
 
 export async function sendUserPlanEmail(lead: AeoLeadRow): Promise<void> {
   const { CALENDLY, REPORT_URL } = getUrls();
   const fromEmail  = process.env.FROM_EMAIL ?? 'hello@maxifidigital.com';
-  const score      = getScore(lead.awareness);
-  const entity     = lead.company_name ?? lead.first_name;
-  const challenges = lead.challenge.split(';').map((c) => c.trim()).filter(Boolean);
-  const displaced  = challenges.some((c) => c.includes('My competitors show up'));
-  const topicGoal  = challenges.some((c) => c.includes('specific topics'));
-  const queryCount = topicGoal ? 4 : 3;
 
-  const scoreDisplay = score > 0 ? `${score}%` : '—';
-  const subject      = `Your AEO Visibility Snapshot — ${entity} is at ${score > 0 ? `${score}%` : 'an undiagnosed'} visibility`;
+  const competitors  = getAllCompetitors(lead.competitors);
+  const score        = getVisibilityScore(lead.awareness, competitors);
+  const benchAvg     = getIndustryBenchmark(lead.industry);
+  const { x: buyerX, y: buyerY } = buyerConversations(score, benchAvg);
+  const entity       = lead.company_name ?? lead.first_name;
 
-  const benchAvg = BENCHMARKS[lead.industry] ?? 38;
-  const buyerX   = Math.max(0, Math.min(9, Math.round((score / (benchAvg || 1)) * 10)));
-  const buyerY   = Math.max(1, Math.min(10, Math.round((benchAvg / 100) * 10)));
+  const scoreDisplay   = score > 0 ? `${score}%` : '—';
+  const subject        = `Your AEO Visibility Snapshot — ${entity} is at ${score > 0 ? `${score}%` : 'an undiagnosed'} visibility`;
+
   const benchmarkLine = score > 0
     ? `Your score of <strong>${score}%</strong> compares to an industry average of <strong>${benchAvg}%</strong> for ${lead.industry || 'your industry'}.
        ${score < benchAvg ? 'You are currently below the industry benchmark.' : 'You are at or above the industry benchmark.'}`
     : `Your AI visibility baseline is undiagnosed. Search for ${entity} in ChatGPT or Perplexity to see where you stand.`;
 
-  const competitorSection = displaced ? `
+  // Only include a competitor call-out when the user explicitly said competitors were cited
+  const displacedByCompetitor = lead.awareness === 'Yes — competitors were cited instead of me';
+  const competitorSection = displacedByCompetitor ? `
     <tr><td style="padding-bottom:20px;">
       <p style="margin:0;font-size:15px;color:#374151;line-height:1.7;">
-        A competitor is being cited instead of you on
-        <strong>${queryCount} of your priority queries</strong>.
-        Your full report names them, lists every query they win, and shows the structural reason they beat you.
+        ${competitors.length > 0
+          ? `Based on what you reported, <strong>${competitors.join(', ')}</strong> ${competitors.length === 1 ? 'is' : 'are'} being cited instead of you when buyers search for what you do.`
+          : 'A competitor is being cited instead of you when buyers search for what you do.'
+        }
+        Your full report shows the structural reason they&rsquo;re appearing ahead of you — and what to change.
       </p>
     </td></tr>` : '';
+
+  // Upsell headline matched to what the user actually reported
+  const upsellHeadline =
+    displacedByCompetitor
+      ? `See exactly which queries your competitors are winning — and why.`
+      : lead.awareness === "Yes — but I wasn't mentioned at all"
+      ? `Find out which queries you&rsquo;re missing — and how to get into them.`
+      : lead.awareness === 'Yes — but details about me were wrong'
+      ? `See exactly what AI is saying about you — and how to correct it.`
+      : lead.awareness === 'Yes — but old/outdated info appeared'
+      ? `Find out which outdated content AI is citing — and how to update it.`
+      : `Find out exactly where ${entity} stands across all AI platforms — and what to fix first.`;
 
   const html = `<!DOCTYPE html>
 <html lang="en">
@@ -116,7 +108,7 @@ export async function sendUserPlanEmail(lead: AeoLeadRow): Promise<void> {
   </td></tr>
 
   <!-- Opportunity -->
-  ${lead.awareness === 'Yes — competitors were cited instead of me' ? `
+  ${displacedByCompetitor ? `
   <tr><td style="padding-bottom:20px;">
     <p style="margin:0;font-size:15px;color:#374151;line-height:1.7;">
       This is fixable &mdash; and faster to address than starting from zero.
@@ -132,7 +124,7 @@ export async function sendUserPlanEmail(lead: AeoLeadRow): Promise<void> {
   <tr><td style="padding-bottom:28px;">
     <div style="background:#6B5DD3;border-radius:12px;padding:28px;">
       <h2 style="margin:0 0 10px;font-size:20px;font-weight:700;color:#ffffff;line-height:1.4;">
-        Your competitors are winning ${queryCount} of your priority queries.
+        ${upsellHeadline}
       </h2>
       <p style="margin:0 0 20px;font-size:14px;color:#ddd6fe;line-height:1.7;">
         Your free snapshot shows the gap. Your AEO Visibility Report shows exactly why &mdash;
@@ -145,8 +137,8 @@ export async function sendUserPlanEmail(lead: AeoLeadRow): Promise<void> {
         Get My Full AEO Visibility Report &rarr;
       </a>
       <p style="margin:0;font-size:12px;color:#c4b5fd;line-height:1.6;">
-        Once the gaps are closed, citations shift 40&ndash;60% monthly. AEO Visibility Engine keeps you
-        ahead of changes your competitors don&rsquo;t see coming. Cancel anytime.
+        AEO citation positions shift as AI platforms update their data sources — sometimes significantly within a single quarter.
+        AEO Visibility Engine tracks your position monthly so changes don&rsquo;t catch you off guard. Cancel anytime.
       </p>
     </div>
   </td></tr>
