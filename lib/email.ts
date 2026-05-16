@@ -12,7 +12,7 @@ function getResend() {
 }
 
 function getUrls() {
-  const calendly = process.env.CALENDLY_URL ?? 'https://maxifidigital.com';
+  const calendly = process.env.CALENDLY_URL ?? 'https://lunacal.ai/maxifidigital/meeting';
   return {
     CALENDLY: calendly,
     REPORT_URL: process.env.REPORT_CHECKOUT_URL ?? calendly,
