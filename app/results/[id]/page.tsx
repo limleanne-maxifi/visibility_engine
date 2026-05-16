@@ -41,18 +41,19 @@ function toTitleCase(str: string): string {
 function getPlatformSearchUrl(platform: string, query: string): string {
   const encoded = encodeURIComponent(query);
   switch (platform) {
-    case 'ChatGPT':             return `https://chatgpt.com/?q=${encoded}`;
-    case 'Google AI Overviews': return `https://www.google.com/search?q=${encoded}`;
-    case 'Perplexity':          return `https://www.perplexity.ai/search?q=${encoded}`;
-    case 'Claude':              return 'https://claude.ai/new';
-    case 'Gemini':              return 'https://gemini.google.com/app';
-    default:                    return `https://chatgpt.com/?q=${encoded}`;
+    case 'ChatGPT':              return `https://chatgpt.com/?q=${encoded}`;
+    case 'Google AI Overviews':  return `https://www.google.com/search?q=${encoded}`;
+    case 'Perplexity':           return `https://www.perplexity.ai/search?q=${encoded}`;
+    case 'Claude':               return 'https://claude.ai/new';
+    case 'Gemini':               return 'https://gemini.google.com/app';
+    case 'Microsoft Copilot':    return `https://copilot.microsoft.com/?q=${encoded}`;
+    default:                     return `https://chatgpt.com/?q=${encoded}`;
   }
 }
 
 // ─── Platform matrix ──────────────────────────────────────────────────────────
 
-const ALL_PLATFORMS = ['ChatGPT', 'Google AI Overviews', 'Perplexity', 'Claude', 'Gemini'];
+const ALL_PLATFORMS = ['ChatGPT', 'Google AI Overviews', 'Perplexity', 'Microsoft Copilot', 'Claude', 'Gemini'];
 
 type PlatformStatus = 'cited' | 'displaced' | 'missing' | 'inaccurate' | 'stale' | 'unknown';
 
