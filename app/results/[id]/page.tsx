@@ -180,7 +180,7 @@ function getGap2Specific(
     return `${opening} ${hasComp ? `${compStr} ${plural ? 'have' : 'has'} a stronger presence in key directories and publications in ${industry}.` : `There are specific source types in ${industry} that aren't yet referencing ${entityName} reliably.`}`;
   }
   if (score > 0) {
-    return `${opening} ${hasComp ? `In particular, ${compStr} ${plural ? 'have' : 'has'} stronger authority signals in this category — which is why ${plural ? 'they are' : 'it is'} cited first.` : `Competing brands in your category have stronger authority signals across these sources.`}`;
+    return `${opening} ${hasComp ? `In particular, ${compStr} ${plural ? 'have' : 'has'} stronger authority signals in this category — which is why ${plural ? 'they are' : 'it is'} cited first.` : `Brands at the industry benchmark in your category have stronger authority signals across these sources — which is why they are cited more reliably.`}`;
   }
   return `${opening} ${hasComp ? `${compStr} ${plural ? 'have' : 'has'} had more time to build their presence in the ${industry} sector.` : `The established businesses in ${industry} have built clearer footprints across the sources AI engines rely on.`}`;
 }
@@ -341,6 +341,7 @@ export default async function ResultsPage({ params }: Props) {
     return `best ${lead.industry} firms`;
   })();
 
+  const isGenericQuery = !lead.target_queries?.trim() && !lead.positioning?.trim();
   const isPlatformEmbeddable = false; // Perplexity and all platforms block iframe embedding
   const platformSearchUrl    = getPlatformSearchUrl(lead.platform, buyerQuery);
   const verifyPlatformName   = lead.platform || 'ChatGPT';
@@ -418,7 +419,7 @@ export default async function ResultsPage({ params }: Props) {
           </div>
           <p className="text-sm text-gray-800 leading-relaxed mt-4">
             {score > 0
-              ? <>Put another way: if 10 potential buyers in your category asked an AI tool for a recommendation today, your brand would appear in approximately <strong>{buyerX}</strong> of those conversations. Your closest competitors appear in <strong>{buyerY}</strong> or more.</>
+              ? <>Put another way: if 10 potential buyers in your category asked an AI tool for a recommendation today, your brand would appear in approximately <strong>{buyerX}</strong> of those conversations. {competitors.length > 0 ? <>Your named competitors appear in <strong>{buyerY}</strong> or more.</> : <>Brands at the {lead.industry} benchmark appear in <strong>{buyerY}</strong> or more.</>}</>
               : <>Your visibility score is undiagnosed — run a search in ChatGPT or Perplexity to establish your baseline.</>
             }
           </p>
@@ -490,14 +491,6 @@ export default async function ResultsPage({ params }: Props) {
             <p className="text-[10px] text-gray-400 mt-3">Add your closest competitors to see who is leading in your category.</p>
           )}
 
-          <div className="mt-4 pt-4 border-t border-gray-100">
-            <p className="text-sm text-gray-700 leading-relaxed">
-              {score > 0
-                ? <>If 10 potential buyers in your category asked an AI tool for a recommendation today, your brand would appear in approximately <strong>{buyerX}</strong> of those conversations. Your closest competitors appear in <strong>{buyerY}</strong> or more.</>
-                : <>Your visibility in AI buyer journeys is currently undiagnosed.</>
-              }
-            </p>
-          </div>
         </div>
 
         {/* 3. Structured finding block */}
@@ -615,6 +608,11 @@ export default async function ResultsPage({ params }: Props) {
           <div className="bg-gray-800 rounded-lg px-4 py-3 mb-5 font-mono text-sm text-emerald-400 break-all select-all">
             &ldquo;{buyerQuery}&rdquo;
           </div>
+          {isGenericQuery && (
+            <p className="text-xs text-gray-500 mb-4">
+              No target queries or positioning were provided, so this uses a general industry search. For a more accurate result, search for exactly what you do — e.g. your specific service or niche.
+            </p>
+          )}
 
           <a
             href={platformSearchUrl}
@@ -701,11 +699,13 @@ export default async function ResultsPage({ params }: Props) {
         <div className="bg-white rounded-xl border border-gray-100 shadow-sm p-6 mb-4">
           <h2 className="text-base font-bold text-gray-900 mb-3">Why timing matters</h2>
           <p className="text-sm text-gray-700 leading-relaxed">
-            The brands that appear first in AI answers are not necessarily the biggest.
-            They are the ones that formatted their content for AI discovery first.
-            That window is still open, but it is closing.
-            Every month a competitor holds an AI citation position, they become harder to displace.
-            Your current position is not permanent — but it requires action before your competitors move further ahead.
+            The brands that appear first in AI answers are not necessarily the biggest — they are the ones that structured their presence for AI discovery first.
+            AI platforms update their citation sources regularly, and positions shift with each update.
+            A brand that addresses these gaps now will hold a structural advantage over one that waits.
+            {score > 0 && score < benchAvg
+              ? <> At {score}%, {entityName} is currently {gap} percentage points below the {lead.industry} benchmark — a gap that is closable with targeted action, but widens if left unaddressed.</>
+              : null
+            }
           </p>
         </div>
 
