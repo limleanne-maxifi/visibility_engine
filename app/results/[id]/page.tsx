@@ -2,6 +2,7 @@ import Image from 'next/image';
 import { notFound } from 'next/navigation';
 import { getLeadById } from '@/lib/supabase';
 import CopyLinkButton from './CopyLinkButton';
+import DownloadPdfButton from './DownloadPdfButton';
 import {
   getAllCompetitors,
   formatCompetitors,
@@ -336,18 +337,19 @@ function getCompetitiveHeadline(score: number, benchAvg: number, industry: strin
 
 function getCitationHeadline(awareness: string, checkedCount: number, entityName: string): string {
   const n = checkedCount;
-  const plat = n === 1 ? 'the platform you tested' : `${n === 2 ? 'both' : `all ${n}`} platforms you tested`;
+  const positiveRef = n === 1 ? 'the platform you tested' : n === 2 ? 'both platforms you tested' : `all ${n} platforms you tested`;
+  const negativeRef  = n === 1 ? 'the platform you tested' : n === 2 ? 'either platform you tested' : `any of the ${n} platforms you tested`;
   switch (awareness) {
     case 'Yes — and the results were accurate':
-      return `You appeared accurately on ${plat} — a signal AI engines are reading your brand correctly.`;
+      return `You appeared accurately on ${positiveRef} — a signal AI engines are reading your brand correctly.`;
     case "Yes — but I wasn't mentioned at all":
-      return `${entityName} did not appear on ${plat} — buyers searching here are not seeing you.`;
+      return `${entityName} did not appear on ${negativeRef} — buyers searching here are not seeing you.`;
     case 'Yes — but details about me were wrong':
-      return `You appeared on ${plat} — but with incorrect information that could be misleading buyers.`;
+      return `You appeared on ${positiveRef} — but with incorrect information that could be misleading buyers.`;
     case 'Yes — competitors were cited instead of me':
-      return `A competitor was returned on ${plat} instead of you — buyers searching here are being directed elsewhere.`;
+      return `A competitor was returned on ${positiveRef} instead of you — buyers searching here are being directed elsewhere.`;
     case 'Yes — but old/outdated info appeared':
-      return `You appeared on ${plat} — but the information shown is outdated and no longer reflects your current offering.`;
+      return `You appeared on ${positiveRef} — but the information shown is outdated and no longer reflects your current offering.`;
     default:
       return `No platforms have been tested yet — run a search to establish your citation baseline.`;
   }
@@ -422,6 +424,23 @@ export default async function ResultsPage({ params }: Props) {
 
   return (
     <div className="min-h-screen bg-gray-50 py-10 px-4">
+      <style>{`
+        @media print {
+          body { background: white !important; font-size: 11pt; }
+          .print\\:hidden { display: none !important; }
+          /* Remove shadows and backgrounds for clean print */
+          * { box-shadow: none !important; }
+          /* Page breaks */
+          .page-break-before { page-break-before: always; }
+          /* Force URLs visible for booking links */
+          a[href]::after { content: " (" attr(href) ")"; font-size: 9pt; color: #6b5dd3; }
+          a[href^="mailto"]::after, a[href^="javascript"]::after, a[href="#"]::after { content: none; }
+          /* Hide search/interactive links in print — shown inline only */
+          .no-print-url::after { content: none !important; }
+          /* Scale for A4 */
+          @page { margin: 18mm 15mm; size: A4; }
+        }
+      `}</style>
       <div className="max-w-[640px] mx-auto">
 
         {/* 1. Header */}
@@ -493,16 +512,27 @@ export default async function ResultsPage({ params }: Props) {
               </tbody>
             </table>
           </div>
-          <p className="text-sm text-gray-800 leading-relaxed mt-4">
-            {score > 0
-              ? <>Put another way: if 10 potential buyers in your category asked an AI tool for a recommendation today, your brand would appear in approximately <strong>{buyerX}</strong> of those conversations. {competitors.length > 0 ? <>Your named competitors appear in <strong>{buyerY}</strong> or more.</> : <>Brands at the {lead.industry} benchmark appear in <strong>{buyerY}</strong> or more.</>}</>
-              : <>Your visibility score is undiagnosed — run a search in ChatGPT or Perplexity to establish your baseline.</>
-            }
-          </p>
+          {score > 0 ? (
+            <div className="mt-4 rounded-xl bg-[#1a2744] text-white p-5">
+              <p className="text-[11px] font-semibold uppercase tracking-widest text-blue-300 mb-2">What this means for your pipeline</p>
+              <p className="text-2xl font-bold leading-tight mb-3">
+                {10 - buyerX} out of 10 AI&#8209;assisted referrals<br className="hidden sm:block" /> in your category are going to other brands.
+              </p>
+              <ul className="space-y-1.5 text-sm text-blue-100">
+                <li className="flex items-start gap-2"><span className="mt-0.5 text-blue-400">▸</span><span>{entityName} appears in approximately <strong className="text-white">{buyerX} in 10</strong> AI buyer conversations in your category.</span></li>
+                <li className="flex items-start gap-2"><span className="mt-0.5 text-blue-400">▸</span><span>{competitors.length > 0 ? 'Your named competitors appear' : `Brands at the ${lead.industry} benchmark appear`} in <strong className="text-white">{buyerY} or more</strong> of those same conversations.</span></li>
+                {buyerY - buyerX > 0 && (
+                  <li className="flex items-start gap-2"><span className="mt-0.5 text-blue-400">▸</span><span>Closing to benchmark could unlock <strong className="text-white">{buyerY - buyerX} additional AI referral{buyerY - buyerX > 1 ? 's' : ''}</strong> per 10 buyer conversations.</span></li>
+                )}
+              </ul>
+            </div>
+          ) : (
+            <p className="text-sm text-gray-600 leading-relaxed mt-4">Your visibility score is undiagnosed — run a search in ChatGPT or Perplexity to establish your baseline.</p>
+          )}
           <div className="mt-3 pt-3 border-t border-gray-100">
             <p className="text-xs text-gray-500 leading-relaxed">
               This score reflects how consistently your brand appears in AI-generated responses across the platforms your buyers use.
-              The indicative benchmark for {lead.industry || 'your sector'} is <strong>{benchAvg}%</strong> — based on Maxifi Digital's analysis of citation patterns across industries.
+              The indicative benchmark for {lead.industry || 'your sector'} is <strong>{benchAvg}%</strong> — based on Maxifi Digital&rsquo;s analysis of citation patterns across industries.
               Brands scoring below 30% are typically invisible in AI buyer journeys.
             </p>
           </div>
@@ -623,7 +653,7 @@ export default async function ResultsPage({ params }: Props) {
                             href={searchUrl}
                             target="_blank"
                             rel="noopener noreferrer"
-                            className="text-[11px] font-medium text-[#6B5DD3] hover:underline whitespace-nowrap"
+                            className="text-[11px] font-medium text-[#6B5DD3] hover:underline whitespace-nowrap no-print-url print:hidden"
                           >
                             Search now →
                           </a>
@@ -714,7 +744,7 @@ export default async function ResultsPage({ params }: Props) {
             href={platformSearchUrl}
             target="_blank"
             rel="noopener noreferrer"
-            className="inline-flex items-center gap-2 bg-white text-gray-900 font-semibold text-sm px-5 py-3 rounded-lg hover:bg-gray-100 transition-colors"
+            className="inline-flex items-center gap-2 bg-white text-gray-900 font-semibold text-sm px-5 py-3 rounded-lg hover:bg-gray-100 transition-colors no-print-url"
           >
             See the live result on {verifyPlatformName} →
           </a>
@@ -812,19 +842,20 @@ export default async function ResultsPage({ params }: Props) {
 
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
 
-            {/* Option A */}
-            <div className="bg-white rounded-xl border border-gray-200 p-5 flex flex-col">
-              <span className="inline-block self-start text-xs font-bold text-[#534AB7] bg-[#EEEDFE] px-2 py-0.5 rounded mb-3">A</span>
+            {/* Option A — primary/recommended */}
+            <div className="bg-white rounded-xl border-2 border-[#534AB7] p-5 flex flex-col relative">
+              <span className="absolute -top-3 left-4 text-[10px] font-bold text-white bg-[#534AB7] px-2 py-0.5 rounded-full tracking-wide uppercase">Most requested</span>
+              <span className="inline-block self-start text-xs font-bold text-[#534AB7] bg-[#EEEDFE] px-2 py-0.5 rounded mb-3 mt-1">A</span>
               <h3 className="text-sm font-bold text-gray-900 mb-2">Get the full picture</h3>
               <p className="text-xs text-gray-500 leading-relaxed flex-1 mb-4">
                 AEO Visibility Report — one report, no subscription.
-                Covers everything in the analysis above plus a prioritised list of fixes.
+                Covers every fix in order of impact, plus the exact sources AI is drawing on about you.
               </p>
               <a
                 href={reportUrl}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="text-sm font-semibold text-[#534AB7] hover:underline"
+                className="block text-center text-sm font-semibold text-white bg-[#534AB7] hover:bg-[#4640a0] rounded-lg px-4 py-2.5 transition-colors"
               >
                 Get the report →
               </a>
@@ -870,13 +901,16 @@ export default async function ResultsPage({ params }: Props) {
           </div>
         </div>
 
-        {/* Share */}
+        {/* Share + Download */}
         <div className="bg-white rounded-xl border border-gray-100 shadow-sm p-6 mb-8">
-          <h2 className="text-base font-semibold text-gray-900 mb-1">Share this snapshot</h2>
+          <h2 className="text-base font-semibold text-gray-900 mb-1">Share or save this snapshot</h2>
           <p className="text-gray-500 text-sm mb-4">
-            Send this link to a colleague or bookmark it — it&rsquo;s persistent.
+            Send this link to a colleague, bookmark it, or download it as a PDF — it&rsquo;s persistent.
           </p>
-          <CopyLinkButton />
+          <div className="flex flex-wrap gap-3">
+            <CopyLinkButton />
+            <DownloadPdfButton />
+          </div>
         </div>
 
         {/* Footer */}
