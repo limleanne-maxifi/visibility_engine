@@ -763,19 +763,25 @@ export default async function ResultsPage({ params }: Props) {
               <span className="flex-shrink-0 text-xs font-bold text-white bg-[#534AB7] px-2 py-0.5 rounded">Gap 1</span>
               <h3 className="text-sm font-bold text-gray-900">How your content is structured</h3>
             </div>
-            <p className="text-sm text-gray-500 mb-3 leading-relaxed">
-              AI engines decide whether to recommend a business based partly on how its website content is formatted.
-              If the format doesn&rsquo;t clearly identify the category, services, and audience, AI engines skip it — regardless of quality.
-            </p>
             <p className="text-sm text-gray-700 leading-relaxed mb-4">
               {gap1Text}
             </p>
-            <div className="rounded-lg bg-amber-50 border border-amber-100 px-4 py-3">
+            <div className="rounded-lg bg-amber-50 border border-amber-100 px-4 py-3 mb-3">
               <p className="text-sm text-amber-800 leading-relaxed">
                 <strong>Business consequence:</strong>{' '}
                 If AI can&rsquo;t extract a clear description of what{' '}{entityName}{' '}does, it won&rsquo;t recommend you — even when buyers are searching for exactly what you offer.
               </p>
             </div>
+            <details className="group">
+              <summary className="text-xs text-[#534AB7] cursor-pointer list-none flex items-center gap-1 select-none hover:underline">
+                <span className="group-open:hidden">+ How AI evaluates content structure</span>
+                <span className="hidden group-open:inline">− Hide</span>
+              </summary>
+              <p className="text-sm text-gray-500 mt-2 leading-relaxed">
+                AI engines decide whether to recommend a business based partly on how its website content is formatted.
+                If the format doesn&rsquo;t clearly identify the category, services, and audience, AI engines skip it — regardless of quality.
+              </p>
+            </details>
           </div>
 
           {/* Gap 2 */}
@@ -784,19 +790,25 @@ export default async function ResultsPage({ params }: Props) {
               <span className="flex-shrink-0 text-xs font-bold text-white bg-[#534AB7] px-2 py-0.5 rounded">Gap 2</span>
               <h3 className="text-sm font-bold text-gray-900">How well-known your brand is to AI</h3>
             </div>
-            <p className="text-sm text-gray-500 mb-3 leading-relaxed">
-              Whether AI engines have enough reliable information about your brand to confidently recommend it.
-              AI engines draw on publicly available sources — company directories, news coverage, review platforms — to build a picture of each business.
-            </p>
             <p className="text-sm text-gray-700 leading-relaxed mb-4">
               {gap2Text}
             </p>
-            <div className="rounded-lg bg-amber-50 border border-amber-100 px-4 py-3">
+            <div className="rounded-lg bg-amber-50 border border-amber-100 px-4 py-3 mb-3">
               <p className="text-sm text-amber-800 leading-relaxed">
                 <strong>Business consequence:</strong>{' '}
                 Until AI engines can describe{' '}{entityName}{' '}accurately and with confidence, your reputation won&rsquo;t translate into AI-generated referrals — regardless of how strong your actual work is.
               </p>
             </div>
+            <details className="group">
+              <summary className="text-xs text-[#534AB7] cursor-pointer list-none flex items-center gap-1 select-none hover:underline">
+                <span className="group-open:hidden">+ How AI measures brand authority</span>
+                <span className="hidden group-open:inline">− Hide</span>
+              </summary>
+              <p className="text-sm text-gray-500 mt-2 leading-relaxed">
+                Whether AI engines have enough reliable information about your brand to confidently recommend it.
+                AI engines draw on publicly available sources — company directories, news coverage, review platforms — to build a picture of each business.
+              </p>
+            </details>
           </div>
 
           {/* Gap 3 */}
@@ -805,19 +817,25 @@ export default async function ResultsPage({ params }: Props) {
               <span className="flex-shrink-0 text-xs font-bold text-white bg-[#534AB7] px-2 py-0.5 rounded">Gap 3</span>
               <h3 className="text-sm font-bold text-gray-900">Who else is talking about you online</h3>
             </div>
-            <p className="text-sm text-gray-500 mb-3 leading-relaxed">
-              The number of trusted third-party sources — industry publications, review platforms, analyst reports — that reference your brand.
-              When AI engines encounter a business name, they check whether recognised external sources confirm it.
-            </p>
             <p className="text-sm text-gray-700 leading-relaxed mb-4">
               {gap3Text}
             </p>
-            <div className="rounded-lg bg-amber-50 border border-amber-100 px-4 py-3">
+            <div className="rounded-lg bg-amber-50 border border-amber-100 px-4 py-3 mb-3">
               <p className="text-sm text-amber-800 leading-relaxed">
                 <strong>Business consequence:</strong>{' '}
                 Without references from sources AI engines recognise, your brand is treated as unverified — and unverified brands are not recommended.
               </p>
             </div>
+            <details className="group">
+              <summary className="text-xs text-[#534AB7] cursor-pointer list-none flex items-center gap-1 select-none hover:underline">
+                <span className="group-open:hidden">+ How third-party references affect AI citation</span>
+                <span className="hidden group-open:inline">− Hide</span>
+              </summary>
+              <p className="text-sm text-gray-500 mt-2 leading-relaxed">
+                The number of trusted third-party sources — industry publications, review platforms, analyst reports — that reference your brand.
+                When AI engines encounter a business name, they check whether recognised external sources confirm it.
+              </p>
+            </details>
           </div>
         </div>
 
