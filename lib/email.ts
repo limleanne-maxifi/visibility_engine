@@ -1,12 +1,20 @@
 import { Resend } from 'resend';
 import type { AeoLeadRow } from '@/lib/supabase';
+import {
+  getAllCompetitors,
+  getVisibilityScore,
+  getIndustryBenchmark,
+  buyerConversations,
+  inferBusinessModel,
+  getPipelineLabel,
+} from '@/lib/scoring';
 
 function getResend() {
   return new Resend(process.env.RESEND_API_KEY);
 }
 
 function getUrls() {
-  const calendly = process.env.CALENDLY_URL ?? 'https://maxifidigital.com';
+  const calendly = process.env.CALENDLY_URL ?? 'https://lunacal.ai/maxifidigital/';
   return {
     CALENDLY: calendly,
     REPORT_URL: process.env.REPORT_CHECKOUT_URL ?? calendly,
@@ -14,64 +22,80 @@ function getUrls() {
   };
 }
 
-// ─── Score helpers ────────────────────────────────────────────────────────────
-
-function getScore(awareness: string): number {
-  const map: Record<string, number> = {
-    "No, I haven't tried this yet":                    0,
-    'Yes — and the results were accurate':             72,
-    "Yes — but I wasn't mentioned at all":              8,
-    'Yes — but details about me were wrong':           24,
-    'Yes — competitors were cited instead of me':      17,
-    'Yes — but old/outdated info appeared':            31,
-  };
-  return map[awareness] ?? 0;
-}
-
-const BENCHMARKS: Record<string, number> = {
-  'Financial Services & Banking': 47, 'Fintech / Financial Technology': 47,
-  'Accounting & Finance': 47,         'Legal': 62,
-  'Professional Services': 54,        'Consulting & Advisory': 54,
-  'Healthcare & Life Sciences': 78,   'B2B SaaS / Enterprise Software': 84,
-  'AI & Machine Learning': 84,        'Cybersecurity': 84,
-  'Cloud Infrastructure': 84,         'Marketing Technology': 63,
-  'Aviation & Aerospace': 41,         'Defense': 41,
-  'Education & Training': 52,         'Media & Publishing': 58,
-  'Real Estate & Property': 35,       'Retail & E-commerce': 48,
-  'Hospitality & Travel': 42,         'Manufacturing & Industrial': 38,
-};
-
 // ─── Email 1: User snapshot email ────────────────────────────────────────────
 
 export async function sendUserPlanEmail(lead: AeoLeadRow): Promise<void> {
   const { CALENDLY, REPORT_URL } = getUrls();
   const fromEmail  = process.env.FROM_EMAIL ?? 'hello@maxifidigital.com';
-  const score      = getScore(lead.awareness);
-  const entity     = lead.company_name ?? lead.first_name;
-  const challenges = lead.challenge.split(';').map((c) => c.trim()).filter(Boolean);
-  const displaced  = challenges.some((c) => c.includes('My competitors show up'));
-  const topicGoal  = challenges.some((c) => c.includes('specific topics'));
-  const queryCount = topicGoal ? 4 : 3;
+
+  const competitors    = getAllCompetitors(lead.competitors);
+  const score          = getVisibilityScore(lead.awareness, competitors);
+  const benchAvg       = getIndustryBenchmark(lead.industry);
+  const { x: buyerX, y: buyerY } = buyerConversations(score, benchAvg);
+  const businessModel  = inferBusinessModel(lead.industry);
+  const pipelineLabel  = getPipelineLabel(businessModel);
+  const entity         = lead.company_name ?? lead.first_name;
 
   const scoreDisplay = score > 0 ? `${score}%` : '—';
   const subject      = `Your AEO Visibility Snapshot — ${entity} is at ${score > 0 ? `${score}%` : 'an undiagnosed'} visibility`;
 
-  const benchAvg = BENCHMARKS[lead.industry] ?? 38;
-  const buyerX   = Math.max(0, Math.min(9, Math.round((score / (benchAvg || 1)) * 10)));
-  const buyerY   = Math.max(1, Math.min(10, Math.round((benchAvg / 100) * 10)));
   const benchmarkLine = score > 0
     ? `Your score of <strong>${score}%</strong> compares to an industry average of <strong>${benchAvg}%</strong> for ${lead.industry || 'your industry'}.
-       ${score < benchAvg ? 'You are currently below the industry benchmark.' : 'You are at or above the industry benchmark.'}`
+       ${score < benchAvg ? 'You are currently below the industry benchmark.' : 'You are at or above the industry benchmark.'}
+       ${businessModel === 'B2G' ? 'This benchmark reflects AI citation during vendor research and due diligence — where procurement teams increasingly search for and evaluate suppliers.' : ''}`
     : `Your AI visibility baseline is undiagnosed. Search for ${entity} in ChatGPT or Perplexity to see where you stand.`;
 
-  const competitorSection = displaced ? `
+  // Buyer conversations — adapted to business model
+  const buyerConvLine = score > 0 ? (() => {
+    const missed = 10 - buyerX;
+    switch (businessModel) {
+      case 'B2G':
+        return `In ${missed} out of 10 cases where procurement teams use AI to research vendors in your category, ${entity} is not in the results. Brands at the ${lead.industry} benchmark appear in ${buyerY} or more of those searches.`;
+      case 'B2C':
+        return `In ${missed} out of 10 cases where consumers ask AI for a recommendation in your category, ${entity} does not appear. Brands at the ${lead.industry} benchmark appear in ${buyerY} or more.`;
+      case 'mixed':
+        return `In ${missed} out of 10 cases where buyers or procurement teams use AI to find providers in your category, ${entity} is not visible. Brands at the ${lead.industry} benchmark appear in ${buyerY} or more of those situations.`;
+      default:
+        return `If 10 potential buyers in your category asked an AI tool for a recommendation today, ${entity} would appear in approximately <strong>${buyerX}</strong> of those conversations. Brands at the ${lead.industry} benchmark appear in <strong>${buyerY}</strong> or more.`;
+    }
+  })() : '';
+
+  // Only include a competitor call-out when the user explicitly said competitors were cited
+  const displacedByCompetitor = lead.awareness === 'Yes — competitors were cited instead of me';
+
+  const searcherTerm = businessModel === 'B2G'
+    ? 'procurement teams research vendors in your category'
+    : businessModel === 'B2C'
+    ? 'buyers search for what you offer'
+    : 'buyers search for what you do';
+
+  const competitorSection = displacedByCompetitor ? `
     <tr><td style="padding-bottom:20px;">
       <p style="margin:0;font-size:15px;color:#374151;line-height:1.7;">
-        A competitor is being cited instead of you on
-        <strong>${queryCount} of your priority queries</strong>.
-        Your full report names them, lists every query they win, and shows the structural reason they beat you.
+        ${competitors.length > 0
+          ? `Based on what you reported, <strong>${competitors.join(', ')}</strong> ${competitors.length === 1 ? 'is' : 'are'} being cited instead of you when ${searcherTerm}.`
+          : `A competitor is being cited instead of you when ${searcherTerm}.`
+        }
+        Your full report shows the structural reason they&rsquo;re appearing ahead of you — and what to change.
       </p>
     </td></tr>` : '';
+
+  // Upsell headline matched to what the user actually reported
+  const upsellHeadline =
+    displacedByCompetitor
+      ? `See exactly which queries your competitors are winning — and why.`
+      : lead.awareness === "Yes — but I wasn't mentioned at all"
+      ? `Find out which queries you&rsquo;re missing — and how to get into them.`
+      : lead.awareness === 'Yes — but details about me were wrong'
+      ? `See exactly what AI is saying about you — and how to correct it.`
+      : lead.awareness === 'Yes — but old/outdated info appeared'
+      ? `Find out which outdated content AI is citing — and how to update it.`
+      : `Find out exactly where ${entity} stands across all AI platforms — and what to fix first.`;
+
+  // Strategy call CTA — adapted to business model
+  const strategyCta = businessModel === 'B2G'
+    ? `Want Maxifi to handle the vendor visibility work for you — so ${entity} appears when procurement teams research your category?`
+    : `Want Maxifi to implement the fixes for you?`;
 
   const html = `<!DOCTYPE html>
 <html lang="en">
@@ -111,12 +135,12 @@ export async function sendUserPlanEmail(lead: AeoLeadRow): Promise<void> {
         ${scoreDisplay}
       </p>
       <p style="margin:0 0 12px;font-size:14px;color:#374151;line-height:1.6;">${benchmarkLine}</p>
-      ${score > 0 ? `<p style="margin:0;font-size:14px;color:#374151;line-height:1.6;">If 10 potential buyers in your category asked an AI tool for a recommendation today, your brand would appear in approximately <strong>${buyerX}</strong> of those conversations. Your closest competitors appear in <strong>${buyerY}</strong> or more.</p>` : ''}
+      ${buyerConvLine ? `<p style="margin:0;font-size:14px;color:#374151;line-height:1.6;">${buyerConvLine}</p>` : ''}
     </div>
   </td></tr>
 
   <!-- Opportunity -->
-  ${lead.awareness === 'Yes — competitors were cited instead of me' ? `
+  ${displacedByCompetitor ? `
   <tr><td style="padding-bottom:20px;">
     <p style="margin:0;font-size:15px;color:#374151;line-height:1.7;">
       This is fixable &mdash; and faster to address than starting from zero.
@@ -132,7 +156,7 @@ export async function sendUserPlanEmail(lead: AeoLeadRow): Promise<void> {
   <tr><td style="padding-bottom:28px;">
     <div style="background:#6B5DD3;border-radius:12px;padding:28px;">
       <h2 style="margin:0 0 10px;font-size:20px;font-weight:700;color:#ffffff;line-height:1.4;">
-        Your competitors are winning ${queryCount} of your priority queries.
+        ${upsellHeadline}
       </h2>
       <p style="margin:0 0 20px;font-size:14px;color:#ddd6fe;line-height:1.7;">
         Your free snapshot shows the gap. Your AEO Visibility Report shows exactly why &mdash;
@@ -145,8 +169,8 @@ export async function sendUserPlanEmail(lead: AeoLeadRow): Promise<void> {
         Get My Full AEO Visibility Report &rarr;
       </a>
       <p style="margin:0;font-size:12px;color:#c4b5fd;line-height:1.6;">
-        Once the gaps are closed, citations shift 40&ndash;60% monthly. AEO Visibility Engine keeps you
-        ahead of changes your competitors don&rsquo;t see coming. Cancel anytime.
+        AEO citation positions shift as AI platforms update their data sources — sometimes significantly within a single quarter.
+        AEO Visibility Engine tracks your position monthly so changes don&rsquo;t catch you off guard. Cancel anytime.
       </p>
     </div>
   </td></tr>
@@ -154,7 +178,7 @@ export async function sendUserPlanEmail(lead: AeoLeadRow): Promise<void> {
   <!-- Strategy call line -->
   <tr><td style="padding-bottom:36px;">
     <p style="margin:0;font-size:14px;color:#6b7280;line-height:1.7;">
-      Want Maxifi to implement the fixes for you?
+      ${strategyCta}
       <a href="${CALENDLY}" style="color:#6B5DD3;font-weight:600;text-decoration:none;">
         Book a strategy call &rarr;
       </a>
@@ -164,7 +188,7 @@ export async function sendUserPlanEmail(lead: AeoLeadRow): Promise<void> {
   <!-- Footer -->
   <tr><td style="border-top:1px solid #e5e7eb;padding-top:20px;">
     <p style="margin:0;font-size:12px;color:#9ca3af;text-align:center;line-height:1.6;">
-      Maxifi Digital &middot; London, United Kingdom &middot;
+      Maxifi Digital &middot; Singapore &middot;
       <a href="mailto:hello@maxifidigital.com" style="color:#9ca3af;text-decoration:underline;">Unsubscribe</a>
     </p>
   </td></tr>
@@ -197,7 +221,7 @@ export async function sendInternalNotification(lead: AeoLeadRow): Promise<void> 
   }
 
   const body = [
-    `New AEO Visibility Check submission`,
+    `New AEO Visibility Snapshot submission`,
     ``,
     `── Lead details ──────────────────────────────`,
     `first_name:    ${lead.first_name}`,
