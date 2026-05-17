@@ -115,6 +115,11 @@ export default function MultiStepForm() {
         body: JSON.stringify(formData),
       });
 
+      const contentType = res.headers.get('content-type') ?? '';
+      if (!contentType.includes('application/json')) {
+        throw new Error('Something went wrong on our end. Please try again in a moment.');
+      }
+
       const data = await res.json();
 
       if (!res.ok) {
