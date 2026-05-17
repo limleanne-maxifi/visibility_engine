@@ -120,7 +120,7 @@ function getRootCauses(
       return [
         `Different sources online describe ${entityName} differently — AI engines blend these into a single answer that ends up inaccurate.`,
         `AI engines verify facts about a brand by cross-referencing multiple external sources. Where those sources are inconsistent or sparse, the AI fills gaps — sometimes incorrectly.`,
-        `There isn't enough consistent, authoritative information about ${entityName} for AI engines to get the details right.`,
+        `Your website isn't currently acting as the definitive source that overrides those inconsistencies. When AI encounters conflicting descriptions, it defaults to external sources — which are often less accurate than your own positioning.`,
       ];
     case 'Yes — but old/outdated info appeared':
       return [
@@ -409,10 +409,10 @@ export default async function ResultsPage({ params }: Props) {
                 <tr className="bg-[#EEEDFE]">
                   <td className="py-3 pr-3 text-xs font-bold text-[#3C3489] whitespace-nowrap">Your AEO Visibility Score</td>
                   <td className="py-3 pr-3 text-xs text-[#534AB7]">Weighted total across all four signals</td>
-                  <td className="py-3 pr-3 text-xs text-[#534AB7]">—</td>
-                  <td className="py-3 text-right font-bold text-[#3C3489] text-base whitespace-nowrap">
+                  <td className="py-3 pr-3 font-bold text-[#3C3489] text-base whitespace-nowrap">
                     {score > 0 ? `${score}%` : 'Undiagnosed'}
                   </td>
+                  <td className="py-3 text-right text-xs text-[#534AB7] whitespace-nowrap">100%</td>
                 </tr>
               </tbody>
             </table>
@@ -456,9 +456,9 @@ export default async function ResultsPage({ params }: Props) {
                     </tr>
                   ))
                 : (
-                    <tr className="border-b border-gray-50">
+                    <tr className="border-b border-dashed border-gray-200">
                       <td className="py-3 pr-4 text-xs text-gray-400 whitespace-nowrap">Competitor</td>
-                      <td className="py-3 pr-4 text-gray-400 italic">No competitors entered</td>
+                      <td className="py-3 pr-4 text-gray-400 italic">Not yet compared</td>
                       <td className="py-3 text-right text-gray-400">—</td>
                     </tr>
                   )
@@ -488,7 +488,9 @@ export default async function ResultsPage({ params }: Props) {
           </table>
           </div>
           {competitors.length === 0 && (
-            <p className="text-[10px] text-gray-400 mt-3">Add your closest competitors to see who is leading in your category.</p>
+            <p className="text-xs text-[#534AB7] font-medium mt-4">
+              Add your closest competitors above to see how their AI visibility compares to yours — and who is leading in your category.
+            </p>
           )}
 
         </div>
