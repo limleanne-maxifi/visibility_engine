@@ -84,8 +84,8 @@ const PLATFORM_STATUS_STYLES: Record<PlatformStatus, { label: string; cls: strin
   cited:      { label: 'Cited ✓',     cls: 'bg-emerald-100 text-emerald-700 border-emerald-200' },
   displaced:  { label: 'Competitor',  cls: 'bg-red-100 text-red-700 border-red-200' },
   missing:    { label: 'Not found',   cls: 'bg-red-100 text-red-700 border-red-200' },
-  inaccurate: { label: 'Inaccurate',  cls: 'bg-orange-100 text-orange-700 border-orange-200' },
-  stale:      { label: 'Stale',       cls: 'bg-amber-100 text-amber-700 border-amber-200' },
+  inaccurate: { label: 'Cited — wrong info',  cls: 'bg-orange-100 text-orange-700 border-orange-200' },
+  stale:      { label: 'Cited — outdated',    cls: 'bg-amber-100 text-amber-700 border-amber-200' },
   unknown:    { label: 'Not checked', cls: 'bg-gray-100 text-gray-400 border-gray-200' },
 };
 
@@ -555,6 +555,10 @@ export default async function ResultsPage({ params }: Props) {
                   <p className="text-xs text-gray-500 mt-3 leading-relaxed">
                     {lead.awareness === "Yes — but I wasn't mentioned at all"
                       ? 'No brands were returned for you on the platforms you tested. Enter your closest competitors to see how their visibility compares to yours.'
+                      : lead.awareness === 'Yes — but details about me were wrong'
+                      ? 'You were cited on these platforms, but the information presented was incorrect. Your full report identifies which sources AI is pulling from and what needs to change.'
+                      : lead.awareness === 'Yes — but old/outdated info appeared'
+                      ? 'You were cited on these platforms, but with outdated information. Your full report identifies which content AI is drawing on and how to update it.'
                       : 'Enter your closest competitors to see how their AI visibility compares to yours across these platforms.'
                     }
                   </p>
