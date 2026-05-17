@@ -48,7 +48,7 @@ export default function Step5Consent({ data, onChange, onSubmit, onBack, errors,
 
   return (
     <form onSubmit={handleSubmit} noValidate>
-      <h1 className="text-2xl font-semibold text-gray-900 mb-1">
+      <h1 className="text-[2.4375rem] font-semibold text-gray-900 mb-1 whitespace-nowrap">
         Almost there, {data.firstName ? toTitleCase(data.firstName) : 'there'} — you&apos;re 10 seconds away
       </h1>
       <p className="text-sm text-gray-500 mb-6">
