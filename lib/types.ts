@@ -1,5 +1,6 @@
 export type Occupation =
   | 'Executive / Founder'
+  | 'Head of / VP'
   | 'Marketing & Communications'
   | 'Sales & Business Development'
   | 'Operations & Strategy'
