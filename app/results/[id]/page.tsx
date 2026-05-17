@@ -3,6 +3,7 @@ import { notFound } from 'next/navigation';
 import { getLeadById } from '@/lib/supabase';
 import CopyLinkButton from './CopyLinkButton';
 import DownloadPdfButton from './DownloadPdfButton';
+import ShareByEmailButton from './ShareByEmailButton';
 import {
   getAllCompetitors,
   formatCompetitors,
@@ -923,9 +924,14 @@ export default async function ResultsPage({ params }: Props) {
         <div className="bg-white rounded-xl border border-gray-100 shadow-sm p-6 mb-8">
           <h2 className="text-base font-semibold text-gray-900 mb-1">Share or save this snapshot</h2>
           <p className="text-gray-500 text-sm mb-4">
-            Send this link to a colleague, bookmark it, or download it as a PDF — it&rsquo;s persistent.
+            Send directly to your inbox — or forward to a colleague. Link is persistent.
           </p>
-          <div className="flex flex-wrap gap-3">
+          <ShareByEmailButton
+            defaultEmail={lead.email}
+            firstName={toTitleCase(lead.first_name)}
+            company={entityName}
+          />
+          <div className="flex flex-wrap gap-3 mt-3 pt-3 border-t border-gray-100">
             <CopyLinkButton />
             <DownloadPdfButton />
           </div>
