@@ -296,6 +296,74 @@ function getOpportunityContent(
   }
 }
 
+// ─── Section headline helpers ─────────────────────────────────────────────────
+
+function getPageHeadline(awareness: string, entityName: string, score: number, benchAvg: number): string {
+  switch (awareness) {
+    case 'Yes — and the results were accurate':
+      return `${entityName} is already in the AI conversation — and ahead of most. Here's how to hold that position as competitors catch up.`;
+    case "Yes — but I wasn't mentioned at all":
+      return `Your buyers are asking AI for recommendations. Right now, ${entityName} isn't in the answer — here's why, and what changes that.`;
+    case 'Yes — but details about me were wrong':
+      return `Good news: AI can find ${entityName}. The problem is what it's telling your buyers.`;
+    case 'Yes — competitors were cited instead of me':
+      return `When buyers ask AI who to call, your competitors get the referral. Here's exactly why — and what closes that gap.`;
+    case 'Yes — but old/outdated info appeared':
+      return `AI is recommending ${entityName} — but the version from years ago. Here's how to update the story it tells buyers.`;
+    default:
+      return `${entityName}'s AI visibility is undiagnosed. This snapshot shows you where you likely stand — and what to do first.`;
+  }
+}
+
+function getScoreHeadline(score: number, benchAvg: number, industry: string): string {
+  if (score === 0) return `Your AI visibility baseline is not yet established — here's what the signals suggest.`;
+  const gap = benchAvg - score;
+  if (gap > 0) return `Your score of ${score}% puts you ${gap} points below the ${industry} benchmark — a gap with a clear fix path.`;
+  return `Your score of ${score}% is at or above the ${industry} benchmark — a strong starting position.`;
+}
+
+function getCompetitiveHeadline(score: number, benchAvg: number, industry: string, competitors: string[]): string {
+  const gap = benchAvg - score;
+  if (competitors.length > 0) {
+    return gap > 0
+      ? `${formatCompetitors(competitors)} ${competitors.length > 1 ? 'are' : 'is'} ahead — and the ${industry} median sits ${gap} points above your current score.`
+      : `You are at or above the ${industry} median. The question is whether your named competitors are pulling further ahead.`;
+  }
+  return gap > 0
+    ? `You are ${gap} points behind the ${industry} median — without competitor data, this is the clearest benchmark available.`
+    : `You are at or above the ${industry} median — a competitive position worth protecting.`;
+}
+
+function getCitationHeadline(awareness: string, checkedCount: number, entityName: string): string {
+  const n = checkedCount;
+  const plat = n === 1 ? 'the platform you tested' : `${n === 2 ? 'both' : `all ${n}`} platforms you tested`;
+  switch (awareness) {
+    case 'Yes — and the results were accurate':
+      return `You appeared accurately on ${plat} — a signal AI engines are reading your brand correctly.`;
+    case "Yes — but I wasn't mentioned at all":
+      return `${entityName} did not appear on ${plat} — buyers searching here are not seeing you.`;
+    case 'Yes — but details about me were wrong':
+      return `You appeared on ${plat} — but with incorrect information that could be misleading buyers.`;
+    case 'Yes — competitors were cited instead of me':
+      return `A competitor was returned on ${plat} instead of you — buyers searching here are being directed elsewhere.`;
+    case 'Yes — but old/outdated info appeared':
+      return `You appeared on ${plat} — but the information shown is outdated and no longer reflects your current offering.`;
+    default:
+      return `No platforms have been tested yet — run a search to establish your citation baseline.`;
+  }
+}
+
+function getRootCauseHeadline(awareness: string): string {
+  switch (awareness) {
+    case 'Yes — and the results were accurate':       return `Three things keeping your AI citation position strong — and what could erode it.`;
+    case "Yes — but I wasn't mentioned at all":       return `Three reasons AI isn't surfacing you yet — and which to fix first.`;
+    case 'Yes — but details about me were wrong':     return `Three reasons AI is describing you inaccurately — and the one that matters most.`;
+    case 'Yes — competitors were cited instead of me': return `Three structural reasons a competitor appears in your place — and how they got there.`;
+    case 'Yes — but old/outdated info appeared':      return `Three reasons AI is citing an outdated version of your brand.`;
+    default:                                           return `Three things your current AI visibility position reveals.`;
+  }
+}
+
 // ─── Page ─────────────────────────────────────────────────────────────────────
 
 export default async function ResultsPage({ params }: Props) {
@@ -329,6 +397,12 @@ export default async function ResultsPage({ params }: Props) {
   const gap1Text = getGap1Specific(lead.awareness, entityName, lead.industry, competitors, lead.platform);
   const gap2Text = getGap2Specific(entityName, lead.industry, competitors, score, benchAvg);
   const gap3Text = getGap3Specific(entityName, lead.industry, lead.awareness);
+
+  const pageHeadline        = getPageHeadline(lead.awareness, entityName, score, benchAvg);
+  const scoreHeadline       = getScoreHeadline(score, benchAvg, lead.industry);
+  const competitiveHeadline = getCompetitiveHeadline(score, benchAvg, lead.industry, competitors);
+  const citationHeadline    = getCitationHeadline(lead.awareness, checkedPlatforms.length, entityName);
+  const rootCauseHeadline   = getRootCauseHeadline(lead.awareness);
 
   console.log('[results] id:', lead.id, '| awareness:', lead.awareness, '| competitors:', lead.competitors, '| company_name:', lead.company_name, '| target_queries:', lead.target_queries, '| positioning:', lead.positioning, '| platform:', lead.platform);
 
@@ -377,16 +451,18 @@ export default async function ResultsPage({ params }: Props) {
           <h1 className="text-2xl font-bold text-gray-900 leading-snug mb-2">
             {toTitleCase(lead.first_name)}&rsquo;s AEO Visibility Snapshot
           </h1>
-          <p className="text-sm text-gray-500">
+          <p className="text-sm text-gray-500 mb-5">
             {entityName} · {lead.industry} · {lead.occupation} · Generated {snapshotDate}
           </p>
+          <p className="text-lg font-bold text-gray-900 leading-snug">{pageHeadline}</p>
         </div>
 
         {/* 2. Scoring methodology */}
         <div className="bg-white rounded-xl border border-gray-100 shadow-sm p-6 mb-4">
-          <p className="text-xs font-semibold text-gray-400 uppercase tracking-wide mb-4">
+          <p className="text-xs font-semibold text-gray-400 uppercase tracking-wide mb-2">
             How your score was calculated
           </p>
+          <p className="text-base font-bold text-gray-900 leading-snug mb-4">{scoreHeadline}</p>
           <div className="overflow-x-auto">
             <table className="w-full text-sm">
               <thead>
@@ -434,9 +510,10 @@ export default async function ResultsPage({ params }: Props) {
 
         {/* 3. Competitive position table */}
         <div className="bg-white rounded-xl border border-gray-100 shadow-sm p-6 mb-4">
-          <p className="text-xs font-semibold text-gray-400 uppercase tracking-wide mb-4">
+          <p className="text-xs font-semibold text-gray-400 uppercase tracking-wide mb-2">
             Competitive position
           </p>
+          <p className="text-base font-bold text-gray-900 leading-snug mb-4">{competitiveHeadline}</p>
           <div className="overflow-x-auto">
           <table className="w-full text-sm">
             <thead>
@@ -509,7 +586,8 @@ export default async function ResultsPage({ params }: Props) {
 
           {/* Evidence / citation status by platform */}
           <div className="p-6 border-b border-gray-100">
-            <p className="text-xs font-semibold text-gray-400 uppercase tracking-wide mb-3">Citation status by platform</p>
+            <p className="text-xs font-semibold text-gray-400 uppercase tracking-wide mb-2">Citation status by platform</p>
+            <p className="text-base font-bold text-gray-900 leading-snug mb-3">{citationHeadline}</p>
             {lead.awareness === "No, I haven't tried this yet" ? (
               <p className="text-sm text-gray-600 leading-relaxed">
                 Run a quick test: open ChatGPT and search for what you do. Note which brands appear. Those are your citation competitors.
@@ -587,7 +665,8 @@ export default async function ResultsPage({ params }: Props) {
 
           {/* Root cause */}
           <div className="p-6 border-b border-gray-100">
-            <p className="text-xs font-semibold text-gray-400 uppercase tracking-wide mb-3">Root cause</p>
+            <p className="text-xs font-semibold text-gray-400 uppercase tracking-wide mb-2">Root cause</p>
+            <p className="text-base font-bold text-gray-900 leading-snug mb-3">{rootCauseHeadline}</p>
             <ul className="space-y-3">
               {rootCauses.map((cause, i) => (
                 <li key={i} className="flex items-start gap-3">
