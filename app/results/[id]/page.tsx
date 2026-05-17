@@ -534,11 +534,22 @@ export default async function ResultsPage({ params }: Props) {
                         badgeCls = 'bg-gray-100 text-gray-500 border-gray-200';
                       }
                     }
+                    const searchUrl = getPlatformSearchUrl(platform, buyerQuery);
                     return (
                       <div key={platform} className="flex items-center justify-between px-3 py-2.5">
                         <span className="text-sm text-gray-700">{platform}</span>
-                        <span className={`text-[11px] font-medium px-2 py-0.5 rounded border ${badgeCls}`}>
-                          {displayLabel}
+                        <span className="flex items-center gap-2">
+                          <a
+                            href={searchUrl}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="text-[11px] font-medium text-[#6B5DD3] hover:underline whitespace-nowrap"
+                          >
+                            Search now →
+                          </a>
+                          <span className={`text-[11px] font-medium px-2 py-0.5 rounded border ${badgeCls}`}>
+                            {displayLabel}
+                          </span>
                         </span>
                       </div>
                     );
