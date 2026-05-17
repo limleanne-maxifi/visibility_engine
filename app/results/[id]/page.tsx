@@ -495,19 +495,19 @@ export default async function ResultsPage({ params }: Props) {
               <tbody>
                 {scoringRows.map((row) => (
                   <tr key={row.signal} className="border-b border-gray-50">
-                    <td className="py-3 pr-3 text-xs font-semibold text-gray-700 whitespace-nowrap align-top">{row.signal}</td>
-                    <td className="py-3 pr-3 text-xs text-gray-500 align-top">{row.measured}</td>
-                    <td className={`py-3 pr-3 text-xs font-medium align-top ${row.bad ? 'text-amber-700' : 'text-gray-700'}`}>{row.result}</td>
-                    <td className="py-3 text-right text-xs font-bold text-[#534AB7] whitespace-nowrap align-top">{row.weight}</td>
+                    <td className="py-3 pr-3 text-sm font-semibold text-gray-700 whitespace-nowrap align-top">{row.signal}</td>
+                    <td className="py-3 pr-3 text-sm text-gray-500 align-top">{row.measured}</td>
+                    <td className={`py-3 pr-3 text-sm font-medium align-top ${row.bad ? 'text-amber-700' : 'text-gray-700'}`}>{row.result}</td>
+                    <td className="py-3 text-right text-sm font-bold text-[#534AB7] whitespace-nowrap align-top">{row.weight}</td>
                   </tr>
                 ))}
                 <tr className="bg-[#EEEDFE]">
-                  <td className="py-3 pr-3 text-xs font-bold text-[#3C3489] whitespace-nowrap">Your AEO Visibility Score</td>
-                  <td className="py-3 pr-3 text-xs text-[#534AB7]">Weighted total across all four signals</td>
+                  <td className="py-3 pr-3 text-sm font-bold text-[#3C3489] whitespace-nowrap">Your AEO Visibility Score</td>
+                  <td className="py-3 pr-3 text-sm text-[#534AB7]">Weighted total across all four signals</td>
                   <td className="py-3 pr-3 font-bold text-[#3C3489] text-base whitespace-nowrap">
                     {score > 0 ? `${score}%` : 'Undiagnosed'}
                   </td>
-                  <td className="py-3 text-right text-xs text-[#534AB7] whitespace-nowrap">100%</td>
+                  <td className="py-3 text-right text-sm text-[#534AB7] whitespace-nowrap">100%</td>
                 </tr>
               </tbody>
             </table>
