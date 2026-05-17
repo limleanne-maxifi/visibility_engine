@@ -10,6 +10,8 @@ import {
   getVisibilityScore,
   getIndustryBenchmark,
   buyerConversations,
+  inferBusinessModel,
+  getPipelineLabel,
 } from '@/lib/scoring';
 
 interface Props {
@@ -392,6 +394,8 @@ export default async function ResultsPage({ params }: Props) {
 
   const gap             = benchAvg - score;
   const { x: buyerX, y: buyerY } = buyerConversations(score, benchAvg);
+  const businessModel   = inferBusinessModel(lead.industry);
+  const pipelineLabel   = getPipelineLabel(businessModel);
 
   const rootCauses   = getRootCauses(lead.awareness, entityName, lead.industry, competitors);
   const scoringRows  = getScoringRows(lead.awareness, competitors, derivedQueries.length);
@@ -517,13 +521,13 @@ export default async function ResultsPage({ params }: Props) {
             <div className="mt-4 rounded-xl bg-[#1a2744] text-white p-5">
               <p className="text-[11px] font-semibold uppercase tracking-widest text-blue-300 mb-2">What this means for your pipeline</p>
               <p className="text-2xl font-bold leading-tight mb-3">
-                {10 - buyerX} out of 10 AI&#8209;assisted referrals<br className="hidden sm:block" /> in your category are going to other brands.
+                {10 - buyerX} out of 10 {pipelineLabel.referrals}<br className="hidden sm:block" /> in your category are going to other brands.
               </p>
               <ul className="space-y-1.5 text-sm text-blue-100">
-                <li className="flex items-start gap-2"><span className="mt-0.5 text-blue-400">▸</span><span>{entityName} appears in approximately <strong className="text-white">{buyerX} in 10</strong> AI buyer conversations in your category.</span></li>
-                <li className="flex items-start gap-2"><span className="mt-0.5 text-blue-400">▸</span><span>{competitors.length > 0 ? 'Your named competitors appear' : `Brands at the ${lead.industry} benchmark appear`} in <strong className="text-white">{buyerY} or more</strong> of those same conversations.</span></li>
+                <li className="flex items-start gap-2"><span className="mt-0.5 text-blue-400">▸</span><span>{entityName} appears in approximately <strong className="text-white">{buyerX} in 10</strong> cases where {pipelineLabel.action} in your category.</span></li>
+                <li className="flex items-start gap-2"><span className="mt-0.5 text-blue-400">▸</span><span>{competitors.length > 0 ? 'Your named competitors appear' : `Brands at the ${lead.industry} benchmark appear`} in <strong className="text-white">{buyerY} or more</strong> of those same situations.</span></li>
                 {buyerY - buyerX > 0 && (
-                  <li className="flex items-start gap-2"><span className="mt-0.5 text-blue-400">▸</span><span>Closing to benchmark could unlock <strong className="text-white">{buyerY - buyerX} additional AI referral{buyerY - buyerX > 1 ? 's' : ''}</strong> per 10 buyer conversations.</span></li>
+                  <li className="flex items-start gap-2"><span className="mt-0.5 text-blue-400">▸</span><span>Closing to benchmark could unlock <strong className="text-white">{buyerY - buyerX} additional {pipelineLabel.referral}{buyerY - buyerX > 1 ? 's' : ''}</strong> per 10 opportunities.</span></li>
                 )}
               </ul>
             </div>
@@ -534,7 +538,10 @@ export default async function ResultsPage({ params }: Props) {
             <p className="text-xs text-gray-500 leading-relaxed">
               This score reflects how consistently your brand appears in AI-generated responses across the platforms your buyers use.
               The indicative benchmark for {lead.industry || 'your sector'} is <strong>{benchAvg}%</strong> — based on Maxifi Digital&rsquo;s analysis of citation patterns across industries.
-              Brands scoring below 30% are typically invisible in AI buyer journeys.
+              {businessModel === 'B2G'
+                ? ' For procurement-led sectors, this benchmark reflects AI citation during vendor research and due diligence — not transactional referrals.'
+                : ' Brands scoring below 30% are typically invisible in AI buyer journeys.'
+              }
             </p>
           </div>
         </div>

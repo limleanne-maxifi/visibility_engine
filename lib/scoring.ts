@@ -51,21 +51,118 @@ export function getVisibilityScore(awareness: string, competitorList: string[]):
   return Math.round(platform * 0.30 + displacement * 0.30 + query * 0.25 + consistency * 0.15);
 }
 
+// ─── Industry benchmarks ──────────────────────────────────────────────────────
+// Benchmarks represent the median AI citation rate observed across brands in
+// each sector — based on Maxifi Digital's analysis of citation patterns.
+// B2G and procurement-led sectors (Defense, Gov Systems) carry lower benchmarks
+// because formal tender processes reduce AI-driven discovery relevance.
+
 export const INDUSTRY_BENCHMARKS: Record<string, number> = {
-  'Financial Services & Banking': 47, 'Fintech / Financial Technology': 47,
-  'Accounting & Finance': 47,         'Legal': 62,
-  'Professional Services': 54,        'Consulting & Advisory': 54,
-  'Healthcare & Life Sciences': 78,   'B2B SaaS / Enterprise Software': 84,
-  'AI & Machine Learning': 84,        'Cybersecurity': 84,
-  'Cloud Infrastructure': 84,         'Marketing Technology': 63,
-  'Aviation & Aerospace': 41,         'Defense': 41,
-  'Education & Training': 52,         'Media & Publishing': 58,
-  'Real Estate & Property': 35,       'Retail & E-commerce': 48,
-  'Hospitality & Travel': 42,         'Manufacturing & Industrial': 38,
+  // Technology
+  'B2B SaaS / Enterprise Software':        76,
+  'Cybersecurity':                          74,
+  'Cloud Infrastructure & DevOps':          74,
+  'Cloud Infrastructure':                   74, // legacy compat
+  'AI & Machine Learning':                  78,
+  'Marketing Technology':                   63,
+
+  // Financial
+  'Financial Services & Banking':           47,
+  'Fintech / Financial Technology':         52,
+  'Insurance':                              44,
+  'Accounting & Finance':                   47,
+
+  // Professional Services
+  'Professional Services':                  54,
+  'Consulting & Advisory':                  54,
+  'Legal & Legal Services':                 62,
+  'Legal':                                  62, // legacy compat
+  'Human Resources & Recruitment':          52,
+
+  // Healthcare & Life Sciences
+  'Healthcare & Life Sciences':             68,
+  'Healthcare Technology / Digital Health': 72,
+  'Pharmaceuticals & Biotech':              65,
+
+  // Industrial & Infrastructure
+  'Manufacturing & Industrial':             38,
+  'Logistics & Supply Chain':               40,
+  'Architecture, Engineering & Construction': 36,
+  'Energy & Utilities':                     38,
+  'Telecommunications':                     50,
+
+  // Government & Defense (procurement-led — lower AI discovery relevance)
+  'Aviation, ATC & Aerospace':              41,
+  'Aviation & Aerospace':                   41, // legacy compat
+  'Defense & Government Systems':           32,
+  'Defense':                                35, // legacy compat
+
+  // Consumer-facing
+  'Retail & E-commerce':                    48,
+  'Hospitality & Travel':                   42,
+  'Real Estate & Property':                 35,
+  'Media & Publishing':                     58,
+  'Education & Training':                   52,
 };
 
 export function getIndustryBenchmark(industry: string): number {
-  return INDUSTRY_BENCHMARKS[industry] ?? 38;
+  return INDUSTRY_BENCHMARKS[industry] ?? 40;
+}
+
+// ─── Business model inference ─────────────────────────────────────────────────
+// Inferred from industry — used to adapt pipeline framing on the results page.
+
+export type BusinessModel = 'B2B' | 'B2C' | 'B2G' | 'mixed';
+
+const B2G_INDUSTRIES = new Set([
+  'Defense & Government Systems', 'Defense',
+  'Aviation, ATC & Aerospace', // partial B2G (ANSPs, defense)
+]);
+const B2C_INDUSTRIES = new Set([
+  'Retail & E-commerce', 'Hospitality & Travel', 'Media & Publishing',
+]);
+const MIXED_INDUSTRIES = new Set([
+  'Healthcare & Life Sciences', 'Education & Training',
+  'Real Estate & Property', 'Financial Services & Banking',
+  'Insurance', 'Telecommunications',
+]);
+
+export function inferBusinessModel(industry: string): BusinessModel {
+  if (B2G_INDUSTRIES.has(industry)) return 'B2G';
+  if (B2C_INDUSTRIES.has(industry))  return 'B2C';
+  if (MIXED_INDUSTRIES.has(industry)) return 'mixed';
+  return 'B2B';
+}
+
+// ─── Pipeline framing labels by business model ────────────────────────────────
+
+export function getPipelineLabel(model: BusinessModel): {
+  referral: string;
+  referrals: string;
+  action: string;
+} {
+  switch (model) {
+    case 'B2G': return {
+      referral:  'AI-assisted vendor shortlist entry',
+      referrals: 'AI-assisted shortlisting opportunities',
+      action:    'procurement teams using AI to build vendor longlists',
+    };
+    case 'B2C': return {
+      referral:  'AI-assisted buyer recommendation',
+      referrals: 'AI-assisted buyer recommendations',
+      action:    'buyers asking AI for a recommendation',
+    };
+    case 'mixed': return {
+      referral:  'AI-assisted discovery opportunity',
+      referrals: 'AI-assisted discovery opportunities',
+      action:    'buyers or procurement teams using AI to find providers',
+    };
+    default: return {
+      referral:  'AI-assisted referral',
+      referrals: 'AI-assisted referrals',
+      action:    'potential buyers asking AI for a recommendation',
+    };
+  }
 }
 
 export function buyerConversations(score: number, benchAvg: number): { x: number; y: number } {

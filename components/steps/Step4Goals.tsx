@@ -35,21 +35,20 @@ const AEO_OUTCOMES: AeoOutcome[] = [
 
 // ─── Industry family mapping ──────────────────────────────────────────────────
 
-type IndustryFamily = 'aviation' | 'tech' | 'b2b';
+type IndustryFamily = 'aviation' | 'tech' | 'healthcare' | 'industrial' | 'professional' | 'b2b';
 
-const AVIATION = new Set(['Aviation & Aerospace', 'Defense']);
-const TECH = new Set([
-  'B2B SaaS / Enterprise Software',
-  'Cybersecurity',
-  'Cloud Infrastructure',
-  'AI & Machine Learning',
-  'Fintech / Financial Technology',
-  'Marketing Technology',
-]);
+const AVIATION     = new Set(['Aviation, ATC & Aerospace', 'Aviation & Aerospace', 'Defense & Government Systems', 'Defense']);
+const TECH         = new Set(['B2B SaaS / Enterprise Software', 'Cybersecurity', 'Cloud Infrastructure & DevOps', 'Cloud Infrastructure', 'AI & Machine Learning', 'Fintech / Financial Technology', 'Marketing Technology']);
+const HEALTHCARE   = new Set(['Healthcare & Life Sciences', 'Healthcare Technology / Digital Health', 'Pharmaceuticals & Biotech']);
+const INDUSTRIAL   = new Set(['Manufacturing & Industrial', 'Logistics & Supply Chain', 'Architecture, Engineering & Construction', 'Energy & Utilities', 'Telecommunications']);
+const PROFESSIONAL = new Set(['Legal & Legal Services', 'Legal', 'Accounting & Finance', 'Financial Services & Banking', 'Insurance', 'Human Resources & Recruitment']);
 
 function getFamily(industry: string): IndustryFamily {
-  if (AVIATION.has(industry)) return 'aviation';
-  if (TECH.has(industry)) return 'tech';
+  if (AVIATION.has(industry))     return 'aviation';
+  if (TECH.has(industry))         return 'tech';
+  if (HEALTHCARE.has(industry))   return 'healthcare';
+  if (INDUSTRIAL.has(industry))   return 'industrial';
+  if (PROFESSIONAL.has(industry)) return 'professional';
   return 'b2b';
 }
 
@@ -57,37 +56,67 @@ function getFamily(industry: string): IndustryFamily {
 
 const POSITIONING_EXAMPLES: Record<IndustryFamily, [string, string, string]> = {
   aviation: [
-    'The MRO partner turboprop operators rely on to keep ageing fleets airworthy',
-    'The aircraft leasing advisor growth-stage carriers choose when expanding capacity',
-    'The ground handling specialist trusted by low-cost carriers at high-throughput airports',
+    'The ATC communication systems provider air navigation service providers turn to for safety-critical voice infrastructure',
+    'The MRO partner turboprop operators rely on to keep ageing fleets airworthy and compliant',
+    'The aviation safety consultancy regulators and airlines call when they need independent assurance',
   ],
   tech: [
     'The CRM platform mid-market SaaS revenue teams choose to scale from $5M to $50M ARR',
-    'The cybersecurity platform fintech compliance teams rely on under SOC 2 audit',
+    'The cybersecurity platform fintech compliance teams rely on under SOC 2 and ISO 27001 audit',
     'The DevOps tooling provider engineering leaders turn to when scaling beyond 50 developers',
   ],
+  healthcare: [
+    'The clinical decision support platform hospital systems rely on to reduce diagnostic errors at scale',
+    'The digital health solution NHS and health system procurement teams choose for patient engagement',
+    'The healthcare data analytics partner life sciences teams use to accelerate regulatory submission',
+  ],
+  industrial: [
+    'The supply chain visibility platform manufacturers rely on to eliminate Tier 2 supplier blind spots',
+    'The energy management solution industrial facilities use to achieve ISO 50001 compliance and cut consumption',
+    'The engineering consultancy infrastructure owners trust when assessing structural integrity at scale',
+  ],
+  professional: [
+    'The employment law firm mid-sized employers call when facing workforce restructuring or tribunal risk',
+    'The accounting firm technology businesses trust for R&D tax claims and international structuring',
+    'The HR advisory practice scale-up founders rely on when building their first people function',
+  ],
   b2b: [
-    "The firm businesses call when they need to grow and don't know where to start",
-    'The trusted advisor companies rely on when navigating complex operational change',
-    'The partner established businesses choose when competing in a digital-first market',
+    "The advisory firm businesses call when they need to grow revenue and don't know where to start",
+    'The trusted partner companies rely on when navigating complex operational or strategic change',
+    'The specialist consultancy established businesses choose when competing in a digital-first market',
   ],
 };
 
 const TARGET_QUERIES_EXAMPLES: Record<IndustryFamily, [string, string, string]> = {
   aviation: [
-    'best MRO provider for turboprop fleets · part 145 approved maintenance · heavy maintenance comparison',
-    'aircraft leasing options narrow-body · wet lease vs dry lease · ACMI provider comparisons',
-    'ground handling services comparison · ramp handling providers · airport services contracts',
+    'ATC voice communication systems · air traffic management technology vendors · VCCS systems comparison',
+    'best MRO provider turboprop fleets · Part 145 approved maintenance · heavy maintenance comparison',
+    'aviation safety audit firms · SMS compliance consultancy · airworthiness review specialists',
   ],
   tech: [
     'best CRM for mid-market SaaS · revenue platforms for growth-stage teams · Salesforce alternatives',
-    'best cybersecurity platform for fintech compliance · SOC 2 audit tools · security automation',
-    'best DevOps tools for scaling engineering teams · CI/CD platform comparison · developer productivity',
+    'best cybersecurity platform fintech compliance · SOC 2 audit tools · security posture management',
+    'best DevOps tools scaling engineering teams · CI/CD platform comparison · developer productivity',
+  ],
+  healthcare: [
+    'best clinical decision support software · hospital EHR integration platforms · clinical AI tools',
+    'digital patient engagement platforms · patient portal solutions · telehealth platform comparison',
+    'healthcare analytics platforms · real-world evidence solutions · pharmacovigilance software',
+  ],
+  industrial: [
+    'supply chain visibility software · supplier risk management platforms · manufacturing logistics tools',
+    'energy management software industry · ISO 50001 compliance tools · industrial energy audit',
+    'structural engineering consultants · civil engineering services · infrastructure assessment firms',
+  ],
+  professional: [
+    'employment law advice for employers · workplace dispute specialists · HR legal support firms',
+    'R&D tax credit specialists · international tax structuring advice · corporate tax advisors',
+    'HR advisory for scale-ups · people strategy consultants · fractional HR firms',
   ],
   b2b: [
     'best business advisory firm · business growth consultants · top strategy consultancy',
     'operational change management services · business transformation advisors · change consultants',
-    'digital strategy firms for established businesses · growth advisory services · business consultants',
+    'digital strategy firms established businesses · growth advisory services · business consultants',
   ],
 };
 

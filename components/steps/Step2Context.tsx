@@ -22,26 +22,41 @@ const OCCUPATIONS: Occupation[] = [
 ];
 
 const INDUSTRIES = [
-  'Aviation & Aerospace',
-  'Defense',
-  'B2B SaaS / Enterprise Software',
-  'Cybersecurity',
-  'Cloud Infrastructure',
+  // Technology
   'AI & Machine Learning',
-  'Fintech / Financial Technology',
-  'Financial Services & Banking',
-  'Professional Services',
-  'Consulting & Advisory',
-  'Legal',
+  'B2B SaaS / Enterprise Software',
+  'Cloud Infrastructure & DevOps',
+  'Cybersecurity',
+  'Marketing Technology',
+  // Financial Services
   'Accounting & Finance',
+  'Financial Services & Banking',
+  'Fintech / Financial Technology',
+  'Insurance',
+  // Professional Services
+  'Consulting & Advisory',
+  'Human Resources & Recruitment',
+  'Legal & Legal Services',
+  'Professional Services',
+  // Healthcare & Life Sciences
   'Healthcare & Life Sciences',
-  'Education & Training',
-  'Retail & E-commerce',
-  'Hospitality & Travel',
+  'Healthcare Technology / Digital Health',
+  'Pharmaceuticals & Biotech',
+  // Industrial & Infrastructure
+  'Architecture, Engineering & Construction',
+  'Energy & Utilities',
+  'Logistics & Supply Chain',
   'Manufacturing & Industrial',
+  'Telecommunications',
+  // Government & Regulated Sectors
+  'Aviation, ATC & Aerospace',
+  'Defense & Government Systems',
+  // Consumer & Media
+  'Education & Training',
+  'Hospitality & Travel',
   'Media & Publishing',
   'Real Estate & Property',
-  'Marketing Technology',
+  'Retail & E-commerce',
   'Other',
 ];
 
