@@ -9,7 +9,7 @@ export const metadata: Metadata = {
 const EFFECTIVE_DATE = '19 May 2025';
 const CONTACT_EMAIL  = 'hello@maxifidigital.com';
 const COMPANY_NAME   = 'Maxifi Digital';
-const COMPANY_ENTITY = 'Maxifi Digital Pte. Ltd.';
+const COMPANY_ENTITY = 'Maxifi Digital';
 const COMPANY_COUNTRY = 'Singapore';
 
 export default function PrivacyPage() {
@@ -41,9 +41,10 @@ export default function PrivacyPage() {
           <section>
             <h2 className="text-lg font-bold text-gray-900 mb-3">1. Who we are</h2>
             <p>
-              {COMPANY_ENTITY} ("<strong>{COMPANY_NAME}</strong>", "we", "us", "our") is incorporated
-              in {COMPANY_COUNTRY} and operates the AEO Visibility Snapshot tool at this website.
-              We are the data controller for the personal data described in this policy.
+              {COMPANY_ENTITY} ("<strong>{COMPANY_NAME}</strong>", "we", "us", "our") is a sole
+              proprietorship registered in {COMPANY_COUNTRY} and operates the AEO Visibility Snapshot
+              tool at this website. We are the data controller for the personal data described in
+              this policy.
             </p>
             <p className="mt-3">
               Questions about this policy or your data: <a href={`mailto:${CONTACT_EMAIL}`}
