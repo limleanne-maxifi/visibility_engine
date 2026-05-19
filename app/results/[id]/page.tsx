@@ -1,24 +1,34 @@
+'use client';
+
 import Image from 'next/image';
-import { notFound } from 'next/navigation';
-import { getLeadById } from '@/lib/supabase';
+import { useParams } from 'next/navigation';
+import { useEffect, useState } from 'react';
 import CopyLinkButton from './CopyLinkButton';
 import DownloadPdfButton from './DownloadPdfButton';
 import ShareByEmailButton from './ShareByEmailButton';
 import {
-  getAllCompetitors,
   formatCompetitors,
-  getVisibilityScore,
-  getIndustryBenchmark,
   buyerConversations,
   inferBusinessModel,
   getPipelineLabel,
 } from '@/lib/scoring';
+import type {
+  FreeReportResponse,
+  FullReportSections,
+} from '@/lib/types-v2';
 
-interface Props {
-  params: Promise<{ id: string }>;
-}
+// ─── Reverse-map failure mode → awareness string ──────────────────────────────
 
-// ─── Data helpers ─────────────────────────────────────────────────────────────
+const FAILURE_MODE_TO_AWARENESS: Record<string, string> = {
+  not_structured: "Yes — but I wasn't mentioned at all",
+  inaccurate:     'Yes — but details about me were wrong',
+  displaced:      'Yes — competitors were cited instead of me',
+  stale:          'Yes — but old/outdated info appeared',
+  untested:       "No, I haven't tried this yet",
+  low_authority:  'Yes — and the results were accurate',
+};
+
+// ─── Data helpers (kept as fallback) ─────────────────────────────────────────
 
 function deriveQueries(
   entityName: string,
@@ -55,8 +65,6 @@ function getPlatformSearchUrl(platform: string, query: string): string {
   }
 }
 
-// ─── Platform matrix ──────────────────────────────────────────────────────────
-
 const ALL_PLATFORMS = ['ChatGPT', 'Google AI Overviews', 'Perplexity', 'Microsoft Copilot', 'Claude', 'Gemini'];
 
 type PlatformStatus = 'cited' | 'displaced' | 'missing' | 'inaccurate' | 'stale' | 'unknown';
@@ -68,12 +76,10 @@ function getPlatformStatuses(
 ): Record<string, PlatformStatus> {
   const out: Record<string, PlatformStatus> = {};
   for (const p of ALL_PLATFORMS) out[p] = 'unknown';
-
   const mark = (status: PlatformStatus) => {
     if (primary && ALL_PLATFORMS.includes(primary)) out[primary] = status;
     if (secondary && ALL_PLATFORMS.includes(secondary)) out[secondary] = status;
   };
-
   switch (awareness) {
     case 'Yes — and the results were accurate':           mark('cited');      break;
     case "Yes — but I wasn't mentioned at all":           mark('missing');    break;
@@ -85,16 +91,13 @@ function getPlatformStatuses(
 }
 
 const PLATFORM_STATUS_STYLES: Record<PlatformStatus, { label: string; cls: string }> = {
-  cited:      { label: 'Cited ✓',     cls: 'bg-emerald-100 text-emerald-700 border-emerald-200' },
-  displaced:  { label: 'Competitor',  cls: 'bg-red-100 text-red-700 border-red-200' },
-  missing:    { label: 'Not found',   cls: 'bg-red-100 text-red-700 border-red-200' },
+  cited:      { label: 'Cited ✓',            cls: 'bg-emerald-100 text-emerald-700 border-emerald-200' },
+  displaced:  { label: 'Competitor',          cls: 'bg-red-100 text-red-700 border-red-200' },
+  missing:    { label: 'Not found',           cls: 'bg-red-100 text-red-700 border-red-200' },
   inaccurate: { label: 'Cited — wrong info',  cls: 'bg-orange-100 text-orange-700 border-orange-200' },
   stale:      { label: 'Cited — outdated',    cls: 'bg-amber-100 text-amber-700 border-amber-200' },
-  unknown:    { label: 'Not checked', cls: 'bg-gray-100 text-gray-400 border-gray-200' },
+  unknown:    { label: 'Not checked',         cls: 'bg-gray-100 text-gray-400 border-gray-200' },
 };
-
-// ─── Finding block helpers ────────────────────────────────────────────────────
-
 
 function getRootCauses(
   awareness: string,
@@ -106,7 +109,6 @@ function getRootCauses(
   const compStr = formatCompetitors(competitors);
   const plural = competitors.length > 1;
   const compVerb = hasComp ? `${compStr} ${plural ? 'have' : 'has'}` : 'Leading brands in your category have';
-
   switch (awareness) {
     case "Yes — but I wasn't mentioned at all":
       return [
@@ -141,8 +143,6 @@ function getRootCauses(
   }
 }
 
-// ─── Three-gap content helpers ────────────────────────────────────────────────
-
 function getGap1Specific(
   awareness: string,
   entityName: string,
@@ -154,7 +154,6 @@ function getGap1Specific(
   const hasComp = competitors.length > 0;
   const compStr = formatCompetitors(competitors);
   const plural = competitors.length > 1;
-
   switch (awareness) {
     case "Yes — but I wasn't mentioned at all":
       return `Based on this snapshot, ${entityName} is not being surfaced when buyers search for ${industry} recommendations on ${plat}. Content structure is one of the most common reasons — the full report analyses the specific cause.`;
@@ -199,8 +198,6 @@ function getGap3Specific(
   }
   return `Third-party references from recognised sources in ${industry} — directories, analyst platforms, review sites — increase the likelihood of AI citation. When AI encounters a brand name, it checks whether trusted external sources confirm it. Based on what you've reported, building more consistent third-party references is likely a contributing factor to your current visibility position for ${entityName}.`;
 }
-
-// ─── Scoring methodology helpers ─────────────────────────────────────────────
 
 function getScoringRows(
   awareness: string,
@@ -249,14 +246,12 @@ function getScoringRows(
       : { result: 'Based on self-reported assessment', bad: false };
 
   return [
-    { signal: 'Platform presence', measured: 'Are you cited on any AI platform your buyers use?', ...platformEntry, weight: '30%' },
-    { signal: 'Competitor displacement', measured: 'Do competitors appear instead of you on your core queries?', ...displacementEntry, weight: '30%' },
-    { signal: 'Query coverage', measured: 'How many of your target queries return your brand?', ...queryEntry, weight: '25%' },
-    { signal: 'Awareness consistency', measured: 'Does AI produce consistent, accurate information about your brand when asked directly?', ...consistencyEntry, weight: '15%' },
+    { signal: 'Platform presence',        measured: 'Are you cited on any AI platform your buyers use?',                                           ...platformEntry,    weight: '30%' },
+    { signal: 'Competitor displacement',  measured: 'Do competitors appear instead of you on your core queries?',                                  ...displacementEntry, weight: '30%' },
+    { signal: 'Query coverage',           measured: 'How many of your target queries return your brand?',                                          ...queryEntry,       weight: '25%' },
+    { signal: 'Awareness consistency',    measured: 'Does AI produce consistent, accurate information about your brand when asked directly?',      ...consistencyEntry, weight: '15%' },
   ];
 }
-
-// ─── Opportunity framing helpers ──────────────────────────────────────────────
 
 function getOpportunityContent(
   awareness: string,
@@ -299,8 +294,6 @@ function getOpportunityContent(
       };
   }
 }
-
-// ─── Section headline helpers ─────────────────────────────────────────────────
 
 function getPageHeadline(awareness: string, entityName: string, score: number, benchAvg: number): string {
   switch (awareness) {
@@ -369,63 +362,419 @@ function getRootCauseHeadline(awareness: string): string {
   }
 }
 
+// ─── Full-fetch status type ───────────────────────────────────────────────────
+
+type FullFetchStatus = 'idle' | 'loading' | 'loaded' | 'payment_required' | 'generating' | 'no_session' | 'error';
+
+// ─── Skeleton ─────────────────────────────────────────────────────────────────
+
+function Skeleton({ className }: { className?: string }) {
+  return <div className={`animate-pulse bg-gray-200 rounded ${className ?? ''}`} />;
+}
+
 // ─── Page ─────────────────────────────────────────────────────────────────────
 
-export default async function ResultsPage({ params }: Props) {
-  const { id } = await params;
-  const lead = await getLeadById(id);
-  if (!lead) notFound();
+export default function ResultsPage() {
+  const params     = useParams();
+  const snapshotId = params.id as string;
 
-  const reportUrl    = process.env.REPORT_CHECKOUT_URL  ?? process.env.CALENDLY_URL ?? 'https://calendly.com/maxifi-digital';
-  const monitorUrl   = process.env.MONITOR_CHECKOUT_URL ?? process.env.CALENDLY_URL ?? 'https://calendly.com/maxifi-digital';
-  const calendlyUrl  = process.env.CALENDLY_URL ?? 'https://calendly.com/maxifi-digital';
-  const contactEmail = process.env.MAXIFI_CONTACT_EMAIL ?? 'letsgetstarted@maxifidigital.com';
+  const [freeData,    setFreeData]    = useState<FreeReportResponse | null>(null);
+  const [fullData,    setFullData]    = useState<FullReportSections | null>(null);
+  const [freeLoading, setFreeLoading] = useState(true);
+  const [fullStatus,  setFullStatus]  = useState<FullFetchStatus>('idle');
+  const [gateEmail,   setGateEmail]   = useState('');
+  const [gateStatus,  setGateStatus]  = useState<'idle' | 'submitting' | 'sent' | 'error'>('idle');
+  const [gateError,   setGateError]   = useState('');
+  const [unlockLoading, setUnlockLoading] = useState(false);
 
-  const competitors  = getAllCompetitors(lead.competitors);
-  const score        = getVisibilityScore(lead.awareness, competitors);
-  const benchAvg     = getIndustryBenchmark(lead.industry);
-  const platforms    = getPlatformStatuses(lead.awareness, lead.platform, lead.platform_other);
+  useEffect(() => {
+    if (!snapshotId) return;
+    setFreeLoading(true);
+    setFullStatus('loading');
 
-  const entityName       = lead.company_name ?? lead.first_name;
-  const derivedQueries   = deriveQueries(entityName, lead.positioning, lead.target_queries);
+    Promise.all([
+      fetch(`/api/report/${snapshotId}/free`),
+      fetch(`/api/report/${snapshotId}/full`),
+    ]).then(async ([freeRes, fullRes]) => {
+      if (freeRes.ok) {
+        const data = await freeRes.json();
+        setFreeData(data);
+      }
+      setFreeLoading(false);
 
-  const snapshotDate     = new Date(lead.created_at).toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' });
-  const checkedPlatforms = ALL_PLATFORMS.filter((p) => platforms[p] !== 'unknown');
+      if (fullRes.status === 200) {
+        const data = await fullRes.json();
+        setFullData(data.sections);
+        setFullStatus('loaded');
+      } else if (fullRes.status === 202) {
+        setFullStatus('generating');
+      } else if (fullRes.status === 401) {
+        const data = await fullRes.json().catch(() => ({}));
+        setFullStatus(data.code === 'PAYMENT_REQUIRED' ? 'payment_required' : 'no_session');
+      } else if (fullRes.status === 403) {
+        setFullStatus('payment_required');
+      } else {
+        setFullStatus('no_session');
+      }
+    }).catch(() => {
+      setFreeLoading(false);
+      setFullStatus('no_session');
+    });
+  }, [snapshotId]);
 
-  const gap             = benchAvg - score;
-  const { x: buyerX, y: buyerY } = buyerConversations(score, benchAvg);
-  const businessModel   = inferBusinessModel(lead.industry);
-  const pipelineLabel   = getPipelineLabel(businessModel);
-
-  const rootCauses   = getRootCauses(lead.awareness, entityName, lead.industry, competitors);
-  const scoringRows  = getScoringRows(lead.awareness, competitors, derivedQueries.length);
-  const opportunity  = getOpportunityContent(lead.awareness, entityName, competitors);
-
-  const gap1Text = getGap1Specific(lead.awareness, entityName, lead.industry, competitors, lead.platform);
-  const gap2Text = getGap2Specific(entityName, lead.industry, competitors, score, benchAvg);
-  const gap3Text = getGap3Specific(entityName, lead.industry, lead.awareness);
-
-  const pageHeadline        = getPageHeadline(lead.awareness, entityName, score, benchAvg);
-  const scoreHeadline       = getScoreHeadline(score, benchAvg, lead.industry);
-  const competitiveHeadline = getCompetitiveHeadline(score, benchAvg, lead.industry, competitors);
-  const citationHeadline    = getCitationHeadline(lead.awareness, checkedPlatforms.length, entityName);
-  const rootCauseHeadline   = getRootCauseHeadline(lead.awareness);
-
-  console.log('[results] id:', lead.id, '| awareness:', lead.awareness, '| competitors:', lead.competitors, '| company_name:', lead.company_name, '| target_queries:', lead.target_queries, '| positioning:', lead.positioning, '| platform:', lead.platform);
-
-  const buyerQuery = (() => {
-    if (lead.target_queries?.trim()) {
-      const q = lead.target_queries.split(/[,;\n]/)[0].trim();
-      if (q) return q;
+  async function handleGateSubmit(e: React.FormEvent) {
+    e.preventDefault();
+    setGateStatus('submitting');
+    setGateError('');
+    try {
+      const res = await fetch('/api/gate', {
+        method:  'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body:    JSON.stringify({ email: gateEmail, snapshot_id: snapshotId }),
+      });
+      if (res.status === 200 || res.status === 202) {
+        setGateStatus('sent');
+      } else {
+        const data = await res.json().catch(() => ({}));
+        setGateError(data.error ?? 'Something went wrong. Please try again.');
+        setGateStatus('error');
+      }
+    } catch {
+      setGateError('Network error. Please try again.');
+      setGateStatus('error');
     }
-    if (lead.positioning?.trim()) return lead.positioning.trim().slice(0, 120);
-    return `best ${lead.industry} firms`;
-  })();
+  }
 
-  const isGenericQuery = !lead.target_queries?.trim() && !lead.positioning?.trim();
-  const isPlatformEmbeddable = false; // Perplexity and all platforms block iframe embedding
-  const platformSearchUrl    = getPlatformSearchUrl(lead.platform, buyerQuery);
-  const verifyPlatformName   = lead.platform || 'ChatGPT';
+  async function handleUnlock() {
+    setUnlockLoading(true);
+    try {
+      const res = await fetch('/api/stripe/checkout', {
+        method:  'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body:    JSON.stringify({ snapshot_id: snapshotId }),
+      });
+      if (res.ok) {
+        const data = await res.json();
+        window.location.href = data.checkout_url;
+        return;
+      }
+      if (res.status === 401) {
+        setFullStatus('no_session');
+      }
+    } catch {
+      // swallow — button re-enables
+    }
+    setUnlockLoading(false);
+  }
+
+  // ── Derived values from API sections ─────────────────────────────────────────
+
+  const cs = freeData?.sections.citation_snapshot;
+  const fd = freeData?.sections.failure_mode_diagnosis;
+  const bc = freeData?.sections.benchmark_comparison;
+
+  const awareness  = FAILURE_MODE_TO_AWARENESS[fd?.primary_failure_mode ?? ''] ?? '';
+  const entityName = 'your brand';
+  const competitors: string[] = [];
+
+  const score    = bc?.score    ?? 0;
+  const benchAvg = bc?.benchmark ?? 50;
+  const industry = bc?.industry  ?? '';
+  const gap      = bc?.gap       ?? (benchAvg - score);
+
+  const { x: buyerX, y: buyerY } = bc
+    ? { x: bc.buyer_x, y: bc.buyer_y }
+    : buyerConversations(score, benchAvg);
+
+  const businessModel = inferBusinessModel(industry);
+  const pipelineLabel = getPipelineLabel(businessModel);
+
+  const buyerQuery     = cs?.query_used      ?? `best ${industry} firms`;
+  const isGenericQuery = cs?.query_is_generic ?? true;
+  const snapshotDate   = cs?.tested_date     ?? '';
+
+  const checkedPlatforms = cs?.platforms.filter((p) => p.status !== 'unknown') ?? [];
+  const primaryPlatform  = checkedPlatforms[0];
+  const verifyPlatformName = primaryPlatform?.name ?? 'ChatGPT';
+  const platformSearchUrl  = primaryPlatform?.search_url ?? getPlatformSearchUrl('ChatGPT', buyerQuery);
+
+  // Use pre-generated text from API where available, helpers as fallback
+  const opportunityFromApi = fd
+    ? { headline: fd.opportunity_headline, body: fd.opportunity_body, displaced: fd.primary_failure_mode === 'displaced' }
+    : null;
+  const opportunity = opportunityFromApi ?? getOpportunityContent(awareness, entityName, competitors);
+
+  const rootCausesFromApi = fd?.root_causes.map((rc) => rc.cause);
+  const rootCauses        = rootCausesFromApi ?? getRootCauses(awareness, entityName, industry, competitors);
+
+  const scoringRows         = getScoringRows(awareness, competitors, Math.max(checkedPlatforms.length, 1));
+  const gap1Text            = getGap1Specific(awareness, entityName, industry, competitors, primaryPlatform?.name ?? '');
+  const gap2Text            = getGap2Specific(entityName, industry, competitors, score, benchAvg);
+  const gap3Text            = getGap3Specific(entityName, industry, awareness);
+  const pageHeadline        = getPageHeadline(awareness, entityName, score, benchAvg);
+  const scoreHeadline       = getScoreHeadline(score, benchAvg, industry);
+  const competitiveHeadline = getCompetitiveHeadline(score, benchAvg, industry, competitors);
+  const citationHeadline    = getCitationHeadline(awareness, checkedPlatforms.length, entityName);
+  const rootCauseHeadline   = getRootCauseHeadline(awareness);
+
+  const reportUrl   = process.env.NEXT_PUBLIC_REPORT_CHECKOUT_URL  ?? process.env.NEXT_PUBLIC_CALENDLY_URL ?? 'https://calendly.com/maxifi-digital';
+  const monitorUrl  = process.env.NEXT_PUBLIC_MONITOR_CHECKOUT_URL ?? process.env.NEXT_PUBLIC_CALENDLY_URL ?? 'https://calendly.com/maxifi-digital';
+  const calendlyUrl = process.env.NEXT_PUBLIC_CALENDLY_URL ?? 'https://calendly.com/maxifi-digital';
+  const contactEmail = process.env.NEXT_PUBLIC_CONTACT_EMAIL ?? 'letsgetstarted@maxifidigital.com';
+
+  // ── Loading skeleton ──────────────────────────────────────────────────────────
+
+  if (freeLoading) {
+    return (
+      <div className="min-h-screen bg-[#152438] flex flex-col">
+        <header className="flex items-center justify-between px-6 sm:px-8 h-14 border-b border-white/[0.07] bg-[#091521]/80 backdrop-blur-sm flex-shrink-0">
+          <Image src="/maxifi-logo-white.png" alt="Maxifi Digital" height={28} width={140} className="h-7 w-auto" />
+        </header>
+        <div className="py-10 px-4">
+          <div className="max-w-[640px] mx-auto space-y-4">
+            <Skeleton className="h-8 w-3/4" />
+            <Skeleton className="h-4 w-1/2" />
+            <Skeleton className="h-64 w-full" />
+            <Skeleton className="h-48 w-full" />
+            <Skeleton className="h-48 w-full" />
+            <Skeleton className="h-32 w-full" />
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  if (!freeData) {
+    return (
+      <div className="min-h-screen bg-[#152438] flex items-center justify-center">
+        <p className="text-white/60 text-sm">Report not found.</p>
+      </div>
+    );
+  }
+
+  // ── Sections 5-8 renderers ────────────────────────────────────────────────────
+
+  function renderGateForm() {
+    return (
+      <div className="bg-white rounded-xl border-2 border-[#C87A2F] p-6 mb-8">
+        <h2 className="text-base font-bold text-gray-900 mb-2">Get your full AI Visibility Report</h2>
+        <p className="text-sm text-gray-600 mb-4 leading-relaxed">
+          Enter your email to receive a magic link. Your full report includes competitor displacement analysis, positioning gaps, query coverage, and a 60-day action queue.
+        </p>
+        {gateStatus === 'sent' ? (
+          <div className="rounded-lg bg-emerald-50 border border-emerald-200 px-4 py-3">
+            <p className="text-sm text-emerald-800 font-medium">Check your inbox — we&rsquo;ve sent you a magic link to view your full report.</p>
+          </div>
+        ) : (
+          <form onSubmit={handleGateSubmit} className="flex gap-2">
+            <input
+              type="email"
+              required
+              value={gateEmail}
+              onChange={(e) => setGateEmail(e.target.value)}
+              placeholder="your@email.com"
+              className="flex-1 text-sm border border-gray-200 rounded-lg px-3 py-2.5 focus:outline-none focus:ring-2 focus:ring-[#C87A2F]/40 focus:border-[#C87A2F]"
+            />
+            <button
+              type="submit"
+              disabled={gateStatus === 'submitting'}
+              className="text-sm font-semibold text-white bg-[#C87A2F] hover:bg-[#A8651E] rounded-lg px-4 py-2.5 transition-colors disabled:opacity-60 whitespace-nowrap"
+            >
+              {gateStatus === 'submitting' ? 'Sending…' : 'Send link'}
+            </button>
+          </form>
+        )}
+        {gateStatus === 'error' && gateError && (
+          <p className="text-sm text-red-600 mt-2">{gateError}</p>
+        )}
+      </div>
+    );
+  }
+
+  function renderLockedSections() {
+    const LOCKED_SECTIONS = [
+      { title: 'Competitor displacement analysis', subtitle: 'Which competitors AI is citing instead of you, and why.' },
+      { title: 'Positioning gap',                  subtitle: 'How your content is structured vs. what AI needs to cite you.' },
+      { title: 'Query gap analysis',               subtitle: 'Which buyer queries you are missing and what to target.' },
+      { title: '60-day action queue',              subtitle: 'Every fix, in order of impact, with effort estimates.' },
+    ];
+    return (
+      <div className="mb-8">
+        <div className="flex items-start justify-between gap-4 mb-5">
+          <div>
+            <h2 className="text-xl font-bold text-gray-900">Full AI Visibility Report</h2>
+            <p className="text-sm text-gray-500 mt-1">Four sections. One-time unlock. No subscription.</p>
+          </div>
+          <button
+            onClick={handleUnlock}
+            disabled={unlockLoading}
+            className="flex-shrink-0 text-sm font-semibold text-white bg-[#C87A2F] hover:bg-[#A8651E] rounded-lg px-4 py-2.5 transition-colors disabled:opacity-60 whitespace-nowrap"
+          >
+            {unlockLoading ? 'Redirecting…' : 'Unlock — SGD 299'}
+          </button>
+        </div>
+        <div className="space-y-4">
+          {LOCKED_SECTIONS.map((s) => (
+            <div key={s.title} className="relative bg-white rounded-xl border border-gray-100 shadow-sm p-6 overflow-hidden">
+              <div className="blur-sm select-none pointer-events-none">
+                <p className="text-xs font-semibold text-gray-400 uppercase tracking-wide mb-2">{s.title}</p>
+                <p className="text-base font-bold text-gray-900 mb-4">{s.subtitle}</p>
+                <div className="space-y-2">
+                  <div className="h-3 bg-gray-100 rounded w-full" />
+                  <div className="h-3 bg-gray-100 rounded w-5/6" />
+                  <div className="h-3 bg-gray-100 rounded w-4/6" />
+                  <div className="h-3 bg-gray-100 rounded w-full" />
+                  <div className="h-3 bg-gray-100 rounded w-3/4" />
+                </div>
+              </div>
+              <div className="absolute inset-0 flex items-center justify-center bg-white/70 backdrop-blur-[1px]">
+                <div className="flex flex-col items-center gap-1.5">
+                  <svg className="w-5 h-5 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                    <path strokeLinecap="round" strokeLinejoin="round" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
+                  </svg>
+                  <span className="text-xs text-gray-500 font-medium">Unlock to view</span>
+                </div>
+              </div>
+            </div>
+          ))}
+        </div>
+      </div>
+    );
+  }
+
+  function renderGeneratingPlaceholder() {
+    return (
+      <div className="bg-white rounded-xl border border-gray-100 shadow-sm p-6 mb-8">
+        <div className="flex items-center gap-3 mb-3">
+          <div className="w-2 h-2 bg-[#C87A2F] rounded-full animate-pulse" />
+          <p className="text-sm font-semibold text-gray-700">Generating your full report…</p>
+        </div>
+        <p className="text-sm text-gray-500 leading-relaxed">
+          Your competitor displacement analysis, positioning gap, query gap, and 60-day action queue are being prepared. This takes about 30–60 seconds. Refresh the page to check.
+        </p>
+      </div>
+    );
+  }
+
+  function renderUnlockedSections() {
+    if (!fullData) return null;
+    const cd = fullData.competitor_displacement;
+    const pg = fullData.positioning_gap;
+    const qg = fullData.query_gap;
+    const aq = fullData.action_queue;
+
+    return (
+      <div className="mb-8">
+        {/* Section 5 — Competitor Displacement */}
+        <div className="bg-white rounded-xl border border-gray-100 shadow-sm p-6 mb-4">
+          <p className="text-xs font-semibold text-gray-400 uppercase tracking-wide mb-2">Competitor displacement analysis</p>
+          <p className="text-base font-bold text-gray-900 leading-snug mb-4">{cd.displacement_summary}</p>
+          {cd.competitors.length > 0 ? (
+            <div className="space-y-3 mb-4">
+              {cd.competitors.map((comp) => (
+                <div key={comp.name} className="rounded-lg bg-gray-50 border border-gray-100 px-4 py-3">
+                  <div className="flex items-center justify-between gap-2 mb-1">
+                    <span className="text-sm font-semibold text-gray-900">{comp.name}</span>
+                    {comp.displacement_likely && (
+                      <span className="text-[11px] font-medium px-2 py-0.5 rounded border bg-red-100 text-red-700 border-red-200 whitespace-nowrap">Displacing you</span>
+                    )}
+                  </div>
+                  <p className="text-sm text-gray-600 leading-relaxed">{comp.ai_generated_assessment}</p>
+                </div>
+              ))}
+            </div>
+          ) : (
+            <p className="text-sm text-gray-500 mb-4">No named competitors were provided — the analysis reflects general category displacement patterns.</p>
+          )}
+          <p className="text-sm text-gray-700 leading-relaxed">{cd.ai_narrative}</p>
+        </div>
+
+        {/* Section 6 — Positioning Gap */}
+        <div className="bg-white rounded-xl border border-gray-100 shadow-sm p-6 mb-4">
+          <p className="text-xs font-semibold text-gray-400 uppercase tracking-wide mb-2">Positioning gap</p>
+          <p className="text-base font-bold text-gray-900 leading-snug mb-4">{pg.gap_summary}</p>
+          {pg.content_structure_issues.length > 0 && (
+            <ul className="space-y-2 mb-4">
+              {pg.content_structure_issues.map((issue, i) => (
+                <li key={i} className="flex items-start gap-2 text-sm text-gray-700">
+                  <span className="flex-shrink-0 text-[#C87A2F] font-bold mt-0.5">▸</span>
+                  {issue}
+                </li>
+              ))}
+            </ul>
+          )}
+          <div className="rounded-lg bg-[#FDF1E6] border border-amber-200 px-4 py-3 mb-4">
+            <p className="text-xs font-semibold text-[#7a4a10] uppercase tracking-wide mb-1">Recommended angle</p>
+            <p className="text-sm text-[#7a4a10] leading-relaxed">{pg.recommended_angle}</p>
+          </div>
+          <p className="text-sm text-gray-700 leading-relaxed">{pg.ai_narrative}</p>
+        </div>
+
+        {/* Section 7 — Query Gap */}
+        <div className="bg-white rounded-xl border border-gray-100 shadow-sm p-6 mb-4">
+          <p className="text-xs font-semibold text-gray-400 uppercase tracking-wide mb-2">Query gap analysis</p>
+          <p className="text-base font-bold text-gray-900 leading-snug mb-4">{qg.coverage_assessment}</p>
+          {qg.missing_query_types.length > 0 && (
+            <div className="mb-4">
+              <p className="text-xs text-gray-400 uppercase tracking-wide font-semibold mb-2">Query types you are missing</p>
+              <ul className="space-y-1">
+                {qg.missing_query_types.map((qt, i) => (
+                  <li key={i} className="flex items-start gap-2 text-sm text-gray-700">
+                    <span className="text-red-400 font-bold mt-0.5 flex-shrink-0">✕</span>
+                    {qt}
+                  </li>
+                ))}
+              </ul>
+            </div>
+          )}
+          {qg.recommended_queries.length > 0 && (
+            <div className="mb-4">
+              <p className="text-xs text-gray-400 uppercase tracking-wide font-semibold mb-2">Recommended queries to target</p>
+              <ul className="space-y-1.5">
+                {qg.recommended_queries.map((q, i) => (
+                  <li key={i} className="font-mono text-sm text-emerald-700 bg-emerald-50 rounded px-3 py-1.5">&ldquo;{q}&rdquo;</li>
+                ))}
+              </ul>
+            </div>
+          )}
+          <p className="text-sm text-gray-700 leading-relaxed">{qg.ai_narrative}</p>
+        </div>
+
+        {/* Section 8 — 60-Day Action Queue */}
+        <div className="bg-white rounded-xl border border-gray-100 shadow-sm p-6 mb-4">
+          <p className="text-xs font-semibold text-gray-400 uppercase tracking-wide mb-2">60-day action queue</p>
+          <p className="text-base font-bold text-gray-900 leading-snug mb-1">
+            {aq.total_steps} actions — start here first:
+          </p>
+          <p className="text-sm text-[#C87A2F] font-medium mb-4">{aq.quick_win}</p>
+          <div className="space-y-3">
+            {aq.steps.map((step) => (
+              <div key={step.num} className="rounded-lg border border-gray-100 bg-gray-50 px-4 py-3">
+                <div className="flex items-start justify-between gap-2 mb-1">
+                  <div className="flex items-center gap-2 flex-1 min-w-0">
+                    <span className="flex-shrink-0 w-5 h-5 rounded-full bg-[#C87A2F] text-white text-xs font-bold flex items-center justify-center">{step.num}</span>
+                    <p className="text-sm font-semibold text-gray-900">{step.title}</p>
+                  </div>
+                  <div className="flex gap-1 flex-shrink-0 flex-wrap justify-end">
+                    <span className={`text-[10px] font-medium px-1.5 py-0.5 rounded border whitespace-nowrap ${step.effort === 'low' ? 'bg-emerald-50 text-emerald-700 border-emerald-200' : step.effort === 'medium' ? 'bg-amber-50 text-amber-700 border-amber-200' : 'bg-red-50 text-red-700 border-red-200'}`}>
+                      {step.effort} effort
+                    </span>
+                    <span className={`text-[10px] font-medium px-1.5 py-0.5 rounded border whitespace-nowrap ${step.impact === 'high' ? 'bg-emerald-50 text-emerald-700 border-emerald-200' : step.impact === 'medium' ? 'bg-amber-50 text-amber-700 border-amber-200' : 'bg-gray-50 text-gray-500 border-gray-200'}`}>
+                      {step.impact} impact
+                    </span>
+                    <span className="text-[10px] text-gray-400 font-medium px-1.5 py-0.5 whitespace-nowrap">Wk {step.week}</span>
+                  </div>
+                </div>
+                <p className="text-sm text-gray-600 leading-relaxed pl-7">{step.body}</p>
+              </div>
+            ))}
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  // ── Main render ───────────────────────────────────────────────────────────────
 
   return (
     <div className="min-h-screen bg-[#152438] flex flex-col">
@@ -433,16 +782,11 @@ export default async function ResultsPage({ params }: Props) {
         @media print {
           body { background: white !important; font-size: 11pt; }
           .print\\:hidden { display: none !important; }
-          /* Remove shadows and backgrounds for clean print */
           * { box-shadow: none !important; }
-          /* Page breaks */
           .page-break-before { page-break-before: always; }
-          /* Force URLs visible for booking links */
           a[href]::after { content: " (" attr(href) ")"; font-size: 9pt; color: #C87A2F; }
           a[href^="mailto"]::after, a[href^="javascript"]::after, a[href="#"]::after { content: none; }
-          /* Hide search/interactive links in print — shown inline only */
           .no-print-url::after { content: none !important; }
-          /* Scale for A4 */
           @page { margin: 18mm 15mm; size: A4; }
         }
       `}</style>
@@ -461,18 +805,9 @@ export default async function ResultsPage({ params }: Props) {
         {/* 1. Header */}
         <div className="mb-8">
           <div className="flex items-center w-full mb-4 pb-4 border-b border-gray-100">
-            {/* Logo — flush left */}
             <div className="flex-none">
-              <Image
-                src="/maxifi-logo-black.png"
-                alt="Maxifi Digital"
-                height={60}
-                width={300}
-                className="h-[60px] w-auto"
-              />
+              <Image src="/maxifi-logo-black.png" alt="Maxifi Digital" height={60} width={300} className="h-[60px] w-auto" />
             </div>
-
-            {/* Title — 50px from logo, centred in remaining space */}
             <div className="flex-1 flex justify-start min-w-0 pl-[16px]">
               <p
                 className="text-2xl whitespace-nowrap"
@@ -483,10 +818,10 @@ export default async function ResultsPage({ params }: Props) {
             </div>
           </div>
           <h1 className="text-2xl font-bold text-gray-900 leading-snug mb-2">
-            {toTitleCase(lead.first_name)}&rsquo;s AI Visibility Snapshot
+            AI Visibility Snapshot
           </h1>
           <p className="text-sm text-gray-500 mb-5">
-            {entityName} · {lead.industry} · {lead.occupation} · Generated {snapshotDate}
+            {industry}{industry && snapshotDate ? ' · ' : ''}{snapshotDate ? `Generated ${snapshotDate}` : ''}
           </p>
           <p className="text-lg font-bold text-gray-900 leading-snug">{pageHeadline}</p>
         </div>
@@ -535,7 +870,7 @@ export default async function ResultsPage({ params }: Props) {
               </p>
               <ul className="space-y-1.5 text-sm text-blue-100">
                 <li className="flex items-start gap-2"><span className="mt-0.5 text-blue-400">▸</span><span>{entityName} appears in approximately <strong className="text-white">{buyerX} in 10</strong> cases where {pipelineLabel.action} in your category.</span></li>
-                <li className="flex items-start gap-2"><span className="mt-0.5 text-blue-400">▸</span><span>{competitors.length > 0 ? 'Your named competitors appear' : `Brands at the ${lead.industry} benchmark appear`} in <strong className="text-white">{buyerY} or more</strong> of those same situations.</span></li>
+                <li className="flex items-start gap-2"><span className="mt-0.5 text-blue-400">▸</span><span>{competitors.length > 0 ? 'Your named competitors appear' : `Brands at the ${industry} benchmark appear`} in <strong className="text-white">{buyerY} or more</strong> of those same situations.</span></li>
                 {buyerY - buyerX > 0 && (
                   <li className="flex items-start gap-2"><span className="mt-0.5 text-blue-400">▸</span><span>Closing to benchmark could unlock <strong className="text-white">{buyerY - buyerX} additional {pipelineLabel.referral}{buyerY - buyerX > 1 ? 's' : ''}</strong> per 10 opportunities.</span></li>
                 )}
@@ -547,8 +882,8 @@ export default async function ResultsPage({ params }: Props) {
           <div className="mt-3 pt-3 border-t border-gray-100">
             <p className="text-xs text-gray-500 leading-relaxed">
               This score reflects how consistently your brand appears in AI-generated responses across the platforms your buyers use.
-              The indicative benchmark for {lead.industry || 'your sector'} is <strong>{benchAvg}%</strong> — based on Maxifi Digital&rsquo;s analysis of citation patterns across industries.
-              {businessModel === 'B2G'
+              The indicative benchmark for {industry || 'your sector'} is <strong>{benchAvg}%</strong> — based on Maxifi Digital&rsquo;s analysis of citation patterns across industries.
+              {inferBusinessModel(industry) === 'B2G'
                 ? ' For procurement-led sectors, this benchmark reflects AI citation during vendor research and due diligence — not transactional referrals.'
                 : ' Brands scoring below 30% are typically invisible in AI buyer journeys.'
               }
@@ -572,25 +907,14 @@ export default async function ResultsPage({ params }: Props) {
               </tr>
             </thead>
             <tbody>
-              {competitors.length > 0
-                ? competitors.map((comp, i) => (
-                    <tr key={comp} className="border-b border-gray-50">
-                      <td className="py-3 pr-4 text-xs text-gray-400 whitespace-nowrap">{i === 0 ? 'Competitor' : ''}</td>
-                      <td className="py-3 pr-4 font-medium text-gray-900">{comp}</td>
-                      <td className="py-3 text-right text-xs text-gray-400 whitespace-nowrap">Est. above median</td>
-                    </tr>
-                  ))
-                : (
-                    <tr className="border-b border-dashed border-gray-200">
-                      <td className="py-3 pr-4 text-xs text-gray-400 whitespace-nowrap">Competitor</td>
-                      <td className="py-3 pr-4 text-gray-400 italic">Not yet compared</td>
-                      <td className="py-3 text-right text-gray-400">—</td>
-                    </tr>
-                  )
-              }
+              <tr className="border-b border-dashed border-gray-200">
+                <td className="py-3 pr-4 text-xs text-gray-400 whitespace-nowrap">Competitor</td>
+                <td className="py-3 pr-4 text-gray-400 italic">Not yet compared</td>
+                <td className="py-3 text-right text-gray-400">—</td>
+              </tr>
               <tr className="border-b border-gray-50">
                 <td className="py-3 pr-4 text-xs text-gray-400 whitespace-nowrap">Industry median</td>
-                <td className="py-3 pr-4 text-gray-600">{lead.industry || 'Your industry'}</td>
+                <td className="py-3 pr-4 text-gray-600">{industry || 'Your industry'}</td>
                 <td className="py-3 text-right text-gray-600">{benchAvg}%</td>
               </tr>
               <tr className={`border-b border-gray-100 ${score < benchAvg ? 'bg-red-50/40' : 'bg-emerald-50/40'}`}>
@@ -612,15 +936,9 @@ export default async function ResultsPage({ params }: Props) {
             </tbody>
           </table>
           </div>
-          {competitors.length === 0 && (
-            <p className="text-xs text-[#C87A2F] font-medium mt-4">
-              Add your closest competitors above to see how their AI visibility compares to yours — and who is leading in your category.
-            </p>
-          )}
-
         </div>
 
-        {/* 3. Structured finding block */}
+        {/* 4. Structured finding block */}
         <div className="bg-white rounded-xl border border-gray-100 shadow-sm overflow-hidden mb-4">
 
           {/* Opportunity framing */}
@@ -632,11 +950,11 @@ export default async function ResultsPage({ params }: Props) {
             <p className="text-sm text-gray-700 leading-relaxed">{opportunity.body}</p>
           </div>
 
-          {/* Evidence / citation status by platform */}
+          {/* Citation status by platform */}
           <div className="p-6 border-b border-gray-100">
             <p className="text-xs font-semibold text-gray-400 uppercase tracking-wide mb-2">Citation status by platform</p>
             <p className="text-base font-bold text-gray-900 leading-snug mb-3">{citationHeadline}</p>
-            {lead.awareness === "No, I haven't tried this yet" ? (
+            {awareness === "No, I haven't tried this yet" ? (
               <p className="text-sm text-gray-600 leading-relaxed">
                 Run a quick test: open ChatGPT and search for what you do. Note which brands appear. Those are your citation competitors.
               </p>
@@ -647,35 +965,21 @@ export default async function ResultsPage({ params }: Props) {
                 </p>
                 <div className="rounded-lg bg-gray-50 divide-y divide-gray-100 overflow-hidden border border-gray-100">
                   {checkedPlatforms.map((platform) => {
-                    const status = platforms[platform];
-                    const s = PLATFORM_STATUS_STYLES[status];
-                    let displayLabel = s.label;
-                    let badgeCls = s.cls;
-                    if (status === 'displaced') {
-                      if (competitors.length > 0) {
-                        const label = competitors.length === 1
-                          ? competitors[0]
-                          : `${competitors[0]} +${competitors.length - 1}`;
-                        displayLabel = label.length > 22 ? label.slice(0, 22) + '…' : label;
-                      } else {
-                        displayLabel = 'Competitor not named';
-                        badgeCls = 'bg-gray-100 text-gray-500 border-gray-200';
-                      }
-                    }
-                    const searchUrl = getPlatformSearchUrl(platform, buyerQuery);
+                    const s = PLATFORM_STATUS_STYLES[platform.status as PlatformStatus] ?? PLATFORM_STATUS_STYLES.unknown;
+                    const displayLabel = platform.badge_label || s.label;
                     return (
-                      <div key={platform} className="flex items-center justify-between px-3 py-2.5">
-                        <span className="text-sm text-gray-700">{platform}</span>
+                      <div key={platform.name} className="flex items-center justify-between px-3 py-2.5">
+                        <span className="text-sm text-gray-700">{platform.name}</span>
                         <span className="flex items-center gap-2">
                           <a
-                            href={searchUrl}
+                            href={platform.search_url}
                             target="_blank"
                             rel="noopener noreferrer"
                             className="text-[11px] font-medium text-[#C87A2F] hover:underline whitespace-nowrap no-print-url print:hidden"
                           >
                             Search now →
                           </a>
-                          <span className={`text-[11px] font-medium px-2 py-0.5 rounded border ${badgeCls}`}>
+                          <span className={`text-[11px] font-medium px-2 py-0.5 rounded border ${s.cls}`}>
                             {displayLabel}
                           </span>
                         </span>
@@ -683,30 +987,10 @@ export default async function ResultsPage({ params }: Props) {
                     );
                   })}
                 </div>
-                {competitors.length === 0 && lead.awareness === 'Yes — competitors were cited instead of me' && (
-                  <p className="text-xs text-gray-500 mt-3 leading-relaxed">
-                    You indicated competitors are appearing instead of you but didn&rsquo;t name them.
-                    Your full AI Visibility Report identifies exactly which brands are displacing you on each platform.{' '}
-                    <a href={reportUrl} target="_blank" rel="noopener noreferrer" className="text-[#C87A2F] font-medium hover:underline">Get the full report →</a>
-                  </p>
-                )}
-                {competitors.length === 0 && lead.awareness !== 'Yes — competitors were cited instead of me' && lead.awareness !== "No, I haven't tried this yet" && (
-                  <p className="text-xs text-gray-500 mt-3 leading-relaxed">
-                    {lead.awareness === "Yes — but I wasn't mentioned at all"
-                      ? 'No brands were returned for you on the platforms you tested. Enter your closest competitors to see how their visibility compares to yours.'
-                      : lead.awareness === 'Yes — but details about me were wrong'
-                      ? 'You were cited on these platforms, but the information presented was incorrect. Your full report identifies which sources AI is pulling from and what needs to change.'
-                      : lead.awareness === 'Yes — but old/outdated info appeared'
-                      ? 'You were cited on these platforms, but with outdated information. Your full report identifies which content AI is drawing on and how to update it.'
-                      : 'Enter your closest competitors to see how their AI visibility compares to yours across these platforms.'
-                    }
-                  </p>
-                )}
               </>
             ) : (
               <p className="text-sm text-gray-500">
-                No platforms have been tested yet.
-                Search for {entityName} in ChatGPT or Perplexity to gather evidence.
+                No platforms have been tested yet. Search for your brand in ChatGPT or Perplexity to gather evidence.
               </p>
             )}
           </div>
@@ -741,7 +1025,7 @@ export default async function ResultsPage({ params }: Props) {
 
         </div>
 
-        {/* 4. High-contrast verify callout */}
+        {/* 4b. Verify callout */}
         <div className="rounded-xl bg-gray-900 p-6 mb-4">
           <p className="text-xs font-semibold text-gray-500 uppercase tracking-wide mb-3">
             Verify this yourself
@@ -757,7 +1041,6 @@ export default async function ResultsPage({ params }: Props) {
               No target queries or positioning were provided, so this uses a general industry search. For a more accurate result, search for exactly what you do — e.g. your specific service or niche.
             </p>
           )}
-
           <a
             href={platformSearchUrl}
             target="_blank"
@@ -771,9 +1054,7 @@ export default async function ResultsPage({ params }: Props) {
         {/* 5. What this means for your business — three gaps */}
         <div className="mb-4">
           <h2 className="text-xl font-bold text-gray-900 mb-1">What this means for your business</h2>
-          <p className="text-sm text-gray-500 mb-5">
-            Three gaps that explain your current AI visibility position.
-          </p>
+          <p className="text-sm text-gray-500 mb-5">Three gaps that explain your current AI visibility position.</p>
 
           {/* Gap 1 */}
           <div className="bg-white rounded-xl border border-gray-100 shadow-sm p-6 mb-3">
@@ -781,13 +1062,11 @@ export default async function ResultsPage({ params }: Props) {
               <span className="flex-shrink-0 text-xs font-bold text-white bg-[#C87A2F] px-2 py-0.5 rounded">Gap 1</span>
               <h3 className="text-sm font-bold text-gray-900">How your content is structured</h3>
             </div>
-            <p className="text-sm text-gray-700 leading-relaxed mb-4">
-              {gap1Text}
-            </p>
+            <p className="text-sm text-gray-700 leading-relaxed mb-4">{gap1Text}</p>
             <div className="rounded-lg bg-amber-50 border border-amber-100 px-4 py-3 mb-3">
               <p className="text-sm text-amber-800 leading-relaxed">
                 <strong>Business consequence:</strong>{' '}
-                If AI can&rsquo;t extract a clear description of what{' '}{entityName}{' '}does, it won&rsquo;t recommend you — even when buyers are searching for exactly what you offer.
+                If AI can&rsquo;t extract a clear description of what {entityName} does, it won&rsquo;t recommend you — even when buyers are searching for exactly what you offer.
               </p>
             </div>
             <details className="group">
@@ -808,13 +1087,11 @@ export default async function ResultsPage({ params }: Props) {
               <span className="flex-shrink-0 text-xs font-bold text-white bg-[#C87A2F] px-2 py-0.5 rounded">Gap 2</span>
               <h3 className="text-sm font-bold text-gray-900">How well-known your brand is to AI</h3>
             </div>
-            <p className="text-sm text-gray-700 leading-relaxed mb-4">
-              {gap2Text}
-            </p>
+            <p className="text-sm text-gray-700 leading-relaxed mb-4">{gap2Text}</p>
             <div className="rounded-lg bg-amber-50 border border-amber-100 px-4 py-3 mb-3">
               <p className="text-sm text-amber-800 leading-relaxed">
                 <strong>Business consequence:</strong>{' '}
-                Until AI engines can describe{' '}{entityName}{' '}accurately and with confidence, your reputation won&rsquo;t translate into AI-generated referrals — regardless of how strong your actual work is.
+                Until AI engines can describe {entityName} accurately and with confidence, your reputation won&rsquo;t translate into AI-generated referrals — regardless of how strong your actual work is.
               </p>
             </div>
             <details className="group">
@@ -835,9 +1112,7 @@ export default async function ResultsPage({ params }: Props) {
               <span className="flex-shrink-0 text-xs font-bold text-white bg-[#C87A2F] px-2 py-0.5 rounded">Gap 3</span>
               <h3 className="text-sm font-bold text-gray-900">Who else is talking about you online</h3>
             </div>
-            <p className="text-sm text-gray-700 leading-relaxed mb-4">
-              {gap3Text}
-            </p>
+            <p className="text-sm text-gray-700 leading-relaxed mb-4">{gap3Text}</p>
             <div className="rounded-lg bg-amber-50 border border-amber-100 px-4 py-3 mb-3">
               <p className="text-sm text-amber-800 leading-relaxed">
                 <strong>Business consequence:</strong>{' '}
@@ -865,20 +1140,31 @@ export default async function ResultsPage({ params }: Props) {
             AI platforms update their citation sources regularly, and positions shift with each update.
             A brand that addresses these gaps now will hold a structural advantage over one that waits.
             {score > 0 && score < benchAvg
-              ? <> At {score}%, {entityName} is currently {gap} percentage points below the {lead.industry} benchmark — a gap that is closable with targeted action, but widens if left unaddressed.</>
+              ? <> At {score}%, {entityName} is currently {gap} percentage points below the {industry} benchmark — a gap that is closable with targeted action, but widens if left unaddressed.</>
               : null
             }
           </p>
         </div>
 
-        {/* 7. Three-option path forward */}
+        {/* 7. Sections 5-8 (gate / locked / generating / unlocked) */}
+        {fullStatus === 'loading'           && (
+          <div className="space-y-4 mb-8">
+            <Skeleton className="h-48 w-full" />
+            <Skeleton className="h-48 w-full" />
+          </div>
+        )}
+        {fullStatus === 'no_session'        && renderGateForm()}
+        {fullStatus === 'payment_required'  && renderLockedSections()}
+        {fullStatus === 'generating'        && renderGeneratingPlaceholder()}
+        {fullStatus === 'loaded'            && renderUnlockedSections()}
+
+        {/* 8. Three-option path forward */}
         <div className="mb-8">
           <h2 className="text-xl font-bold text-gray-900 mb-1">What would you like to do next?</h2>
           <p className="text-sm text-gray-500 mb-5">Three ways to move forward. No sales call required.</p>
 
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
 
-            {/* Option A — primary/recommended */}
             <div className="bg-white rounded-xl border-2 border-[#C87A2F] p-5 flex flex-col relative">
               <span className="absolute -top-3 left-4 text-[10px] font-bold text-white bg-[#C87A2F] px-2 py-0.5 rounded-full tracking-wide uppercase">Most requested</span>
               <span className="inline-block self-start text-xs font-bold text-[#C87A2F] bg-[#FDF1E6] px-2 py-0.5 rounded mb-3 mt-1">A</span>
@@ -887,17 +1173,26 @@ export default async function ResultsPage({ params }: Props) {
                 AI Visibility Report — one report, no subscription.
                 Covers every fix in order of impact, plus the exact sources AI is drawing on about you.
               </p>
-              <a
-                href={reportUrl}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="block text-center text-sm font-semibold text-white bg-[#C87A2F] hover:bg-[#A8651E] rounded-lg px-4 py-2.5 transition-colors"
-              >
-                Get the report →
-              </a>
+              {fullStatus === 'payment_required' ? (
+                <button
+                  onClick={handleUnlock}
+                  disabled={unlockLoading}
+                  className="block text-center text-sm font-semibold text-white bg-[#C87A2F] hover:bg-[#A8651E] rounded-lg px-4 py-2.5 transition-colors disabled:opacity-60"
+                >
+                  {unlockLoading ? 'Redirecting…' : 'Get the report →'}
+                </button>
+              ) : (
+                <a
+                  href={reportUrl}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="block text-center text-sm font-semibold text-white bg-[#C87A2F] hover:bg-[#A8651E] rounded-lg px-4 py-2.5 transition-colors"
+                >
+                  Get the report →
+                </a>
+              )}
             </div>
 
-            {/* Option B */}
             <div className="bg-white rounded-xl border border-gray-200 p-5 flex flex-col">
               <span className="inline-block self-start text-xs font-bold text-[#C87A2F] bg-[#FDF1E6] px-2 py-0.5 rounded mb-3">B</span>
               <h3 className="text-sm font-bold text-gray-900 mb-2">Track your position every month</h3>
@@ -905,17 +1200,11 @@ export default async function ResultsPage({ params }: Props) {
                 AI Visibility Engine — monthly tracking across all AI platforms.
                 Alerts when competitors move. Quarterly strategy review included.
               </p>
-              <a
-                href={monitorUrl}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="text-sm font-semibold text-[#C87A2F] hover:underline"
-              >
+              <a href={monitorUrl} target="_blank" rel="noopener noreferrer" className="text-sm font-semibold text-[#C87A2F] hover:underline">
                 Start tracking →
               </a>
             </div>
 
-            {/* Option C */}
             <div className="bg-white rounded-xl border border-gray-200 p-5 flex flex-col">
               <span className="inline-block self-start text-xs font-bold text-[#C87A2F] bg-[#FDF1E6] px-2 py-0.5 rounded mb-3">C</span>
               <h3 className="text-sm font-bold text-gray-900 mb-2">Have us fix it for you</h3>
@@ -924,12 +1213,7 @@ export default async function ResultsPage({ params }: Props) {
                 We handle the content formatting, brand presence, and citation work.
                 Monthly reporting included.
               </p>
-              <a
-                href={calendlyUrl}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="text-sm font-semibold text-[#C87A2F] hover:underline"
-              >
+              <a href={calendlyUrl} target="_blank" rel="noopener noreferrer" className="text-sm font-semibold text-[#C87A2F] hover:underline">
                 Book a strategy call →
               </a>
             </div>
@@ -944,8 +1228,8 @@ export default async function ResultsPage({ params }: Props) {
             Send directly to your inbox — or forward to a colleague. Link is persistent.
           </p>
           <ShareByEmailButton
-            defaultEmail={lead.email}
-            firstName={toTitleCase(lead.first_name)}
+            defaultEmail=""
+            firstName=""
             company={entityName}
           />
           <div className="flex flex-wrap gap-3 mt-3 pt-3 border-t border-gray-100">
@@ -956,13 +1240,7 @@ export default async function ResultsPage({ params }: Props) {
 
         {/* Footer */}
         <div className="flex justify-center mb-3">
-          <Image
-            src="/maxifi-logo-black.png"
-            alt="Maxifi Digital"
-            height={20}
-            width={100}
-            className="h-5 w-auto opacity-30"
-          />
+          <Image src="/maxifi-logo-black.png" alt="Maxifi Digital" height={20} width={100} className="h-5 w-auto opacity-30" />
         </div>
         <p className="text-center text-xs text-gray-400">
           Snapshot generated by{' '}
