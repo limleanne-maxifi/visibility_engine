@@ -294,7 +294,7 @@ function getOpportunityContent(
     default:
       return {
         headline: 'Your starting position is better than it may feel.',
-        body: `Without a live test, it is not yet clear whether ${entityName} is invisible, cited inaccurately, or simply being displaced by a competitor. Each scenario requires a different fix — but none requires starting from zero. The AEO landscape is still early enough that a focused effort in the right areas creates measurable results within a quarter.`,
+        body: `Without a live test, it is not yet clear whether ${entityName} is invisible, cited inaccurately, or simply being displaced by a competitor. Each scenario requires a different fix — but none requires starting from zero. The AI landscape is still early enough that a focused effort in the right areas creates measurable results within a quarter.`,
         displaced: false,
       };
   }
@@ -428,7 +428,7 @@ export default async function ResultsPage({ params }: Props) {
   const verifyPlatformName   = lead.platform || 'ChatGPT';
 
   return (
-    <div className="min-h-screen bg-gray-50 py-10 px-4">
+    <div className="min-h-screen bg-[#152438] flex flex-col">
       <style>{`
         @media print {
           body { background: white !important; font-size: 11pt; }
@@ -438,7 +438,7 @@ export default async function ResultsPage({ params }: Props) {
           /* Page breaks */
           .page-break-before { page-break-before: always; }
           /* Force URLs visible for booking links */
-          a[href]::after { content: " (" attr(href) ")"; font-size: 9pt; color: #6b5dd3; }
+          a[href]::after { content: " (" attr(href) ")"; font-size: 9pt; color: #C87A2F; }
           a[href^="mailto"]::after, a[href^="javascript"]::after, a[href="#"]::after { content: none; }
           /* Hide search/interactive links in print — shown inline only */
           .no-print-url::after { content: none !important; }
@@ -446,6 +446,16 @@ export default async function ResultsPage({ params }: Props) {
           @page { margin: 18mm 15mm; size: A4; }
         }
       `}</style>
+
+      {/* Site header */}
+      <header className="flex items-center justify-between px-6 sm:px-8 h-14 border-b border-white/[0.07] bg-[#091521]/80 backdrop-blur-sm flex-shrink-0 print:hidden">
+        <a href="https://www.maxifidigital.com" aria-label="Maxifi Digital">
+          <Image src="/maxifi-logo-white.png" alt="Maxifi Digital" height={28} width={140} className="h-7 w-auto" />
+        </a>
+        <a href="https://www.maxifidigital.com" className="text-xs text-white/40 hover:text-white/70 transition-colors">← maxifidigital.com</a>
+      </header>
+
+      <div className="py-10 px-4">
       <div className="max-w-[640px] mx-auto">
 
         {/* 1. Header */}
@@ -503,16 +513,16 @@ export default async function ResultsPage({ params }: Props) {
                     <td className="py-3 pr-3 text-sm font-semibold text-gray-700 whitespace-nowrap align-top">{row.signal}</td>
                     <td className="py-3 pr-3 text-sm text-gray-500 align-top">{row.measured}</td>
                     <td className={`py-3 pr-3 text-sm font-medium align-top ${row.bad ? 'text-amber-700' : 'text-gray-700'}`}>{row.result}</td>
-                    <td className="py-3 text-right text-sm font-bold text-[#534AB7] whitespace-nowrap align-top">{row.weight}</td>
+                    <td className="py-3 text-right text-sm font-bold text-[#C87A2F] whitespace-nowrap align-top">{row.weight}</td>
                   </tr>
                 ))}
-                <tr className="bg-[#EEEDFE]">
-                  <td className="py-3 pr-3 text-sm font-bold text-[#3C3489] whitespace-nowrap">Your AEO Visibility Score</td>
-                  <td className="py-3 pr-3 text-sm text-[#534AB7]">Weighted total across all four signals</td>
-                  <td className="py-3 pr-3 font-bold text-[#3C3489] text-base whitespace-nowrap">
+                <tr className="bg-[#FDF1E6]">
+                  <td className="py-3 pr-3 text-sm font-bold text-[#7a4a10] whitespace-nowrap">Your AI Visibility Score</td>
+                  <td className="py-3 pr-3 text-sm text-[#C87A2F]">Weighted total across all four signals</td>
+                  <td className="py-3 pr-3 font-bold text-[#7a4a10] text-base whitespace-nowrap">
                     {score > 0 ? `${score}%` : 'Undiagnosed'}
                   </td>
-                  <td className="py-3 text-right text-sm text-[#534AB7] whitespace-nowrap">100%</td>
+                  <td className="py-3 text-right text-sm text-[#C87A2F] whitespace-nowrap">100%</td>
                 </tr>
               </tbody>
             </table>
@@ -584,7 +594,7 @@ export default async function ResultsPage({ params }: Props) {
                 <td className="py-3 text-right text-gray-600">{benchAvg}%</td>
               </tr>
               <tr className={`border-b border-gray-100 ${score < benchAvg ? 'bg-red-50/40' : 'bg-emerald-50/40'}`}>
-                <td className="py-3 pr-4 text-xs font-semibold text-[#534AB7] whitespace-nowrap">Your position</td>
+                <td className="py-3 pr-4 text-xs font-semibold text-[#C87A2F] whitespace-nowrap">Your position</td>
                 <td className="py-3 pr-4 text-gray-900 font-semibold">{entityName}</td>
                 <td className={`py-3 text-right font-bold ${score < benchAvg ? 'text-red-600' : 'text-emerald-600'}`}>
                   {score > 0 ? `${score}%` : 'Undiagnosed'}
@@ -603,7 +613,7 @@ export default async function ResultsPage({ params }: Props) {
           </table>
           </div>
           {competitors.length === 0 && (
-            <p className="text-xs text-[#534AB7] font-medium mt-4">
+            <p className="text-xs text-[#C87A2F] font-medium mt-4">
               Add your closest competitors above to see how their AI visibility compares to yours — and who is leading in your category.
             </p>
           )}
@@ -615,7 +625,7 @@ export default async function ResultsPage({ params }: Props) {
 
           {/* Opportunity framing */}
           <div className={`p-6 border-b border-gray-100 ${opportunity.displaced ? 'bg-blue-50/50' : ''}`}>
-            <p className="text-xs font-semibold text-[#534AB7] uppercase tracking-wide mb-3">
+            <p className="text-xs font-semibold text-[#C87A2F] uppercase tracking-wide mb-3">
               Where your biggest opportunity lies right now
             </p>
             <p className="text-base font-bold text-gray-900 leading-snug mb-3">{opportunity.headline}</p>
@@ -661,7 +671,7 @@ export default async function ResultsPage({ params }: Props) {
                             href={searchUrl}
                             target="_blank"
                             rel="noopener noreferrer"
-                            className="text-[11px] font-medium text-[#6B5DD3] hover:underline whitespace-nowrap no-print-url print:hidden"
+                            className="text-[11px] font-medium text-[#C87A2F] hover:underline whitespace-nowrap no-print-url print:hidden"
                           >
                             Search now →
                           </a>
@@ -676,8 +686,8 @@ export default async function ResultsPage({ params }: Props) {
                 {competitors.length === 0 && lead.awareness === 'Yes — competitors were cited instead of me' && (
                   <p className="text-xs text-gray-500 mt-3 leading-relaxed">
                     You indicated competitors are appearing instead of you but didn&rsquo;t name them.
-                    Your full AEO Visibility Report identifies exactly which brands are displacing you on each platform.{' '}
-                    <a href={reportUrl} target="_blank" rel="noopener noreferrer" className="text-[#534AB7] font-medium hover:underline">Get the full report →</a>
+                    Your full AI Visibility Report identifies exactly which brands are displacing you on each platform.{' '}
+                    <a href={reportUrl} target="_blank" rel="noopener noreferrer" className="text-[#C87A2F] font-medium hover:underline">Get the full report →</a>
                   </p>
                 )}
                 {competitors.length === 0 && lead.awareness !== 'Yes — competitors were cited instead of me' && lead.awareness !== "No, I haven't tried this yet" && (
@@ -708,7 +718,7 @@ export default async function ResultsPage({ params }: Props) {
             <ul className="space-y-3">
               {rootCauses.map((cause, i) => (
                 <li key={i} className="flex items-start gap-3">
-                  <span className="flex-shrink-0 w-5 h-5 rounded-full bg-[#EEEDFE] text-[#534AB7] text-xs font-bold flex items-center justify-center mt-0.5">
+                  <span className="flex-shrink-0 w-5 h-5 rounded-full bg-[#FDF1E6] text-[#C87A2F] text-xs font-bold flex items-center justify-center mt-0.5">
                     {i + 1}
                   </span>
                   <p className="text-sm text-gray-700 leading-relaxed">{cause}</p>
@@ -768,7 +778,7 @@ export default async function ResultsPage({ params }: Props) {
           {/* Gap 1 */}
           <div className="bg-white rounded-xl border border-gray-100 shadow-sm p-6 mb-3">
             <div className="flex items-center gap-2 mb-3">
-              <span className="flex-shrink-0 text-xs font-bold text-white bg-[#534AB7] px-2 py-0.5 rounded">Gap 1</span>
+              <span className="flex-shrink-0 text-xs font-bold text-white bg-[#C87A2F] px-2 py-0.5 rounded">Gap 1</span>
               <h3 className="text-sm font-bold text-gray-900">How your content is structured</h3>
             </div>
             <p className="text-sm text-gray-700 leading-relaxed mb-4">
@@ -781,7 +791,7 @@ export default async function ResultsPage({ params }: Props) {
               </p>
             </div>
             <details className="group">
-              <summary className="text-xs text-[#534AB7] cursor-pointer list-none flex items-center gap-1 select-none hover:underline">
+              <summary className="text-xs text-[#C87A2F] cursor-pointer list-none flex items-center gap-1 select-none hover:underline">
                 <span className="group-open:hidden">+ How AI evaluates content structure</span>
                 <span className="hidden group-open:inline">− Hide</span>
               </summary>
@@ -795,7 +805,7 @@ export default async function ResultsPage({ params }: Props) {
           {/* Gap 2 */}
           <div className="bg-white rounded-xl border border-gray-100 shadow-sm p-6 mb-3">
             <div className="flex items-center gap-2 mb-3">
-              <span className="flex-shrink-0 text-xs font-bold text-white bg-[#534AB7] px-2 py-0.5 rounded">Gap 2</span>
+              <span className="flex-shrink-0 text-xs font-bold text-white bg-[#C87A2F] px-2 py-0.5 rounded">Gap 2</span>
               <h3 className="text-sm font-bold text-gray-900">How well-known your brand is to AI</h3>
             </div>
             <p className="text-sm text-gray-700 leading-relaxed mb-4">
@@ -808,7 +818,7 @@ export default async function ResultsPage({ params }: Props) {
               </p>
             </div>
             <details className="group">
-              <summary className="text-xs text-[#534AB7] cursor-pointer list-none flex items-center gap-1 select-none hover:underline">
+              <summary className="text-xs text-[#C87A2F] cursor-pointer list-none flex items-center gap-1 select-none hover:underline">
                 <span className="group-open:hidden">+ How AI measures brand authority</span>
                 <span className="hidden group-open:inline">− Hide</span>
               </summary>
@@ -822,7 +832,7 @@ export default async function ResultsPage({ params }: Props) {
           {/* Gap 3 */}
           <div className="bg-white rounded-xl border border-gray-100 shadow-sm p-6">
             <div className="flex items-center gap-2 mb-3">
-              <span className="flex-shrink-0 text-xs font-bold text-white bg-[#534AB7] px-2 py-0.5 rounded">Gap 3</span>
+              <span className="flex-shrink-0 text-xs font-bold text-white bg-[#C87A2F] px-2 py-0.5 rounded">Gap 3</span>
               <h3 className="text-sm font-bold text-gray-900">Who else is talking about you online</h3>
             </div>
             <p className="text-sm text-gray-700 leading-relaxed mb-4">
@@ -835,7 +845,7 @@ export default async function ResultsPage({ params }: Props) {
               </p>
             </div>
             <details className="group">
-              <summary className="text-xs text-[#534AB7] cursor-pointer list-none flex items-center gap-1 select-none hover:underline">
+              <summary className="text-xs text-[#C87A2F] cursor-pointer list-none flex items-center gap-1 select-none hover:underline">
                 <span className="group-open:hidden">+ How third-party references affect AI citation</span>
                 <span className="hidden group-open:inline">− Hide</span>
               </summary>
@@ -869,19 +879,19 @@ export default async function ResultsPage({ params }: Props) {
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
 
             {/* Option A — primary/recommended */}
-            <div className="bg-white rounded-xl border-2 border-[#534AB7] p-5 flex flex-col relative">
-              <span className="absolute -top-3 left-4 text-[10px] font-bold text-white bg-[#534AB7] px-2 py-0.5 rounded-full tracking-wide uppercase">Most requested</span>
-              <span className="inline-block self-start text-xs font-bold text-[#534AB7] bg-[#EEEDFE] px-2 py-0.5 rounded mb-3 mt-1">A</span>
+            <div className="bg-white rounded-xl border-2 border-[#C87A2F] p-5 flex flex-col relative">
+              <span className="absolute -top-3 left-4 text-[10px] font-bold text-white bg-[#C87A2F] px-2 py-0.5 rounded-full tracking-wide uppercase">Most requested</span>
+              <span className="inline-block self-start text-xs font-bold text-[#C87A2F] bg-[#FDF1E6] px-2 py-0.5 rounded mb-3 mt-1">A</span>
               <h3 className="text-sm font-bold text-gray-900 mb-2">Get the full picture</h3>
               <p className="text-xs text-gray-500 leading-relaxed flex-1 mb-4">
-                AEO Visibility Report — one report, no subscription.
+                AI Visibility Report — one report, no subscription.
                 Covers every fix in order of impact, plus the exact sources AI is drawing on about you.
               </p>
               <a
                 href={reportUrl}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="block text-center text-sm font-semibold text-white bg-[#534AB7] hover:bg-[#4640a0] rounded-lg px-4 py-2.5 transition-colors"
+                className="block text-center text-sm font-semibold text-white bg-[#C87A2F] hover:bg-[#A8651E] rounded-lg px-4 py-2.5 transition-colors"
               >
                 Get the report →
               </a>
@@ -889,17 +899,17 @@ export default async function ResultsPage({ params }: Props) {
 
             {/* Option B */}
             <div className="bg-white rounded-xl border border-gray-200 p-5 flex flex-col">
-              <span className="inline-block self-start text-xs font-bold text-[#534AB7] bg-[#EEEDFE] px-2 py-0.5 rounded mb-3">B</span>
+              <span className="inline-block self-start text-xs font-bold text-[#C87A2F] bg-[#FDF1E6] px-2 py-0.5 rounded mb-3">B</span>
               <h3 className="text-sm font-bold text-gray-900 mb-2">Track your position every month</h3>
               <p className="text-xs text-gray-500 leading-relaxed flex-1 mb-4">
-                AEO Visibility Engine — monthly tracking across all AI platforms.
+                AI Visibility Engine — monthly tracking across all AI platforms.
                 Alerts when competitors move. Quarterly strategy review included.
               </p>
               <a
                 href={monitorUrl}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="text-sm font-semibold text-[#534AB7] hover:underline"
+                className="text-sm font-semibold text-[#C87A2F] hover:underline"
               >
                 Start tracking →
               </a>
@@ -907,7 +917,7 @@ export default async function ResultsPage({ params }: Props) {
 
             {/* Option C */}
             <div className="bg-white rounded-xl border border-gray-200 p-5 flex flex-col">
-              <span className="inline-block self-start text-xs font-bold text-[#534AB7] bg-[#EEEDFE] px-2 py-0.5 rounded mb-3">C</span>
+              <span className="inline-block self-start text-xs font-bold text-[#C87A2F] bg-[#FDF1E6] px-2 py-0.5 rounded mb-3">C</span>
               <h3 className="text-sm font-bold text-gray-900 mb-2">Have us fix it for you</h3>
               <p className="text-xs text-gray-500 leading-relaxed flex-1 mb-4">
                 Done for you — Maxifi implements every fix.
@@ -918,7 +928,7 @@ export default async function ResultsPage({ params }: Props) {
                 href={calendlyUrl}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="text-sm font-semibold text-[#534AB7] hover:underline"
+                className="text-sm font-semibold text-[#C87A2F] hover:underline"
               >
                 Book a strategy call →
               </a>
@@ -965,6 +975,7 @@ export default async function ResultsPage({ params }: Props) {
           </a>
         </p>
 
+      </div>
       </div>
     </div>
   );
