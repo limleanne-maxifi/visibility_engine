@@ -476,7 +476,7 @@ export default async function ResultsPage({ params }: Props) {
             <div className="flex-1 flex justify-start min-w-0 pl-[16px]">
               <p
                 className="text-2xl whitespace-nowrap"
-                style={{ fontFamily: 'var(--font-dm-sans)', fontWeight: 700, whiteSpace: 'nowrap', color: '#1a2744', letterSpacing: '0.05em' }}
+                style={{ fontFamily: 'var(--font-sans)', fontWeight: 700, whiteSpace: 'nowrap', color: '#1a2744', letterSpacing: '0.05em' }}
               >
                 AI Visibility Snapshot
               </p>
