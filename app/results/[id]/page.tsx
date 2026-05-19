@@ -376,9 +376,9 @@ export default async function ResultsPage({ params }: Props) {
   const lead = await getLeadById(id);
   if (!lead) notFound();
 
-  const reportUrl    = process.env.REPORT_CHECKOUT_URL  ?? process.env.CALENDLY_URL ?? 'https://lunacal.ai/maxifidigital/';
-  const monitorUrl   = process.env.MONITOR_CHECKOUT_URL ?? process.env.CALENDLY_URL ?? 'https://lunacal.ai/maxifidigital/';
-  const calendlyUrl  = process.env.CALENDLY_URL ?? 'https://lunacal.ai/maxifidigital/';
+  const reportUrl    = process.env.REPORT_CHECKOUT_URL  ?? process.env.CALENDLY_URL ?? 'https://calendly.com/maxifi-digital';
+  const monitorUrl   = process.env.MONITOR_CHECKOUT_URL ?? process.env.CALENDLY_URL ?? 'https://calendly.com/maxifi-digital';
+  const calendlyUrl  = process.env.CALENDLY_URL ?? 'https://calendly.com/maxifi-digital';
   const contactEmail = process.env.MAXIFI_CONTACT_EMAIL ?? 'letsgetstarted@maxifidigital.com';
 
   const competitors  = getAllCompetitors(lead.competitors);
