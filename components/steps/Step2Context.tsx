@@ -62,7 +62,7 @@ const INDUSTRIES = [
 
 const inputBase =
   'w-full px-4 py-3 rounded-lg border text-sm outline-none transition-colors bg-white';
-const inputNormal = 'border-gray-200 focus:border-[#534AB7]';
+const inputNormal = 'border-gray-200 focus:border-[#C87A2F]';
 const inputError = 'border-red-400 focus:border-red-500';
 
 export default function Step2Context({ data, onChange, onNext, onBack, errors }: Props) {
@@ -154,7 +154,7 @@ export default function Step2Context({ data, onChange, onNext, onBack, errors }:
         </button>
         <button
           type="submit"
-          className="flex-1 py-3 px-6 bg-[#534AB7] hover:bg-[#4640a0] text-white text-sm font-semibold rounded-lg transition-colors"
+          className="flex-1 py-3 px-6 bg-[#C87A2F] hover:bg-[#A8651E] text-white text-sm font-semibold rounded-lg transition-colors"
         >
           Continue →
         </button>

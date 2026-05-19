@@ -2,9 +2,9 @@
 
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
+import Image from 'next/image';
 import { FormData, initialFormData } from '@/lib/types';
 import { generateSessionId, parseUtmParams } from '@/lib/utils';
-import BrandPill from '@/components/BrandPill';
 import ProgressBar from '@/components/ProgressBar';
 import Step1Identity from '@/components/steps/Step1Identity';
 import Step2Context from '@/components/steps/Step2Context';
@@ -138,15 +138,38 @@ export default function MultiStepForm() {
   };
 
   return (
-    <div className="min-h-screen bg-gray-50 flex items-start justify-center py-10 px-4">
+    <div className="min-h-screen bg-[#0B1929] flex flex-col">
+      {/* Site header */}
+      <header className="flex items-center justify-between px-6 sm:px-8 h-14 border-b border-white/[0.07] bg-[#091521]/80 backdrop-blur-sm flex-shrink-0">
+        <a href="https://www.maxifidigital.com" aria-label="Maxifi Digital">
+          <Image
+            src="/maxifi-logo-white.png"
+            alt="Maxifi Digital"
+            height={28}
+            width={140}
+            className="h-7 w-auto"
+          />
+        </a>
+        <a
+          href="https://www.maxifidigital.com"
+          className="text-xs text-white/40 hover:text-white/70 transition-colors"
+        >
+          ← maxifidigital.com
+        </a>
+      </header>
+
+      {/* Form area */}
+      <div className="flex-1 flex items-start justify-center py-10 px-4">
       <div className="w-full max-w-[520px]">
-        {/* Brand pill */}
-        <div className="mb-4">
-          <BrandPill />
-        </div>
+
+        {/* Eyebrow */}
+        <p className="text-[10px] font-bold tracking-[0.14em] uppercase text-[#C87A2F] mb-3">
+          AI Visibility Snapshot &nbsp;·&nbsp; Step {step} of {TOTAL_STEPS}
+        </p>
 
         {/* Card */}
-        <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-6 sm:p-8">
+        <div className="bg-white rounded-2xl border border-white/[0.06] p-6 sm:p-8"
+             style={{ boxShadow: '0 32px 64px rgba(0,0,0,0.45)' }}>
           {/* Progress bar */}
           <div className="mb-6">
             <ProgressBar step={step} totalSteps={TOTAL_STEPS} />
@@ -217,6 +240,7 @@ export default function MultiStepForm() {
             </p>
           </div>
         )}
+      </div>
       </div>
     </div>
   );

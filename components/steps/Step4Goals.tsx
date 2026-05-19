@@ -212,7 +212,7 @@ export default function Step4Goals({ data, onChange, onNext, onBack, errors, ind
                 disabled={isDisabled}
                 className={`w-full text-left px-4 py-3 rounded-lg border text-sm transition-all duration-150 ${
                   isSelected
-                    ? 'border-[#534AB7] bg-[#EEEDFE] text-[#3C3489] font-medium'
+                    ? 'border-[#C87A2F] bg-[#FDF1E6] text-[#7a4a10] font-medium'
                     : isDisabled
                     ? 'border-gray-100 bg-gray-50 text-gray-300 cursor-not-allowed'
                     : 'border-gray-200 bg-white text-gray-700 hover:border-gray-300 hover:bg-gray-50'
@@ -223,7 +223,7 @@ export default function Step4Goals({ data, onChange, onNext, onBack, errors, ind
                     <span
                       className={`flex-shrink-0 w-4 h-4 rounded-full border-2 flex items-center justify-center ${
                         isSelected
-                          ? 'border-[#534AB7] bg-[#534AB7]'
+                          ? 'border-[#C87A2F] bg-[#C87A2F]'
                           : 'border-gray-300'
                       }`}
                     >
@@ -232,7 +232,7 @@ export default function Step4Goals({ data, onChange, onNext, onBack, errors, ind
                     {challenge}
                   </span>
                   {isSelected && (
-                    <span className="flex-shrink-0 text-xs font-bold text-[#534AB7]">
+                    <span className="flex-shrink-0 text-xs font-bold text-[#C87A2F]">
                       #{idx + 1}
                     </span>
                   )}
@@ -260,7 +260,7 @@ export default function Step4Goals({ data, onChange, onNext, onBack, errors, ind
           onChange={(e) => onChange({ competitors: e.target.value })}
           placeholder="Your closest competitors by name"
           autoComplete="new-password"
-          className="w-full px-4 py-3 rounded-lg border border-gray-200 text-sm outline-none focus:border-[#534AB7] transition-colors"
+          className="w-full px-4 py-3 rounded-lg border border-gray-200 text-sm outline-none focus:border-[#C87A2F] transition-colors"
         />
         <p className="mt-1 text-xs text-gray-400">
           Optional — add competitors to unlock side-by-side displacement analysis in your plan.
@@ -310,7 +310,7 @@ export default function Step4Goals({ data, onChange, onNext, onBack, errors, ind
             onChange={(e) => onChange({ targetQueries: e.target.value })}
             placeholder="Your target queries…"
             autoComplete="new-password"
-            className="w-full px-4 py-3 rounded-lg border border-gray-200 text-sm outline-none focus:border-[#534AB7] transition-colors resize-none"
+            className="w-full px-4 py-3 rounded-lg border border-gray-200 text-sm outline-none focus:border-[#C87A2F] transition-colors resize-none"
           />
           <p
             className={`mt-1 text-xs text-gray-400 italic transition-opacity duration-200 ${
@@ -353,7 +353,7 @@ export default function Step4Goals({ data, onChange, onNext, onBack, errors, ind
         </button>
         <button
           type="submit"
-          className="flex-1 py-3 px-6 bg-[#534AB7] hover:bg-[#4640a0] text-white text-sm font-semibold rounded-lg transition-colors"
+          className="flex-1 py-3 px-6 bg-[#C87A2F] hover:bg-[#A8651E] text-white text-sm font-semibold rounded-lg transition-colors"
         >
           Continue →
         </button>

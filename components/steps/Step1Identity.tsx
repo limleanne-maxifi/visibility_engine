@@ -37,7 +37,7 @@ export default function Step1Identity({ data, onChange, onNext, errors }: Props)
             className={`w-full px-4 py-3 rounded-lg border text-sm outline-none transition-colors ${
               errors.firstName
                 ? 'border-red-400 focus:border-red-500'
-                : 'border-gray-200 focus:border-[#534AB7]'
+                : 'border-gray-200 focus:border-[#C87A2F]'
             }`}
           />
           {errors.firstName && (
@@ -59,7 +59,7 @@ export default function Step1Identity({ data, onChange, onNext, errors }: Props)
             className={`w-full px-4 py-3 rounded-lg border text-sm outline-none transition-colors ${
               errors.email
                 ? 'border-red-400 focus:border-red-500'
-                : 'border-gray-200 focus:border-[#534AB7]'
+                : 'border-gray-200 focus:border-[#C87A2F]'
             }`}
           />
           {errors.email && (
@@ -81,7 +81,7 @@ export default function Step1Identity({ data, onChange, onNext, errors }: Props)
             className={`w-full px-4 py-3 rounded-lg border text-sm outline-none transition-colors ${
               errors.websiteUrl
                 ? 'border-red-400 focus:border-red-500'
-                : 'border-gray-200 focus:border-[#534AB7]'
+                : 'border-gray-200 focus:border-[#C87A2F]'
             }`}
           />
           {errors.websiteUrl ? (
@@ -94,7 +94,7 @@ export default function Step1Identity({ data, onChange, onNext, errors }: Props)
 
       <button
         type="submit"
-        className="mt-6 w-full py-3 px-6 bg-[#534AB7] hover:bg-[#4640a0] text-white text-sm font-semibold rounded-lg transition-colors"
+        className="mt-6 w-full py-3 px-6 bg-[#C87A2F] hover:bg-[#A8651E] text-white text-sm font-semibold rounded-lg transition-colors"
       >
         Continue →
       </button>

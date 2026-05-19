@@ -33,7 +33,7 @@ export async function sendUserPlanEmail(lead: AeoLeadRow): Promise<void> {
   const entity       = lead.company_name ?? lead.first_name;
 
   const scoreDisplay   = score > 0 ? `${score}%` : '—';
-  const subject        = `Your AEO Visibility Snapshot — ${entity} is at ${score > 0 ? `${score}%` : 'an undiagnosed'} visibility`;
+  const subject        = `Your AI Visibility Snapshot — ${entity} is at ${score > 0 ? `${score}%` : 'an undiagnosed'} visibility`;
 
   const benchmarkLine = score > 0
     ? `Your score of <strong>${score}%</strong> compares to an industry average of <strong>${benchAvg}%</strong> for ${lead.industry || 'your industry'}.
@@ -79,14 +79,14 @@ export async function sendUserPlanEmail(lead: AeoLeadRow): Promise<void> {
   <!-- Brand header -->
   <tr><td style="padding-bottom:24px;">
     <p style="margin:0;font-size:12px;font-weight:600;color:#6B5DD3;letter-spacing:0.08em;text-transform:uppercase;">
-      Maxifi Digital · AEO Visibility Snapshot
+      Maxifi Digital · AI Visibility Snapshot
     </p>
   </td></tr>
 
   <!-- Headline -->
   <tr><td style="padding-bottom:6px;">
     <h1 style="margin:0;font-size:26px;font-weight:700;color:#111827;line-height:1.3;">
-      Hi ${lead.first_name}, here&rsquo;s your AEO Visibility Snapshot for ${entity}.
+      Hi ${lead.first_name}, here&rsquo;s your AI Visibility Snapshot for ${entity}.
     </h1>
   </td></tr>
   <tr><td style="padding-bottom:28px;">
@@ -189,7 +189,7 @@ export async function sendInternalNotification(lead: AeoLeadRow): Promise<void> 
   }
 
   const body = [
-    `New AEO Visibility Snapshot submission`,
+    `New AI Visibility Snapshot submission`,
     ``,
     `── Lead details ──────────────────────────────`,
     `first_name:    ${lead.first_name}`,

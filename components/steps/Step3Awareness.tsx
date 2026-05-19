@@ -106,7 +106,7 @@ export default function Step3Awareness({ data, onChange, onNext, onBack, errors 
                 disabled={isDisabled}
                 className={`w-full text-left px-4 py-3 rounded-lg border text-sm transition-all duration-150 ${
                   isSelected
-                    ? 'border-[#534AB7] bg-[#EEEDFE] text-[#3C3489] font-medium'
+                    ? 'border-[#C87A2F] bg-[#FDF1E6] text-[#7a4a10] font-medium'
                     : isDisabled
                     ? 'border-gray-100 bg-gray-50 text-gray-300 cursor-not-allowed'
                     : 'border-gray-200 bg-white text-gray-700 hover:border-gray-300 hover:bg-gray-50'
@@ -117,7 +117,7 @@ export default function Step3Awareness({ data, onChange, onNext, onBack, errors 
                     <span
                       className={`flex-shrink-0 w-4 h-4 rounded-full border-2 flex items-center justify-center text-[10px] font-bold ${
                         isSelected
-                          ? 'border-[#534AB7] bg-[#534AB7] text-white'
+                          ? 'border-[#C87A2F] bg-[#C87A2F] text-white'
                           : 'border-gray-300'
                       }`}
                     >
@@ -126,7 +126,7 @@ export default function Step3Awareness({ data, onChange, onNext, onBack, errors 
                     {platform}
                   </span>
                   {isSelected && (
-                    <span className="text-xs text-[#534AB7] font-semibold tracking-wide uppercase">
+                    <span className="text-xs text-[#C87A2F] font-semibold tracking-wide uppercase">
                       {rank === 1 ? 'PRIMARY' : '2nd'}
                     </span>
                   )}
@@ -150,7 +150,7 @@ export default function Step3Awareness({ data, onChange, onNext, onBack, errors 
         </button>
         <button
           type="submit"
-          className="flex-1 py-3 px-6 bg-[#534AB7] hover:bg-[#4640a0] text-white text-sm font-semibold rounded-lg transition-colors"
+          className="flex-1 py-3 px-6 bg-[#C87A2F] hover:bg-[#A8651E] text-white text-sm font-semibold rounded-lg transition-colors"
         >
           Continue →
         </button>

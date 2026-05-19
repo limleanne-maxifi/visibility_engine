@@ -42,7 +42,7 @@ export default function PrivacyPage() {
             <h2 className="text-lg font-bold text-gray-900 mb-3">1. Who we are</h2>
             <p>
               {COMPANY_ENTITY} ("<strong>{COMPANY_NAME}</strong>", "we", "us", "our") is a sole
-              proprietorship registered in {COMPANY_COUNTRY} and operates the AEO Visibility Snapshot
+              proprietorship registered in {COMPANY_COUNTRY} and operates the AI Visibility Snapshot
               tool at this website. We are the data controller for the personal data described in
               this policy.
             </p>
@@ -56,7 +56,7 @@ export default function PrivacyPage() {
           <section>
             <h2 className="text-lg font-bold text-gray-900 mb-3">2. Data we collect and why</h2>
             <p className="mb-4">
-              When you complete the AEO Visibility Snapshot form we collect the following categories
+              When you complete the AI Visibility Snapshot form we collect the following categories
               of personal and business data:
             </p>
             <div className="overflow-x-auto">

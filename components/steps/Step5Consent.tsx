@@ -38,7 +38,7 @@ export default function Step5Consent({ data, onChange, onSubmit, onBack, errors,
   if (isLoading) {
     return (
       <div className="flex flex-col items-center justify-center py-12 text-center">
-        <div className="w-10 h-10 border-4 border-[#EEEDFE] border-t-[#534AB7] rounded-full animate-spin mb-4" />
+        <div className="w-10 h-10 border-4 border-[#EEEDFE] border-t-[#C87A2F] rounded-full animate-spin mb-4" />
         <p className="text-lg text-gray-900">
           Hang tight — we&apos;re building your personalised snapshot…
         </p>
@@ -52,7 +52,7 @@ export default function Step5Consent({ data, onChange, onSubmit, onBack, errors,
         Almost there, {data.firstName ? toTitleCase(data.firstName) : 'there'} — you&apos;re 10 seconds away
       </h1>
       <p className="text-sm text-gray-500 mb-6">
-        We&apos;ll email your personalised AEO action plan to you straight away — free, no catch.
+        We&apos;ll email your personalised AI Visibility action plan to you straight away — free, no catch.
       </p>
 
       {/* Summary row */}
@@ -74,7 +74,7 @@ export default function Step5Consent({ data, onChange, onSubmit, onBack, errors,
       </div>
 
       {/* Plan preview */}
-      <div className="mb-5 rounded-xl border border-[#534AB7]/20 bg-[#EEEDFE]/40 px-4 pt-4 pb-3">
+      <div className="mb-5 rounded-xl border border-[#C87A2F]/20 bg-[#FDF1E6]/40 px-4 pt-4 pb-3">
 
         {/* Free section */}
         <p className="text-xs font-semibold text-emerald-600 uppercase tracking-wide mb-2">
@@ -95,10 +95,10 @@ export default function Step5Consent({ data, onChange, onSubmit, onBack, errors,
 
         {/* Locked section */}
         <div className="flex items-center gap-1.5 mb-2">
-          <svg className="w-3.5 h-3.5 text-[#534AB7]" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
+          <svg className="w-3.5 h-3.5 text-[#C87A2F]" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
             <path fillRule="evenodd" d="M10 1a4.5 4.5 0 00-4.5 4.5V9H5a2 2 0 00-2 2v6a2 2 0 002 2h10a2 2 0 002-2v-6a2 2 0 00-2-2h-.5V5.5A4.5 4.5 0 0010 1zm3 8V5.5a3 3 0 10-6 0V9h6z" clipRule="evenodd" />
           </svg>
-          <p className="text-xs font-semibold text-[#534AB7] uppercase tracking-wide">
+          <p className="text-xs font-semibold text-[#C87A2F] uppercase tracking-wide">
             Unlocked in full report
           </p>
         </div>
@@ -126,16 +126,16 @@ export default function Step5Consent({ data, onChange, onSubmit, onBack, errors,
           type="checkbox"
           checked={data.consent}
           onChange={(e) => onChange({ consent: e.target.checked })}
-          className="mt-0.5 flex-shrink-0 w-4 h-4 accent-[#534AB7]"
+          className="mt-0.5 flex-shrink-0 w-4 h-4 accent-[#C87A2F]"
         />
         <span className="text-sm text-gray-600">
-          I agree to receive my free AEO action plan and occasional insights from Maxifi Digital.
+          I agree to receive my free AI Visibility action plan and occasional insights from Maxifi Digital.
           Unsubscribe anytime.{' '}
           <a
             href="/privacy"
             target="_blank"
             rel="noopener noreferrer"
-            className="underline text-[#534AB7] hover:text-[#4640a0]"
+            className="underline text-[#C87A2F] hover:text-[#A8651E]"
           >
             Privacy policy
           </a>
@@ -157,7 +157,7 @@ export default function Step5Consent({ data, onChange, onSubmit, onBack, errors,
         <button
           type="submit"
           disabled={!data.consent}
-          className="flex-1 py-3 px-6 bg-[#534AB7] hover:bg-[#4640a0] disabled:bg-gray-200 disabled:text-gray-400 disabled:cursor-not-allowed text-white text-sm font-semibold rounded-lg transition-colors"
+          className="flex-1 py-3 px-6 bg-[#C87A2F] hover:bg-[#A8651E] disabled:bg-gray-200 disabled:text-gray-400 disabled:cursor-not-allowed text-white text-sm font-semibold rounded-lg transition-colors"
         >
           Generate my free AEO plan →
         </button>
