@@ -4,7 +4,7 @@ import { getAllLeads } from '@/lib/supabase';
 export async function GET(request: NextRequest) {
   const adminKey = request.headers.get('x-admin-key');
   
-  if (!adminKey || adminKey !== process.env.NEXT_PUBLIC_ADMIN_KEY) {
+  if (!adminKey || adminKey !== process.env.ADMIN_KEY) {
     return NextResponse.json(
       { error: 'Unauthorized' },
       { status: 401 }
