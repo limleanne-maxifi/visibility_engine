@@ -1,0 +1,464 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Results Page Preview — AI Visibility Snapshot</title>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; background: #0f172a; color: #111827; }
+
+    /* ── Site header ── */
+    .site-header {
+      display: flex; align-items: center; justify-content: space-between;
+      padding: 0 32px; height: 56px;
+      background: rgba(9,21,33,0.92); backdrop-filter: blur(8px);
+      border-bottom: 1px solid rgba(255,255,255,0.07);
+    }
+    .site-header img { height: 28px; width: auto; }
+    .site-header a.back { font-size: 12px; color: rgba(255,255,255,0.4); text-decoration: none; }
+    .site-header a.back:hover { color: rgba(255,255,255,0.7); }
+
+    /* ── Page shell ── */
+    .page { background: #152438; min-height: 100vh; padding: 40px 16px 64px; }
+    .inner { max-width: 640px; margin: 0 auto; }
+
+    /* ── Report header inside white card area ── */
+    .report-header { margin-bottom: 32px; }
+    .report-logo-row {
+      display: flex; align-items: center; gap: 16px;
+      padding-bottom: 16px; margin-bottom: 16px;
+      border-bottom: 1px solid #f3f4f6;
+    }
+    .report-logo-row img { height: 44px; width: auto; }
+    .report-title {
+      font-size: 22px; font-weight: 700; color: #1a2744; letter-spacing: 0.05em;
+    }
+    .report-header h1 { font-size: 22px; font-weight: 700; color: #111827; margin-bottom: 6px; line-height: 1.35; }
+    .report-header .meta { font-size: 13px; color: #6b7280; margin-bottom: 20px; }
+    .report-header .headline { font-size: 16px; font-weight: 700; color: #111827; line-height: 1.5; }
+
+    /* ── Cards ── */
+    .card {
+      background: #fff; border-radius: 14px; border: 1px solid #f3f4f6;
+      box-shadow: 0 1px 4px rgba(0,0,0,0.06); padding: 24px; margin-bottom: 16px;
+    }
+    .card-label {
+      font-size: 11px; font-weight: 600; color: #9ca3af;
+      text-transform: uppercase; letter-spacing: 0.08em; margin-bottom: 8px;
+    }
+    .card-headline { font-size: 15px; font-weight: 700; color: #111827; margin-bottom: 16px; line-height: 1.4; }
+
+    /* ── Scoring table ── */
+    table { width: 100%; border-collapse: collapse; font-size: 13px; }
+    thead th { text-align: left; padding-bottom: 8px; font-size: 11px; color: #9ca3af; font-weight: 500; border-bottom: 1px solid #f3f4f6; padding-right: 12px; }
+    thead th:last-child { text-align: right; padding-right: 0; }
+    tbody td { padding: 10px 12px 10px 0; vertical-align: top; border-bottom: 1px solid #fafafa; font-size: 13px; }
+    tbody td:last-child { text-align: right; padding-right: 0; }
+    .weight { font-weight: 700; color: #C87A2F; }
+    .result-bad { color: #92400e; font-weight: 500; }
+    .signal { font-weight: 600; color: #374151; white-space: nowrap; }
+    .muted { color: #6b7280; }
+    .total-row td { background: #FDF1E6; font-weight: 700; color: #7a4a10; border-bottom: none; }
+    .total-row td.label { white-space: nowrap; }
+    .total-row td.score { font-size: 16px; }
+
+    /* ── Pipeline box ── */
+    .pipeline {
+      background: #1a2744; color: #fff; border-radius: 12px; padding: 20px; margin-top: 16px;
+    }
+    .pipeline .eyebrow { font-size: 10px; font-weight: 600; color: #93c5fd; text-transform: uppercase; letter-spacing: 0.1em; margin-bottom: 8px; }
+    .pipeline h3 { font-size: 20px; font-weight: 700; margin-bottom: 12px; line-height: 1.3; }
+    .pipeline ul { list-style: none; }
+    .pipeline li { display: flex; gap: 8px; font-size: 13px; color: #bfdbfe; margin-bottom: 6px; }
+    .pipeline li .bullet { color: #60a5fa; flex-shrink: 0; margin-top: 2px; }
+    .pipeline li strong { color: #fff; }
+
+    /* ── Score footnote ── */
+    .footnote { font-size: 12px; color: #6b7280; line-height: 1.6; padding-top: 12px; border-top: 1px solid #f3f4f6; margin-top: 12px; }
+
+    /* ── Competitive table ── */
+    .comp-row-you td { background: rgba(254,242,242,0.4); }
+    .comp-score-bad { color: #dc2626; font-weight: 700; }
+    .comp-gap { color: #dc2626; font-weight: 700; }
+    .comp-label { font-size: 11px; color: #9ca3af; white-space: nowrap; }
+    .comp-brand { font-weight: 600; color: #111827; }
+    .comp-you-label { font-size: 11px; font-weight: 600; color: #C87A2F; white-space: nowrap; }
+    .add-comp { font-size: 12px; color: #C87A2F; font-weight: 500; margin-top: 16px; }
+
+    /* ── Opportunity / finding ── */
+    .finding-block { background: #fff; border-radius: 14px; border: 1px solid #f3f4f6; box-shadow: 0 1px 4px rgba(0,0,0,0.06); overflow: hidden; margin-bottom: 16px; }
+    .finding-section { padding: 24px; border-bottom: 1px solid #f3f4f6; }
+    .finding-section:last-child { border-bottom: none; }
+    .finding-eyebrow { font-size: 11px; font-weight: 600; color: #C87A2F; text-transform: uppercase; letter-spacing: 0.08em; margin-bottom: 10px; }
+    .finding-section .card-label { color: #9ca3af; }
+
+    /* ── Platform list ── */
+    .platform-list { border-radius: 10px; background: #f9fafb; border: 1px solid #f3f4f6; overflow: hidden; }
+    .platform-row { display: flex; align-items: center; justify-content: space-between; padding: 10px 12px; border-bottom: 1px solid #f3f4f6; }
+    .platform-row:last-child { border-bottom: none; }
+    .platform-name { font-size: 13px; color: #374151; }
+    .platform-actions { display: flex; align-items: center; gap: 8px; }
+    .search-link { font-size: 11px; font-weight: 500; color: #C87A2F; text-decoration: none; }
+    .badge { font-size: 11px; font-weight: 500; padding: 2px 8px; border-radius: 4px; border: 1px solid; }
+    .badge-missing { background: #fef2f2; color: #b91c1c; border-color: #fecaca; }
+    .badge-cited { background: #ecfdf5; color: #065f46; border-color: #a7f3d0; }
+    .note { font-size: 12px; color: #6b7280; margin-top: 12px; line-height: 1.6; }
+
+    /* ── Root causes ── */
+    .cause-list { list-style: none; }
+    .cause-item { display: flex; gap: 12px; margin-bottom: 12px; }
+    .cause-num {
+      flex-shrink: 0; width: 20px; height: 20px; border-radius: 50%;
+      background: #FDF1E6; color: #C87A2F;
+      font-size: 11px; font-weight: 700;
+      display: flex; align-items: center; justify-content: center; margin-top: 2px;
+    }
+    .cause-text { font-size: 13px; color: #374151; line-height: 1.6; }
+
+    /* ── Verify callout ── */
+    .verify { background: #111827; border-radius: 14px; padding: 24px; margin-bottom: 16px; }
+    .verify .label { font-size: 11px; font-weight: 600; color: #4b5563; text-transform: uppercase; letter-spacing: 0.08em; margin-bottom: 12px; }
+    .verify h3 { font-size: 17px; font-weight: 700; color: #fff; margin-bottom: 16px; line-height: 1.4; }
+    .query-box { background: #1f2937; border-radius: 8px; padding: 12px 16px; font-family: monospace; font-size: 13px; color: #34d399; margin-bottom: 20px; }
+    .verify-btn { display: inline-flex; align-items: center; gap: 6px; background: #fff; color: #111827; font-size: 13px; font-weight: 600; padding: 10px 20px; border-radius: 8px; text-decoration: none; }
+
+    /* ── Three gaps ── */
+    .gap-badge { display: inline-block; font-size: 11px; font-weight: 700; color: #fff; background: #C87A2F; padding: 2px 8px; border-radius: 4px; margin-right: 8px; }
+    .gap-header { display: flex; align-items: center; margin-bottom: 12px; }
+    .gap-title { font-size: 13px; font-weight: 700; color: #111827; }
+    .gap-body { font-size: 13px; color: #374151; line-height: 1.6; margin-bottom: 14px; }
+    .consequence { background: #fffbeb; border: 1px solid #fde68a; border-radius: 8px; padding: 12px 16px; font-size: 13px; color: #92400e; line-height: 1.6; margin-bottom: 10px; }
+    .expand { font-size: 12px; color: #C87A2F; cursor: pointer; }
+
+    /* ── CTA cards ── */
+    .cta-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; margin-bottom: 32px; }
+    @media (max-width: 600px) { .cta-grid { grid-template-columns: 1fr; } }
+    .cta-card { background: #fff; border-radius: 14px; border: 1px solid #e5e7eb; padding: 20px; display: flex; flex-direction: column; position: relative; }
+    .cta-card.primary { border: 2px solid #C87A2F; }
+    .most-requested {
+      position: absolute; top: -11px; left: 16px;
+      font-size: 10px; font-weight: 700; color: #fff;
+      background: #C87A2F; padding: 2px 8px; border-radius: 999px; letter-spacing: 0.08em; text-transform: uppercase;
+    }
+    .cta-letter { display: inline-block; font-size: 11px; font-weight: 700; color: #C87A2F; background: #FDF1E6; padding: 2px 8px; border-radius: 4px; margin-bottom: 12px; margin-top: 4px; }
+    .cta-card h3 { font-size: 13px; font-weight: 700; color: #111827; margin-bottom: 8px; }
+    .cta-desc { font-size: 12px; color: #6b7280; line-height: 1.6; flex: 1; margin-bottom: 16px; }
+    .cta-btn-primary { display: block; text-align: center; font-size: 13px; font-weight: 600; color: #fff; background: #C87A2F; border-radius: 8px; padding: 10px 16px; text-decoration: none; }
+    .cta-btn-primary:hover { background: #A8651E; }
+    .cta-link { font-size: 13px; font-weight: 600; color: #C87A2F; text-decoration: none; }
+
+    /* ── Share section ── */
+    .share-card { background: #fff; border-radius: 14px; border: 1px solid #f3f4f6; box-shadow: 0 1px 4px rgba(0,0,0,0.06); padding: 24px; margin-bottom: 32px; }
+    .share-card h2 { font-size: 15px; font-weight: 600; color: #111827; margin-bottom: 4px; }
+    .share-card .sub { font-size: 13px; color: #6b7280; margin-bottom: 16px; }
+    .email-row { display: flex; gap: 8px; }
+    .email-input { flex: 1; border: 1px solid #e5e7eb; border-radius: 8px; padding: 9px 12px; font-size: 13px; color: #374151; outline: none; }
+    .send-btn { background: #C87A2F; color: #fff; font-size: 13px; font-weight: 600; border: none; border-radius: 8px; padding: 9px 20px; cursor: pointer; }
+    .action-row { display: flex; gap: 10px; margin-top: 12px; padding-top: 12px; border-top: 1px solid #f3f4f6; }
+    .action-btn { font-size: 12px; font-weight: 500; color: #6b7280; border: 1px solid #e5e7eb; border-radius: 6px; padding: 6px 14px; background: #fff; cursor: pointer; }
+
+    /* ── Footer ── */
+    .footer { text-align: center; }
+    .footer img { height: 18px; width: auto; opacity: 0.25; display: block; margin: 0 auto 10px; }
+    .footer p { font-size: 12px; color: #9ca3af; }
+    .footer a { color: #9ca3af; text-decoration: underline; }
+
+    /* ── Section headers ── */
+    .section-h2 { font-size: 20px; font-weight: 700; color: #111827; margin-bottom: 4px; }
+    .section-sub { font-size: 13px; color: #6b7280; margin-bottom: 20px; }
+  </style>
+</head>
+<body>
+
+<!-- ══ SITE HEADER ══════════════════════════════════════════════════════════ -->
+<header class="site-header">
+  <a href="https://www.maxifidigital.com" aria-label="Maxifi Digital">
+    <img src="/maxifi-logo-white.png" alt="Maxifi Digital">
+  </a>
+  <a href="https://www.maxifidigital.com" class="back">← maxifidigital.com</a>
+</header>
+
+<!-- ══ PAGE ═════════════════════════════════════════════════════════════════ -->
+<div class="page">
+<div class="inner">
+
+  <!-- 1. Report header -->
+  <div class="report-header">
+    <div class="report-logo-row" style="background:#fff; border-radius:14px; padding:20px 24px; margin-bottom:16px; border:1px solid #f3f4f6; box-shadow:0 1px 4px rgba(0,0,0,0.06);">
+      <img src="/maxifi-logo-black.png" alt="Maxifi Digital" style="height:44px;width:auto;">
+      <span class="report-title">AI Visibility Snapshot</span>
+    </div>
+    <h1 class="report-header" style="font-size:22px;font-weight:700;color:#111827;margin-bottom:6px;line-height:1.35;">Le-Anne's AI Visibility Snapshot</h1>
+    <p class="meta" style="font-size:13px;color:#6b7280;margin-bottom:20px;">Maxifi Digital · Marketing Technology · Marketing &amp; Communications · Generated 19 May 2026</p>
+    <p class="headline" style="font-size:16px;font-weight:700;color:#111827;line-height:1.5;">Your buyers are asking AI for recommendations. Right now, Maxifi Digital isn't in the answer — here's why, and what changes that.</p>
+  </div>
+
+  <!-- 2. Scoring methodology -->
+  <div class="card">
+    <div class="card-label">How your score was calculated</div>
+    <div class="card-headline">Your score of 6% puts you 57 points below the Marketing Technology benchmark — a gap with a clear fix path.</div>
+    <table>
+      <thead>
+        <tr>
+          <th>Signal</th>
+          <th>What we measured</th>
+          <th>Your result</th>
+          <th style="text-align:right">Weight</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td class="signal">Platform presence</td>
+          <td class="muted">Are you cited on any AI platform your buyers use?</td>
+          <td class="result-bad">Not cited on primary platform</td>
+          <td class="weight">30%</td>
+        </tr>
+        <tr>
+          <td class="signal">Competitor displacement</td>
+          <td class="muted">Do competitors appear instead of you on your core queries?</td>
+          <td class="muted">Not assessed — no competitor entered</td>
+          <td class="weight">30%</td>
+        </tr>
+        <tr>
+          <td class="signal">Query coverage</td>
+          <td class="muted">How many of your target queries return your brand?</td>
+          <td class="result-bad">0 of 1 checked query returned your brand</td>
+          <td class="weight">25%</td>
+        </tr>
+        <tr>
+          <td class="signal">Awareness consistency</td>
+          <td class="muted">Does AI produce consistent, accurate information about your brand when asked directly?</td>
+          <td class="muted">Based on self-reported assessment</td>
+          <td class="weight">15%</td>
+        </tr>
+        <tr class="total-row">
+          <td class="label">Your AI Visibility Score</td>
+          <td style="color:#C87A2F;font-weight:500;">Weighted total across all four signals</td>
+          <td class="score">6%</td>
+          <td style="color:#C87A2F;font-weight:500;text-align:right;white-space:nowrap;">100%</td>
+        </tr>
+      </tbody>
+    </table>
+
+    <!-- Pipeline box -->
+    <div class="pipeline">
+      <div class="eyebrow">What this means for your pipeline</div>
+      <h3>9 out of 10 AI-assisted referrals<br>in your category are going to other brands.</h3>
+      <ul>
+        <li><span class="bullet">▸</span><span>Maxifi Digital appears in approximately <strong>1 in 10</strong> cases where potential buyers asking AI for a recommendation in your category.</span></li>
+        <li><span class="bullet">▸</span><span>Brands at the Marketing Technology benchmark appear in <strong>6 or more</strong> of those same situations.</span></li>
+        <li><span class="bullet">▸</span><span>Closing to benchmark could unlock <strong>5 additional AI-assisted referrals</strong> per 10 opportunities.</span></li>
+      </ul>
+    </div>
+
+    <div class="footnote">
+      This score reflects how consistently your brand appears in AI-generated responses across the platforms your buyers use. The indicative benchmark for Marketing Technology is <strong>63%</strong> — based on Maxifi Digital's analysis of citation patterns across industries. Brands scoring below 30% are typically invisible in AI buyer journeys.
+    </div>
+  </div>
+
+  <!-- 3. Competitive position -->
+  <div class="card">
+    <div class="card-label">Competitive position</div>
+    <div class="card-headline">You are 57 points behind the Marketing Technology median — without competitor data, this is the clearest benchmark available.</div>
+    <table>
+      <thead>
+        <tr>
+          <th>Position</th>
+          <th>Brand</th>
+          <th style="text-align:right">AI visibility</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td class="comp-label">Competitor</td>
+          <td style="color:#9ca3af;font-style:italic;">Not yet compared</td>
+          <td style="text-align:right;color:#9ca3af;">—</td>
+        </tr>
+        <tr>
+          <td class="comp-label">Industry median</td>
+          <td class="muted">Marketing Technology</td>
+          <td style="text-align:right;color:#374151;">63%</td>
+        </tr>
+        <tr class="comp-row-you">
+          <td class="comp-you-label">Your position</td>
+          <td class="comp-brand">Maxifi Digital</td>
+          <td class="comp-score-bad" style="text-align:right;">6%</td>
+        </tr>
+        <tr>
+          <td class="comp-label">Gap to parity</td>
+          <td class="muted" style="font-size:12px;">vs industry median</td>
+          <td class="comp-gap" style="text-align:right;">−57%</td>
+        </tr>
+      </tbody>
+    </table>
+    <p class="add-comp">Add your closest competitors above to see how their AI visibility compares to yours — and who is leading in your category.</p>
+  </div>
+
+  <!-- 4. Finding block -->
+  <div class="finding-block">
+
+    <!-- Opportunity -->
+    <div class="finding-section">
+      <div class="finding-eyebrow">Where your biggest opportunity lies right now</div>
+      <div class="card-headline">You are findable — but not yet being cited.</div>
+      <p style="font-size:13px;color:#374151;line-height:1.6;">AI systems have the building blocks to describe Maxifi Digital. The challenge is that your content isn't yet structured in a way that signals to AI engines which questions you should be the answer to. This is a content architecture problem, not a credibility one — and it is directly addressable.</p>
+    </div>
+
+    <!-- Citation by platform -->
+    <div class="finding-section">
+      <div class="card-label">Citation status by platform</div>
+      <div class="card-headline">Maxifi Digital did not appear on either platform you tested — buyers searching here are not seeing you.</div>
+      <p style="font-size:13px;color:#6b7280;margin-bottom:12px;">Your reported test on 19 May 2026 · Query: "best Marketing Technology firms"</p>
+      <div class="platform-list">
+        <div class="platform-row">
+          <span class="platform-name">Microsoft Copilot</span>
+          <span class="platform-actions">
+            <a href="#" class="search-link">Search now →</a>
+            <span class="badge badge-missing">Not found</span>
+          </span>
+        </div>
+        <div class="platform-row">
+          <span class="platform-name">Gemini</span>
+          <span class="platform-actions">
+            <a href="#" class="search-link">Search now →</a>
+            <span class="badge badge-missing">Not found</span>
+          </span>
+        </div>
+      </div>
+      <p class="note">No brands were returned for you on the platforms you tested. Enter your closest competitors to see how their visibility compares to yours.</p>
+    </div>
+
+    <!-- Root cause -->
+    <div class="finding-section">
+      <div class="card-label">Root cause</div>
+      <div class="card-headline">Three reasons AI isn't surfacing you yet — and which to fix first.</div>
+      <ul class="cause-list">
+        <li class="cause-item">
+          <span class="cause-num">1</span>
+          <span class="cause-text">When buyers searched for what you do, Maxifi Digital did not appear in the AI response. This most commonly happens when a brand's online presence hasn't yet been structured in a way that AI engines can extract a clear category recommendation from.</span>
+        </li>
+        <li class="cause-item">
+          <span class="cause-num">2</span>
+          <span class="cause-text">AI engines typically cross-reference a brand against external sources — directories, publications, review platforms — before citing it. Brands that appear consistently across these sources tend to be cited more reliably.</span>
+        </li>
+        <li class="cause-item">
+          <span class="cause-num">3</span>
+          <span class="cause-text">Leading brands in your category have formatted their online presence to match how buyers phrase questions in Marketing Technology — structuring content to match how buyers phrase questions is one of the most reliable ways to improve AI citation rates.</span>
+        </li>
+      </ul>
+    </div>
+
+    <!-- Why now -->
+    <div class="finding-section">
+      <div class="card-label">Why this matters now</div>
+      <p style="font-size:13px;color:#374151;line-height:1.6;">AI citation positions shift as these platforms update their information sources — sometimes significantly within a single quarter. A competitor gaining ground now becomes structurally harder to displace each month they hold the position. The businesses that act first in any category tend to hold those positions longest.</p>
+    </div>
+
+  </div>
+
+  <!-- 5. Verify callout -->
+  <div class="verify">
+    <div class="label">Verify this yourself</div>
+    <h3>Open Microsoft Copilot right now and search this exact query:</h3>
+    <div class="query-box">"best Marketing Technology firms"</div>
+    <p style="font-size:12px;color:#4b5563;margin-bottom:16px;">No target queries or positioning were provided, so this uses a general industry search. For a more accurate result, search for exactly what you do — e.g. your specific service or niche.</p>
+    <a href="#" class="verify-btn">See the live result on Microsoft Copilot →</a>
+  </div>
+
+  <!-- 6. Three gaps -->
+  <div style="margin-bottom:16px;">
+    <h2 class="section-h2">What this means for your business</h2>
+    <p class="section-sub">Three gaps that explain your current AI visibility position.</p>
+
+    <div class="card" style="margin-bottom:12px;">
+      <div class="gap-header">
+        <span class="gap-badge">Gap 1</span>
+        <span class="gap-title">How your content is structured</span>
+      </div>
+      <p class="gap-body">Based on this snapshot, Maxifi Digital is not being surfaced when buyers search for Marketing Technology recommendations on Microsoft Copilot. Content structure is one of the most common reasons — the full report analyses the specific cause.</p>
+      <div class="consequence"><strong>Business consequence:</strong> If AI can't extract a clear description of what Maxifi Digital does, it won't recommend you — even when buyers are searching for exactly what you offer.</div>
+      <span class="expand">+ How AI evaluates content structure</span>
+    </div>
+
+    <div class="card" style="margin-bottom:12px;">
+      <div class="gap-header">
+        <span class="gap-badge">Gap 2</span>
+        <span class="gap-title">How well-known your brand is to AI</span>
+      </div>
+      <p class="gap-body">AI engines build confidence in a brand by checking how consistently it appears across public sources — company directories, news coverage, review platforms. Where that consistency is lower, citations happen less frequently, regardless of the brand's actual quality or reputation. Brands at the industry benchmark in your category have stronger authority signals across these sources — which is why they are cited more reliably.</p>
+      <div class="consequence"><strong>Business consequence:</strong> Until AI engines can describe Maxifi Digital accurately and with confidence, your reputation won't translate into AI-generated referrals — regardless of how strong your actual work is.</div>
+      <span class="expand">+ How AI measures brand authority</span>
+    </div>
+
+    <div class="card">
+      <div class="gap-header">
+        <span class="gap-badge">Gap 3</span>
+        <span class="gap-title">Who else is talking about you online</span>
+      </div>
+      <p class="gap-body">Third-party references from recognised sources in Marketing Technology — directories, analyst platforms, review sites — increase the likelihood of AI citation. When AI encounters a brand name, it checks whether trusted external sources confirm it. Based on what you've reported, building more consistent third-party references is likely a contributing factor to your current visibility position for Maxifi Digital.</p>
+      <div class="consequence"><strong>Business consequence:</strong> Without references from sources AI engines recognise, your brand is treated as unverified — and unverified brands are not recommended.</div>
+      <span class="expand">+ How third-party references affect AI citation</span>
+    </div>
+  </div>
+
+  <!-- 7. Why timing matters -->
+  <div class="card">
+    <h2 style="font-size:15px;font-weight:700;color:#111827;margin-bottom:12px;">Why timing matters</h2>
+    <p style="font-size:13px;color:#374151;line-height:1.6;">The brands that appear first in AI answers are not necessarily the biggest — they are the ones that structured their presence for AI discovery first. AI platforms update their citation sources regularly, and positions shift with each update. A brand that addresses these gaps now will hold a structural advantage over one that waits. At 6%, Maxifi Digital is currently 57 percentage points below the Marketing Technology benchmark — a gap that is closable with targeted action, but widens if left unaddressed.</p>
+  </div>
+
+  <!-- 8. Three-option CTA -->
+  <h2 class="section-h2">What would you like to do next?</h2>
+  <p class="section-sub">Three ways to move forward. No sales call required.</p>
+  <div class="cta-grid">
+
+    <div class="cta-card primary">
+      <span class="most-requested">Most requested</span>
+      <span class="cta-letter">A</span>
+      <h3>Get the full picture</h3>
+      <p class="cta-desc">AI Visibility Report — one report, no subscription. Covers every fix in order of impact, plus the exact sources AI is drawing on about you.</p>
+      <a href="#" class="cta-btn-primary">Get the report →</a>
+    </div>
+
+    <div class="cta-card">
+      <span class="cta-letter">B</span>
+      <h3>Track your position every month</h3>
+      <p class="cta-desc">AI Visibility Engine — monthly tracking across all AI platforms. Alerts when competitors move. Quarterly strategy review included.</p>
+      <a href="#" class="cta-link">Start tracking →</a>
+    </div>
+
+    <div class="cta-card">
+      <span class="cta-letter">C</span>
+      <h3>Have us fix it for you</h3>
+      <p class="cta-desc">Done for you — Maxifi implements every fix. We handle the content formatting, brand presence, and citation work. Monthly reporting included.</p>
+      <a href="#" class="cta-link">Book a strategy call →</a>
+    </div>
+
+  </div>
+
+  <!-- 9. Share -->
+  <div class="share-card">
+    <h2>Share or save this snapshot</h2>
+    <p class="sub">Send directly to your inbox — or forward to a colleague. Link is persistent.</p>
+    <div class="email-row">
+      <input class="email-input" type="email" value="limleanne@maxifidigital.com" readonly>
+      <button class="send-btn">Send →</button>
+    </div>
+    <div class="action-row">
+      <button class="action-btn">Copy link</button>
+      <button class="action-btn">Print / Save as PDF</button>
+    </div>
+  </div>
+
+  <!-- Footer -->
+  <div class="footer">
+    <img src="/maxifi-logo-black.png" alt="Maxifi Digital">
+    <p>Snapshot generated by <a href="#">Maxifi Digital</a> · Benchmarks based on aggregate industry research · <a href="#">Unsubscribe from emails anytime</a></p>
+  </div>
+
+</div>
+</div>
+
+</body>
+</html>
