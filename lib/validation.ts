@@ -110,3 +110,30 @@ export const AdminKeySchema = z.object({
 });
 
 export type AdminKeyInput = z.infer<typeof AdminKeySchema>;
+
+// ─── Text sanitisation ────────────────────────────────────────────────────────
+
+export function sanitiseText(input: string): string {
+  return input
+    .replace(/\x00/g, '')          // strip null bytes
+    .normalize('NFC')              // normalise unicode
+    .trim()
+    .replace(/\n{4,}/g, '\n\n');   // collapse 4+ newlines to 2
+}
+
+// ─── Injection warning (log only — never blocks) ──────────────────────────────
+
+const INJECTION_PATTERNS = [
+  'ignore previous',
+  'disregard',
+  'system prompt',
+  'you are now',
+  'act as',
+];
+
+export function warnIfInjectionAttempt(field: string, value: string): void {
+  const lower = value.toLowerCase();
+  if (INJECTION_PATTERNS.some((p) => lower.includes(p))) {
+    console.warn('[security] possible injection attempt in field:', field);
+  }
+}

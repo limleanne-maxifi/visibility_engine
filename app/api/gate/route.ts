@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { Resend } from 'resend';
 import { withRateLimit, RATE_LIMITS } from '@/lib/rateLimit';
-import { GateSchema } from '@/lib/validation';
+import { GateSchema, sanitiseText } from '@/lib/validation';
 import {
   upsertLead,
   getActiveTokenForSnapshot,
@@ -155,7 +155,8 @@ export async function POST(req: NextRequest): Promise<NextResponse> {
       { status: 400 },
     );
   }
-  const { email, snapshot_id } = parsed.data;
+  const { snapshot_id } = parsed.data;
+  const email = sanitiseText(parsed.data.email);
 
   console.log('[gate] step: upsert lead — snapshot_id:', snapshot_id);
   let leadRow: Awaited<ReturnType<typeof upsertLead>>;

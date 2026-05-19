@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { GenerateSchema } from '@/lib/validation';
+import { GenerateSchema, sanitiseText, warnIfInjectionAttempt } from '@/lib/validation';
 import { withRateLimit, RATE_LIMITS } from '@/lib/rateLimit';
 import {
   upsertLead,
@@ -64,6 +64,16 @@ export async function POST(req: NextRequest): Promise<NextResponse> {
     );
   }
   const input = parsed.data;
+
+  // Sanitise and check free-text fields before any DB or generator use
+  if (input.competitors)   input.competitors   = sanitiseText(input.competitors);
+  if (input.positioning)   input.positioning   = sanitiseText(input.positioning);
+  if (input.targetQueries) input.targetQueries = sanitiseText(input.targetQueries);
+  if (input.company)       input.company       = sanitiseText(input.company);
+  warnIfInjectionAttempt('competitors',   input.competitors   ?? '');
+  warnIfInjectionAttempt('positioning',   input.positioning   ?? '');
+  warnIfInjectionAttempt('targetQueries', input.targetQueries ?? '');
+  warnIfInjectionAttempt('company',       input.company       ?? '');
 
   console.log('[generate/v2] step: validated —', {
     occupation: input.occupation,
