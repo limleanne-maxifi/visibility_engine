@@ -207,10 +207,10 @@ export async function insertReportToken(snapshotId: string): Promise<ReportToken
 
 export async function verifyReportToken(
   token: string,
-): Promise<{ valid: boolean; snapshotId?: string; leadId?: string }> {
+): Promise<{ valid: boolean; snapshotId?: string; leadId?: string; emailVerifiedAt?: string | null }> {
   const { data, error } = await getClient()
     .from('report_tokens')
-    .select('snapshot_id, expires_at, revoked, snapshots(lead_id)')
+    .select('snapshot_id, expires_at, revoked, email_verified_at, snapshots(lead_id)')
     .eq('token', token)
     .maybeSingle();
 
@@ -226,6 +226,7 @@ export async function verifyReportToken(
     valid: true,
     snapshotId: data.snapshot_id as string,
     leadId,
+    emailVerifiedAt: data.email_verified_at as string | null,
   };
 }
 
