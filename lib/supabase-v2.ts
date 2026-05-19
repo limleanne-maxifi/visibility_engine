@@ -329,3 +329,78 @@ export async function insertUnlockEvent(
   if (error) throw error;
   return data as UnlockEventRow;
 }
+
+// ─── 11. getActiveTokenForSnapshot ───────────────────────────────────────────
+// Returns the most recent non-revoked, non-expired token for a snapshot, or null.
+// Used by /api/gate to detect re-submission without issuing a duplicate token.
+
+export async function getActiveTokenForSnapshot(
+  snapshotId: string,
+): Promise<ReportTokenRow | null> {
+  const { data, error } = await getClient()
+    .from('report_tokens')
+    .select('*')
+    .eq('snapshot_id', snapshotId)
+    .eq('revoked', false)
+    .gt('expires_at', new Date().toISOString())
+    .order('created_at', { ascending: false })
+    .limit(1)
+    .maybeSingle();
+
+  if (error) throw error;
+  return data as ReportTokenRow | null;
+}
+
+// ─── 12. getActiveTokensForEmail ─────────────────────────────────────────────
+// Returns all non-revoked, non-expired tokens across every snapshot owned by a
+// given email address. Used by /api/gate/resend to find what to revoke.
+
+export async function getActiveTokensForEmail(
+  email: string,
+): Promise<ReportTokenRow[]> {
+  const db = getClient();
+
+  const { data: lead, error: leadError } = await db
+    .from('leads')
+    .select('id')
+    .eq('email', email)
+    .maybeSingle();
+
+  if (leadError) throw leadError;
+  if (!lead) return [];
+
+  const { data: snapshots, error: snapshotError } = await db
+    .from('snapshots')
+    .select('id')
+    .eq('lead_id', lead.id);
+
+  if (snapshotError) throw snapshotError;
+  if (!snapshots?.length) return [];
+
+  const snapshotIds = snapshots.map((s: { id: string }) => s.id);
+
+  const { data: tokens, error: tokenError } = await db
+    .from('report_tokens')
+    .select('*')
+    .in('snapshot_id', snapshotIds)
+    .eq('revoked', false)
+    .gt('expires_at', new Date().toISOString())
+    .order('created_at', { ascending: false });
+
+  if (tokenError) throw tokenError;
+  return (tokens ?? []) as ReportTokenRow[];
+}
+
+// ─── 13. revokeTokensForSnapshots ────────────────────────────────────────────
+// Sets revoked=true on all tokens belonging to the given snapshot IDs.
+// Used by /api/gate/resend before issuing a fresh token.
+
+export async function revokeTokensForSnapshots(snapshotIds: string[]): Promise<void> {
+  if (!snapshotIds.length) return;
+  const { error } = await getClient()
+    .from('report_tokens')
+    .update({ revoked: true })
+    .in('snapshot_id', snapshotIds);
+
+  if (error) throw error;
+}
