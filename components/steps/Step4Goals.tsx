@@ -15,22 +15,12 @@ interface Props {
 
 // ─── Static option lists ─────────────────────────────────────────────────────
 
-const AEO_CHALLENGES = [
-  "My competitors show up, I don't",
-  'I want to appear for specific topics',
-  "AI systems don't mention me at all",
-  'AI gets my details wrong',
-  "I don't know where to start",
-];
-
-const AEO_OUTCOMES: AeoOutcome[] = [
-  'Understanding where I currently stand in AI search',
-  'Be cited when buyers ask AI tools for recommendations',
-  'Fix inaccurate or outdated information about my brand',
-  'Protecting my reputation online',
-  'Credibility and thought leadership',
-  'Beating a specific competitor',
-  'Other - please state',
+const VISIBILITY_GAPS: AeoOutcome[] = [
+  "I'm not being cited at all",
+  'My competitors are cited instead of me',
+  'Outdated or inaccurate info appears about me',
+  'I want to own specific queries or topics',
+  "I don't know where I currently stand",
 ];
 
 // ─── Industry family mapping ──────────────────────────────────────────────────
@@ -129,7 +119,7 @@ export default function Step4Goals({ data, onChange, onNext, onBack, errors, ind
   };
 
   const family = getFamily(industry);
-  const showTargetQueries = data.challenges.includes('I want to appear for specific topics');
+  const showTargetQueries = data.aeoOutcome === 'I want to own specific queries or topics';
 
   // Positioning phrase rotation
   const [posIdx, setPosIdx] = useState(0);
@@ -174,91 +164,26 @@ export default function Step4Goals({ data, onChange, onNext, onBack, errors, ind
     };
   }, [family, showTargetQueries]);
 
-  // Toggles
-  const toggleChallenge = (challenge: string) => {
-    const current = data.challenges;
-    if (current.includes(challenge)) {
-      onChange({ challenges: current.filter((c) => c !== challenge) });
-    } else if (current.length < 2) {
-      onChange({ challenges: [...current, challenge] });
-    }
-  };
-
   return (
     <form onSubmit={handleSubmit} noValidate>
-      <h1 className="text-2xl text-gray-900 mb-1">Your goals</h1>
+      <h1 className="text-2xl text-gray-900 mb-1">Your visibility gap</h1>
       <p className="text-sm text-gray-500 mb-6">
-        This shapes the whole plan — take 30 seconds to be specific.
+        Understanding what concerns you most helps us personalise your action plan.
       </p>
 
-      {/* Challenges */}
-      <fieldset className="mb-6">
-        <legend className="text-[17px] text-gray-700 mb-1">
-          What are your biggest AEO challenges?{' '}
-          <span className="text-red-500">*</span>
-        </legend>
-        <p className="text-xs text-gray-400 mb-3">Select up to 2.</p>
-        <div className="space-y-2">
-          {AEO_CHALLENGES.map((challenge) => {
-            const idx = data.challenges.indexOf(challenge);
-            const isSelected = idx !== -1;
-            const isDisabled = !isSelected && data.challenges.length >= 2;
-
-            return (
-              <button
-                key={challenge}
-                type="button"
-                onClick={() => toggleChallenge(challenge)}
-                disabled={isDisabled}
-                className={`w-full text-left px-4 py-3 rounded-lg border text-sm transition-all duration-150 ${
-                  isSelected
-                    ? 'border-[#534AB7] bg-[#EEEDFE] text-[#3C3489] font-medium'
-                    : isDisabled
-                    ? 'border-gray-100 bg-gray-50 text-gray-300 cursor-not-allowed'
-                    : 'border-gray-200 bg-white text-gray-700 hover:border-gray-300 hover:bg-gray-50'
-                }`}
-              >
-                <span className="flex items-center justify-between gap-2">
-                  <span className="flex items-center gap-2">
-                    <span
-                      className={`flex-shrink-0 w-4 h-4 rounded-full border-2 flex items-center justify-center ${
-                        isSelected
-                          ? 'border-[#534AB7] bg-[#534AB7]'
-                          : 'border-gray-300'
-                      }`}
-                    >
-                      {isSelected && <span className="w-1.5 h-1.5 rounded-full bg-white" />}
-                    </span>
-                    {challenge}
-                  </span>
-                  {isSelected && (
-                    <span className="flex-shrink-0 text-xs font-bold text-[#534AB7]">
-                      #{idx + 1}
-                    </span>
-                  )}
-                </span>
-              </button>
-            );
-          })}
-        </div>
-        {errors.challenges && (
-          <p className="mt-1 text-xs text-red-500">{errors.challenges}</p>
-        )}
-      </fieldset>
-
-      {/* Outcome */}
+      {/* Visibility Gap */}
       <fieldset className="mb-6">
         <legend className="text-[17px] text-gray-700 mb-3">
-          What outcome matters most to you?{' '}
+          What visibility gap concerns you most right now?{' '}
           <span className="text-red-500">*</span>
         </legend>
         <div className="space-y-2">
-          {AEO_OUTCOMES.map((outcome) => (
+          {VISIBILITY_GAPS.map((gap) => (
             <ChoiceCard
-              key={outcome}
-              label={outcome}
-              selected={data.aeoOutcome === outcome}
-              onSelect={() => onChange({ aeoOutcome: outcome })}
+              key={gap}
+              label={gap}
+              selected={data.aeoOutcome === gap}
+              onSelect={() => onChange({ aeoOutcome: gap })}
             />
           ))}
         </div>

@@ -1,0 +1,205 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Step 4 — Consolidated Visibility Gap Question</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --navy-sub:     #152438;
+      --navy-header:  #091521;
+      --gold:         #C87A2F;
+      --gold-hover:   #A8651E;
+      --gold-pale:    #FDF1E6;
+      --red:          #EF4444;
+      --gray-50:      #F9FAFB;
+      --gray-200:     #E5E7EB;
+      --gray-300:     #D1D5DB;
+      --gray-400:     #9CA3AF;
+      --gray-500:     #6B7280;
+      --gray-600:     #4B5563;
+      --gray-700:     #374151;
+      --gray-900:     #111827;
+    }
+
+    body {
+      font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      background: var(--navy-sub);
+      min-height: 100vh;
+      -webkit-font-smoothing: antialiased;
+      padding: 40px 16px;
+    }
+
+    .container {
+      max-width: 520px;
+      margin: 0 auto;
+    }
+
+    .preview-banner {
+      background: #07101a;
+      border-bottom: 2px solid var(--gold);
+      padding: 9px 24px;
+      text-align: center;
+      font-size: 10px;
+      font-weight: 700;
+      letter-spacing: 0.14em;
+      text-transform: uppercase;
+      color: var(--gold);
+      margin: -40px -16px 40px;
+    }
+
+    .eyebrow {
+      font-size: 10px;
+      font-weight: 700;
+      letter-spacing: 0.14em;
+      text-transform: uppercase;
+      color: var(--gold);
+      margin-bottom: 14px;
+    }
+
+    .card {
+      background: #ffffff;
+      border-radius: 16px;
+      border: 1px solid rgba(255,255,255,0.07);
+      padding: 28px 32px 32px;
+      box-shadow: 0 24px 48px rgba(0,0,0,0.32), 0 0 0 1px rgba(255,255,255,0.04);
+    }
+
+    .progress-wrap { margin-bottom: 22px; }
+    .progress-track {
+      height: 3px;
+      background: var(--gray-200);
+      border-radius: 999px;
+      overflow: hidden;
+    }
+    .progress-fill {
+      height: 100%;
+      background: var(--gold);
+      border-radius: 999px;
+    }
+    .progress-label {
+      margin-top: 5px;
+      font-size: 11px;
+      color: var(--gray-400);
+      text-align: right;
+    }
+
+    .step-h1 { font-size: 22px; font-weight: 700; color: var(--gray-900); margin-bottom: 4px; line-height: 1.3; }
+    .step-sub { font-size: 13px; color: var(--gray-500); margin-bottom: 22px; line-height: 1.6; }
+
+    fieldset { border: none; padding: 0; margin-bottom: 22px; }
+    legend { font-size: 14px; font-weight: 500; color: var(--gray-700); margin-bottom: 10px; line-height: 1.5; }
+
+    .choices { display: flex; flex-direction: column; gap: 7px; }
+    .choice-card {
+      width: 100%; text-align: left; padding: 11px 14px; border-radius: 8px;
+      border: 1px solid var(--gray-200); background: white; font-size: 13px;
+      color: var(--gray-700); cursor: pointer; display: flex; align-items: center;
+      gap: 10px; font-family: inherit; transition: border-color 0.12s, background 0.12s;
+    }
+    .choice-card:hover { border-color: var(--gray-300); }
+    .choice-card.selected {
+      border-color: var(--gold);
+      background: var(--gold-pale);
+      color: #7a4a10;
+      font-weight: 500;
+    }
+
+    .radio-dot {
+      flex-shrink: 0; width: 15px; height: 15px; border-radius: 50%;
+      border: 2px solid var(--gray-300);
+      display: flex; align-items: center; justify-content: center;
+    }
+    .choice-card.selected .radio-dot { border-color: var(--gold); }
+    .radio-inner { width: 7px; height: 7px; border-radius: 50%; background: var(--gold); }
+
+    .btn-secondary {
+      flex: 1; padding: 13px 24px;
+      border: 1px solid var(--gray-200); background: white;
+      color: var(--gray-600); font-size: 14px; font-weight: 500;
+      font-family: inherit; border-radius: 8px; cursor: pointer;
+      transition: border-color 0.15s;
+    }
+    .btn-secondary:hover { border-color: var(--gray-300); }
+
+    .btn-primary {
+      flex: 1; padding: 13px 24px;
+      background: var(--gold); color: white;
+      font-size: 14px; font-weight: 700; font-family: inherit;
+      border: none; border-radius: 8px; cursor: pointer;
+      transition: background 0.15s;
+    }
+    .btn-primary:hover { background: var(--gold-hover); }
+
+    .btn-row { display: flex; gap: 10px; margin-top: 22px; }
+
+    .note {
+      margin-top: 18px;
+      padding: 14px;
+      background: rgba(200,122,47,0.06);
+      border-left: 4px solid var(--gold);
+      border-radius: 4px;
+      font-size: 13px;
+      color: var(--gray-600);
+    }
+    .note strong { color: var(--gray-900); }
+  </style>
+</head>
+<body>
+
+  <div class="preview-banner">Step 4 — Consolidated Visibility Gap Question</div>
+
+  <div class="container">
+    <div class="eyebrow">AI Visibility Snapshot · Step 4 of 5</div>
+    <div class="card">
+      <div class="progress-wrap">
+        <div class="progress-track"><div class="progress-fill" style="width:80%"></div></div>
+        <p class="progress-label">Step 4 of 5</p>
+      </div>
+
+      <h1 class="step-h1">Your visibility gap</h1>
+      <p class="step-sub">Understanding what concerns you most helps us personalise your action plan.</p>
+
+      <fieldset>
+        <legend>What visibility gap concerns you most right now? <span style="color:var(--red);">*</span></legend>
+        <div class="choices">
+          <button class="choice-card selected">
+            <span class="radio-dot"><span class="radio-inner"></span></span>
+            I'm not being cited at all
+          </button>
+          <button class="choice-card">
+            <span class="radio-dot"></span>
+            My competitors are cited instead of me
+          </button>
+          <button class="choice-card">
+            <span class="radio-dot"></span>
+            Outdated or inaccurate info appears about me
+          </button>
+          <button class="choice-card">
+            <span class="radio-dot"></span>
+            I want to own specific queries or topics
+          </button>
+          <button class="choice-card">
+            <span class="radio-dot"></span>
+            I don't know where I currently stand
+          </button>
+        </div>
+      </fieldset>
+
+      <div class="note">
+        <strong>Note:</strong> Your answer directly shapes which sections of your report we prioritise. Each gap maps to specific diagnostics and recommendations.
+      </div>
+
+      <div class="btn-row">
+        <button class="btn-secondary">← Back</button>
+        <button class="btn-primary">Continue →</button>
+      </div>
+    </div>
+  </div>
+
+</body>
+</html>
