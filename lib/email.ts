@@ -161,18 +161,18 @@ export async function sendUserPlanEmail(lead: AeoLeadRow): Promise<void> {
         ${upsellHeadline}
       </h2>
       <p style="margin:0 0 20px;font-size:14px;color:#ddd6fe;line-height:1.7;">
-        Your free snapshot shows the gap. Your AEO Visibility Report shows exactly why &mdash;
+        Your free snapshot shows the gap. Your AI Visibility Report shows exactly why &mdash;
         and gives you a prioritised fix queue to close it.
         One report. No subscription, no sales call.
       </p>
       <a href="${REPORT_URL}"
          style="display:inline-block;background:#ffffff;color:#6B5DD3;font-size:14px;font-weight:700;
                 text-decoration:none;padding:13px 24px;border-radius:8px;margin-bottom:16px;">
-        Get My Full AEO Visibility Report &rarr;
+        Get My Full AI Visibility Report &rarr;
       </a>
       <p style="margin:0;font-size:12px;color:#c4b5fd;line-height:1.6;">
-        AEO citation positions shift as AI platforms update their data sources — sometimes significantly within a single quarter.
-        AEO Visibility Engine tracks your position monthly so changes don&rsquo;t catch you off guard. Cancel anytime.
+        AI citation positions shift as AI platforms update their data sources — sometimes significantly within a single quarter.
+        AI Visibility Engine tracks your position monthly so changes don&rsquo;t catch you off guard. Cancel anytime.
       </p>
     </div>
   </td></tr>
