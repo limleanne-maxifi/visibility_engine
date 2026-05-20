@@ -1,4 +1,9 @@
-import type { FormData } from '@/lib/types';
+import type {
+  FormData,
+  CompetitorsStructured,
+  PositioningStructured,
+  PositioningDimension,
+} from '@/lib/types';
 import { inferBusinessModel, type BusinessModel } from '@/lib/scoring';
 
 const BUYER_MODEL_CONTEXT: Record<string, string> = {
@@ -38,15 +43,100 @@ const SECTOR_CONSTRAINTS: Record<string, string> = {
 };
 
 /**
+ * PHASE 3 Helper: Format structured competitors data into readable text
+ */
+function formatCompetitorsStructured(data: CompetitorsStructured): string {
+  const lines: string[] = [];
+
+  if (data.direct && data.direct.length > 0) {
+    lines.push(`Direct competitors: ${data.direct.join(', ')}`);
+  }
+  if (data.indirect && data.indirect.length > 0) {
+    lines.push(`Alternative solutions: ${data.indirect.join(', ')}`);
+  }
+  if (data.noteworthy) {
+    lines.push(`Market context: ${data.noteworthy}`);
+  }
+
+  return lines.join(' | ');
+}
+
+/**
+ * PHASE 3 Helper: Format structured positioning data into readable text
+ */
+function formatPositioningStructured(data: PositioningStructured): string {
+  const dimensionLabels: Record<PositioningDimension, string> = {
+    speed: 'Speed/Efficiency',
+    cost: 'Cost/Price',
+    quality: 'Quality/Excellence',
+    trust: 'Trust/Reliability',
+    niche: 'Niche/Specialization',
+    integration: 'Integration/Ecosystem',
+    other: 'Other',
+    '': '',
+  };
+
+  const dimension = dimensionLabels[data.dimension] || data.dimension;
+  const lines: string[] = [`Positioning: ${dimension} — ${data.statement}`];
+
+  if (data.proof) {
+    lines.push(`Proof point: ${data.proof}`);
+  }
+
+  return lines.join(' | ');
+}
+
+/**
+ * PHASE 3 Helper: Format compliance certifications by sector
+ */
+function formatCertifications(data: FormData): string | null {
+  const certs: string[] = [];
+
+  if (data.defenseCertifications && data.defenseCertifications.length > 0) {
+    certs.push(`Defense: ${data.defenseCertifications.join(', ')}`);
+  }
+  if (data.healthcareCertifications && data.healthcareCertifications.length > 0) {
+    certs.push(`Healthcare: ${data.healthcareCertifications.join(', ')}`);
+  }
+  if (data.financeCertifications && data.financeCertifications.length > 0) {
+    certs.push(`Finance: ${data.financeCertifications.join(', ')}`);
+  }
+  if (data.aviationCertifications && data.aviationCertifications.length > 0) {
+    certs.push(`Aviation: ${data.aviationCertifications.join(', ')}`);
+  }
+
+  return certs.length > 0 ? certs.join(' | ') : null;
+}
+
+/**
+ * PHASE 3 Helper: Format regulatory context
+ */
+function formatRegulatoryContext(data: FormData): string | null {
+  const contexts: string[] = [];
+
+  if (data.exportStatus && data.exportStatus.trim()) {
+    contexts.push(`Export control: ${data.exportStatus}`);
+  }
+  if (data.dataResidency && data.dataResidency.trim()) {
+    contexts.push(`Data jurisdiction: ${data.dataResidency}`);
+  }
+
+  return contexts.length > 0 ? contexts.join(' | ') : null;
+}
+
+/**
  * PHASE 1.1 & 1.2: Validate form data for critical gaps and edge cases
+ * PHASE 3: Check context completeness (competitive, positioning, regulatory)
  * Returns validation result with warnings for missing/conflicting data
  */
 export function validateFormData(data: FormData): {
   valid: boolean;
   warnings: string[];
   platformNote?: string;
+  contextGaps?: string[];
 } {
   const warnings: string[] = [];
+  const contextGaps: string[] = [];
   let platformNote: string | undefined;
 
   // Critical identity fields
@@ -69,10 +159,41 @@ export function validateFormData(data: FormData): {
     warnings.push('Warning: No challenges specified (plan will be less targeted)');
   }
 
+  // Phase 3: Context completeness checks
+  const hasCompetitorContext =
+    (data.competitorsStructured &&
+      (data.competitorsStructured.direct?.length || data.competitorsStructured.indirect?.length)) ||
+    (data.competitors && data.competitors.trim());
+
+  if (!hasCompetitorContext) {
+    contextGaps.push('No competitor information (plan will lack differentiation guidance)');
+  }
+
+  const hasPositioningContext =
+    (data.positioningStructured && data.positioningStructured.statement) ||
+    (data.positioning && data.positioning.trim());
+
+  if (!hasPositioningContext) {
+    contextGaps.push('No positioning/differentiation details (plan will be generic)');
+  }
+
+  const hasRegulatoryContext =
+    (data.exportStatus && data.exportStatus.trim()) ||
+    (data.dataResidency && data.dataResidency.trim()) ||
+    data.defenseCertifications?.length ||
+    data.healthcareCertifications?.length ||
+    data.financeCertifications?.length ||
+    data.aviationCertifications?.length;
+
+  if (!hasRegulatoryContext && ['Defense & Government Systems', 'Aviation, ATC & Aerospace', 'Healthcare & Life Sciences', 'Healthcare Technology / Digital Health', 'Pharmaceuticals & Biotech', 'Financial Services & Banking', 'Legal & Legal Services'].includes(data.industry)) {
+    contextGaps.push('Regulated sector without compliance/certification context (plan may lack legal groundedness)');
+  }
+
   return {
     valid: warnings.filter(w => w.startsWith('Missing:')).length === 0,
     warnings,
     platformNote,
+    contextGaps: contextGaps.length > 0 ? contextGaps : undefined,
   };
 }
 
@@ -153,6 +274,7 @@ function resolveSectorConstraint(data: FormData): string | null {
  * Build user message for LLM prompt
  * PHASE 1: Defensive null-checks on arrays/objects
  * PHASE 2: Business model & sector role validation
+ * PHASE 3: Competitive intelligence, positioning, regulatory context
  */
 export function buildUserMessage(data: FormData): string {
   // Phase 1.1: Defensive null-checks for array fields
@@ -179,6 +301,34 @@ export function buildUserMessage(data: FormData): string {
       ? '[⚠ User has no primary AI platform selected — recommend starting with awareness on key platforms]'
       : null;
 
+  // Phase 3: Format competitive intelligence (structured or free text)
+  const competitorInfo =
+    data.competitorsStructured && (data.competitorsStructured.direct?.length || data.competitorsStructured.indirect?.length)
+      ? formatCompetitorsStructured(data.competitorsStructured)
+      : data.competitors
+      ? `Competitors: ${data.competitors}`
+      : null;
+
+  // Phase 3: Format positioning (structured or free text)
+  const positioningInfo =
+    data.positioningStructured && data.positioningStructured.statement
+      ? formatPositioningStructured(data.positioningStructured)
+      : data.positioning
+      ? `Positioning / differentiation: ${data.positioning}`
+      : null;
+
+  // Phase 3: Format compliance certifications
+  const certificationsInfo = formatCertifications(data);
+
+  // Phase 3: Format regulatory context
+  const regulatoryInfo = formatRegulatoryContext(data);
+
+  // Phase 3: Competitor AI presence context
+  const competitorAiPresenceInfo =
+    data.competitorAiPresence && data.competitorAiPresence.trim()
+      ? `Competitor AI visibility: ${data.competitorAiPresence}`
+      : null;
+
   const lines = [
     `Write a personalised AEO action plan for:`,
     `Name: ${data.firstName}`,
@@ -191,15 +341,21 @@ export function buildUserMessage(data: FormData): string {
     secondaryPlatform ? `Secondary AI platform: ${secondaryPlatform}` : null,
     `Biggest challenges: ${challenges.join('; ') || 'not specified'}`,
     `Most important outcome: ${data.aeoOutcome}`,
-    data.competitors ? `Competitors: ${data.competitors}` : null,
-    data.positioning ? `Positioning / differentiation: ${data.positioning}` : null,
     data.targetQueries ? `Target queries: ${data.targetQueries}` : null,
-    modelConflictNote ? '' : null,
+    ``,
+    `Competitive & Market Context:`,
+    competitorInfo,
+    competitorAiPresenceInfo,
+    positioningInfo,
+    ``,
+    `Compliance & Regulatory Context:`,
+    certificationsInfo,
+    regulatoryInfo,
+    ``,
     modelConflictNote ? modelConflictNote : null,
-    platformValidationNote ? '' : null,
     platformValidationNote ? platformValidationNote : null,
     ``,
-    `Context for this plan:`,
+    `Buyer Model & Sector Context:`,
     buyerContext,
     sectorConstraint ?? null,
   ].filter(Boolean);
