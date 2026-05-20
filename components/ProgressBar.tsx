@@ -10,11 +10,11 @@ export default function ProgressBar({ step, totalSteps }: ProgressBarProps) {
     <div className="w-full" role="progressbar" aria-valuenow={percent} aria-valuemin={0} aria-valuemax={100}>
       <div className="h-[3px] w-full bg-gray-200 rounded-full overflow-hidden">
         <div
-          className="h-full bg-[#534AB7] rounded-full transition-all duration-300 ease-in-out"
-          style={{ width: `${percent}%` }}
+          className="h-full rounded-full transition-all duration-300 ease-in-out"
+          style={{ width: `${percent}%`, background: '#C87A2F' }}
         />
       </div>
-      <p className="mt-1.5 text-xs text-gray-400 text-right">Step {step} of {totalSteps}</p>
+      <p className="mt-1.5 text-[11px] text-gray-400 text-right">Step {step} of {totalSteps}</p>
     </div>
   );
 }

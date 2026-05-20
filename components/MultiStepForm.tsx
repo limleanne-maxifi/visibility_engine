@@ -4,7 +4,6 @@ import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { FormData, initialFormData } from '@/lib/types';
 import { generateSessionId, parseUtmParams } from '@/lib/utils';
-import BrandPill from '@/components/BrandPill';
 import ProgressBar from '@/components/ProgressBar';
 import Step1Identity from '@/components/steps/Step1Identity';
 import Step2Context from '@/components/steps/Step2Context';
@@ -138,15 +137,24 @@ export default function MultiStepForm() {
   };
 
   return (
-    <div className="min-h-screen bg-gray-50 flex items-start justify-center py-10 px-4">
+    <div className="flex items-start justify-center py-10 px-4" style={{ minHeight: 'calc(100vh - 56px)' }}>
       <div className="w-full max-w-[520px]">
-        {/* Brand pill */}
-        <div className="mb-4">
-          <BrandPill />
-        </div>
+        {/* Eyebrow */}
+        <p
+          className="text-[10px] font-bold uppercase mb-3.5"
+          style={{ color: '#C87A2F', letterSpacing: '0.14em' }}
+        >
+          AI Visibility Snapshot &nbsp;·&nbsp; Step {step} of {TOTAL_STEPS}
+        </p>
 
         {/* Card */}
-        <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-6 sm:p-8">
+        <div
+          className="bg-white rounded-2xl px-8 pt-7 pb-8"
+          style={{
+            boxShadow: '0 24px 48px rgba(0,0,0,0.32), 0 0 0 1px rgba(255,255,255,0.04)',
+            border: '1px solid rgba(255,255,255,0.07)',
+          }}
+        >
           {/* Progress bar */}
           <div className="mb-6">
             <ProgressBar step={step} totalSteps={TOTAL_STEPS} />
