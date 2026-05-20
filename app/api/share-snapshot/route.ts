@@ -37,14 +37,14 @@ export async function POST(req: NextRequest) {
   <!-- Label -->
   <tr><td style="padding-bottom:8px;">
     <p style="margin:0;font-size:11px;font-weight:600;color:#6B5DD3;letter-spacing:0.08em;text-transform:uppercase;">
-      AEO Visibility Snapshot
+      AI Visibility Snapshot
     </p>
   </td></tr>
 
   <!-- Headline -->
   <tr><td style="padding-bottom:6px;">
     <h1 style="margin:0;font-size:22px;font-weight:700;color:#111827;line-height:1.3;">
-      ${firstName ? `${firstName}'s` : 'Your'} AEO Visibility Snapshot is ready
+      ${firstName ? `${firstName}'s` : 'Your'} AI Visibility Snapshot is ready
     </h1>
   </td></tr>
   <tr><td style="padding-bottom:28px;">
@@ -54,7 +54,7 @@ export async function POST(req: NextRequest) {
   <!-- Body -->
   <tr><td style="padding-bottom:28px;">
     <p style="margin:0;font-size:15px;color:#374151;line-height:1.7;">
-      Your AEO Visibility Snapshot has been shared with you. It includes your AI citation score,
+      Your AI Visibility Snapshot has been shared with you. It includes your AI citation score,
       a breakdown of the gaps affecting your visibility, and three ways to close them.
     </p>
   </td></tr>
@@ -92,7 +92,7 @@ export async function POST(req: NextRequest) {
   const { error } = await getResend().emails.send({
     from: fromEmail,
     to: email,
-    subject: `Your AEO Visibility Snapshot${company ? ` — ${company}` : ''}`,
+    subject: `Your AI Visibility Snapshot${company ? ` — ${company}` : ''}`,
     html,
   });
 
