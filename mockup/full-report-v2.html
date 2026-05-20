@@ -1,0 +1,1200 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Full Report Mockup v2 — AI Visibility Snapshot</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --navy-sub:     #152438;
+      --navy-header:  #091521;
+      --gold:         #C87A2F;
+      --gold-hover:   #A8651E;
+      --gold-pale:    #FDF1E6;
+      --gold-text:    #7a4a10;
+      --red:          #EF4444;
+      --amber:        #F59E0B;
+      --emerald:      #10B981;
+      --gray-50:      #F9FAFB;
+      --gray-100:     #F3F4F6;
+      --gray-200:     #E5E7EB;
+      --gray-300:     #D1D5DB;
+      --gray-400:     #9CA3AF;
+      --gray-500:     #6B7280;
+      --gray-600:     #4B5563;
+      --gray-700:     #374151;
+      --gray-800:     #1F2937;
+      --gray-900:     #111827;
+    }
+
+    body {
+      font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      background: var(--navy-sub);
+      min-height: 100vh;
+      -webkit-font-smoothing: antialiased;
+    }
+
+    /* ── Preview banner ───────────────────────────────────────────────── */
+    .preview-banner {
+      background: #07101a;
+      border-bottom: 2px solid var(--gold);
+      padding: 9px 24px;
+      text-align: center;
+      font-size: 10px;
+      font-weight: 700;
+      letter-spacing: 0.14em;
+      text-transform: uppercase;
+      color: var(--gold);
+      position: sticky;
+      top: 0;
+      z-index: 100;
+    }
+
+    /* ── Site header ──────────────────────────────────────────────────── */
+    .site-header {
+      background: var(--navy-header);
+      border-bottom: 1px solid rgba(255,255,255,0.07);
+      padding: 0 32px;
+      height: 56px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+    .site-header img.logo { height: 22px; width: auto; display: block; }
+    .back-link {
+      font-size: 12px;
+      color: rgba(255,255,255,0.38);
+      text-decoration: none;
+    }
+
+    /* ── Page chrome ──────────────────────────────────────────────────── */
+    .page {
+      max-width: 800px;
+      margin: 0 auto;
+      padding: 40px 20px 80px;
+    }
+
+    .eyebrow {
+      font-size: 10px;
+      font-weight: 700;
+      letter-spacing: 0.14em;
+      text-transform: uppercase;
+      color: var(--gold);
+      margin-bottom: 14px;
+    }
+
+    /* ── Card ─────────────────────────────────────────────────────────── */
+    .card {
+      background: #ffffff;
+      border-radius: 16px;
+      border: 1px solid rgba(255,255,255,0.07);
+      padding: 32px 36px;
+      margin-bottom: 18px;
+      box-shadow: 0 24px 48px rgba(0,0,0,0.32), 0 0 0 1px rgba(255,255,255,0.04);
+    }
+    .card.compact { padding: 24px 28px; }
+
+    /* Section title block */
+    .section-num {
+      display: inline-block;
+      font-size: 10px;
+      font-weight: 700;
+      letter-spacing: 0.14em;
+      text-transform: uppercase;
+      color: var(--gold);
+      margin-bottom: 8px;
+    }
+    .section-h2 {
+      font-size: 22px;
+      font-weight: 700;
+      color: var(--gray-900);
+      margin-bottom: 6px;
+      line-height: 1.3;
+    }
+    .section-sub {
+      font-size: 13px;
+      color: var(--gray-500);
+      line-height: 1.6;
+      margin-bottom: 22px;
+    }
+
+    /* ── Hero (page header) ───────────────────────────────────────────── */
+    .hero {
+      padding: 38px 36px 34px;
+    }
+    .hero-meta {
+      font-size: 12px;
+      color: var(--gray-400);
+      margin-bottom: 14px;
+      letter-spacing: 0.01em;
+    }
+    .hero-h1 {
+      font-size: 28px;
+      font-weight: 700;
+      color: var(--gray-900);
+      line-height: 1.25;
+      margin-bottom: 10px;
+    }
+    .hero-lead {
+      font-size: 15px;
+      color: var(--gray-600);
+      line-height: 1.6;
+      margin-bottom: 22px;
+    }
+
+    /* Score block */
+    .score-row {
+      display: flex;
+      align-items: center;
+      gap: 28px;
+      padding: 22px 0 0;
+      border-top: 1px solid var(--gray-200);
+    }
+    .score-circle {
+      flex-shrink: 0;
+      width: 96px;
+      height: 96px;
+      border-radius: 50%;
+      background: conic-gradient(var(--gold) 0% 47%, var(--gray-200) 47% 100%);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      position: relative;
+    }
+    .score-circle::after {
+      content: '';
+      position: absolute;
+      inset: 8px;
+      background: white;
+      border-radius: 50%;
+    }
+    .score-circle .num {
+      position: relative;
+      z-index: 1;
+      font-size: 28px;
+      font-weight: 700;
+      color: var(--gold);
+      line-height: 1;
+    }
+    .score-circle .denom {
+      position: relative;
+      z-index: 1;
+      font-size: 10px;
+      color: var(--gray-400);
+      letter-spacing: 0.06em;
+      margin-top: 1px;
+    }
+    .score-text { flex: 1; }
+    .score-label {
+      font-size: 10px;
+      font-weight: 700;
+      letter-spacing: 0.14em;
+      text-transform: uppercase;
+      color: var(--gray-400);
+      margin-bottom: 6px;
+    }
+    .score-head {
+      font-size: 16px;
+      font-weight: 700;
+      color: var(--gray-900);
+      line-height: 1.4;
+      margin-bottom: 6px;
+    }
+    .score-band {
+      display: inline-block;
+      font-size: 11px;
+      font-weight: 700;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      padding: 3px 9px;
+      border-radius: 4px;
+      background: rgba(245, 158, 11, 0.15);
+      color: #B45309;
+    }
+
+    /* ── Sticky inline TOC ────────────────────────────────────────────── */
+    .toc {
+      background: rgba(255,255,255,0.03);
+      border: 1px solid rgba(255,255,255,0.07);
+      border-radius: 12px;
+      padding: 16px 22px;
+      margin-bottom: 28px;
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 8px 28px;
+    }
+    .toc h4 {
+      grid-column: 1 / -1;
+      font-size: 10px;
+      font-weight: 700;
+      letter-spacing: 0.14em;
+      text-transform: uppercase;
+      color: rgba(255,255,255,0.4);
+      margin-bottom: 6px;
+    }
+    .toc a {
+      font-size: 12px;
+      color: rgba(255,255,255,0.7);
+      text-decoration: none;
+      padding: 4px 0;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .toc a:hover { color: var(--gold); }
+    .toc .badge {
+      flex-shrink: 0;
+      font-size: 9px;
+      font-weight: 700;
+      letter-spacing: 0.04em;
+      padding: 1px 5px;
+      border-radius: 3px;
+      text-transform: uppercase;
+    }
+    .toc .badge.free { background: rgba(16,185,129,0.18); color: #34d399; }
+    .toc .badge.locked { background: rgba(200,122,47,0.2); color: var(--gold); }
+
+    /* ── Citation snapshot table ──────────────────────────────────────── */
+    .cite-row {
+      display: grid;
+      grid-template-columns: 130px 1fr 100px;
+      gap: 18px;
+      padding: 14px 0;
+      border-top: 1px solid var(--gray-100);
+      align-items: start;
+    }
+    .cite-row:first-of-type { border-top: 1px solid var(--gray-200); }
+    .cite-platform {
+      font-size: 14px;
+      font-weight: 600;
+      color: var(--gray-900);
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .platform-dot {
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      flex-shrink: 0;
+    }
+    .platform-dot.green { background: var(--emerald); }
+    .platform-dot.amber { background: var(--amber); }
+    .platform-dot.red { background: var(--red); }
+    .cite-finding {
+      font-size: 13px;
+      color: var(--gray-600);
+      line-height: 1.55;
+    }
+    .cite-finding em {
+      display: block;
+      color: var(--gray-400);
+      font-size: 12px;
+      font-style: normal;
+      margin-top: 4px;
+    }
+    .cite-status {
+      font-size: 11px;
+      font-weight: 700;
+      letter-spacing: 0.06em;
+      text-transform: uppercase;
+      padding: 4px 8px;
+      border-radius: 4px;
+      text-align: center;
+      align-self: start;
+    }
+    .cite-status.cited { background: rgba(16,185,129,0.14); color: #047857; }
+    .cite-status.displaced { background: rgba(239,68,68,0.13); color: #B91C1C; }
+    .cite-status.missing { background: var(--gray-100); color: var(--gray-500); }
+    .cite-status.outdated { background: rgba(245,158,11,0.16); color: #B45309; }
+
+    /* ── Failure mode block ───────────────────────────────────────────── */
+    .failure-callout {
+      background: rgba(239,68,68,0.05);
+      border: 1px solid rgba(239,68,68,0.18);
+      border-left: 4px solid var(--red);
+      border-radius: 10px;
+      padding: 18px 22px;
+      margin-bottom: 22px;
+    }
+    .failure-callout .tag {
+      display: inline-block;
+      font-size: 10px;
+      font-weight: 700;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      color: #B91C1C;
+      margin-bottom: 6px;
+    }
+    .failure-callout h3 {
+      font-size: 17px;
+      font-weight: 700;
+      color: var(--gray-900);
+      line-height: 1.4;
+      margin-bottom: 8px;
+    }
+    .failure-callout p {
+      font-size: 13px;
+      color: var(--gray-700);
+      line-height: 1.65;
+    }
+    .root-causes h4 {
+      font-size: 11px;
+      font-weight: 700;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      color: var(--gray-500);
+      margin-bottom: 12px;
+    }
+    .root-causes ul {
+      list-style: none;
+      display: flex;
+      flex-direction: column;
+      gap: 11px;
+    }
+    .root-causes li {
+      display: flex;
+      gap: 12px;
+      font-size: 13px;
+      color: var(--gray-700);
+      line-height: 1.6;
+    }
+    .root-causes li::before {
+      content: '';
+      flex-shrink: 0;
+      width: 6px;
+      height: 6px;
+      border-radius: 50%;
+      background: var(--gold);
+      margin-top: 8px;
+    }
+    .root-causes li strong { color: var(--gray-900); font-weight: 600; }
+
+    /* ── Platform overview grid ───────────────────────────────────────── */
+    .platform-grid {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 12px;
+    }
+    .platform-card {
+      background: var(--gray-50);
+      border: 1px solid var(--gray-200);
+      border-radius: 10px;
+      padding: 16px 18px;
+    }
+    .platform-card.primary {
+      background: var(--gold-pale);
+      border-color: rgba(200,122,47,0.3);
+    }
+    .platform-card .head {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 8px;
+    }
+    .platform-card .name {
+      font-size: 14px;
+      font-weight: 700;
+      color: var(--gray-900);
+    }
+    .platform-card .rank {
+      font-size: 10px;
+      font-weight: 700;
+      letter-spacing: 0.06em;
+      text-transform: uppercase;
+      color: var(--gold);
+    }
+    .platform-card .visibility {
+      font-size: 24px;
+      font-weight: 700;
+      color: var(--gray-900);
+      line-height: 1;
+      margin-bottom: 4px;
+    }
+    .platform-card .meta {
+      font-size: 11px;
+      color: var(--gray-500);
+      line-height: 1.5;
+    }
+    .platform-card .note {
+      font-size: 12px;
+      color: var(--gray-600);
+      margin-top: 10px;
+      line-height: 1.5;
+    }
+
+    /* ── Benchmark comparison ─────────────────────────────────────────── */
+    .benchmark-bar {
+      position: relative;
+      height: 32px;
+      background: linear-gradient(90deg, #FEE2E2 0%, #FEF3C7 35%, #FEF3C7 60%, #D1FAE5 100%);
+      border-radius: 6px;
+      margin: 22px 0 12px;
+    }
+    .benchmark-marker {
+      position: absolute;
+      top: -6px;
+      bottom: -6px;
+      width: 3px;
+      border-radius: 2px;
+    }
+    .benchmark-marker.you { background: var(--gray-900); }
+    .benchmark-marker.median { background: var(--gray-500); }
+    .benchmark-marker.leader { background: var(--emerald); }
+    .benchmark-marker .label {
+      position: absolute;
+      bottom: calc(100% + 4px);
+      left: 50%;
+      transform: translateX(-50%);
+      font-size: 10px;
+      font-weight: 700;
+      white-space: nowrap;
+      letter-spacing: 0.04em;
+      text-transform: uppercase;
+    }
+    .benchmark-marker.you .label { color: var(--gray-900); }
+    .benchmark-marker.median .label { color: var(--gray-500); }
+    .benchmark-marker.leader .label { color: #047857; }
+    .benchmark-scale {
+      display: flex;
+      justify-content: space-between;
+      font-size: 11px;
+      color: var(--gray-400);
+      margin-top: 6px;
+    }
+    .benchmark-readout {
+      margin-top: 22px;
+      padding: 14px 16px;
+      background: var(--gray-50);
+      border-radius: 8px;
+      font-size: 13px;
+      color: var(--gray-700);
+      line-height: 1.6;
+    }
+    .benchmark-readout strong { color: var(--gray-900); font-weight: 600; }
+
+    /* ── Paywall divider ──────────────────────────────────────────────── */
+    .paywall-divider {
+      text-align: center;
+      margin: 38px 0 22px;
+    }
+    .paywall-divider .ribbon {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      background: var(--gold);
+      color: white;
+      padding: 8px 18px;
+      border-radius: 999px;
+      font-size: 11px;
+      font-weight: 700;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+    }
+    .paywall-hero {
+      background: linear-gradient(180deg, rgba(200,122,47,0.08) 0%, rgba(200,122,47,0.02) 100%);
+      border: 1px solid rgba(200,122,47,0.28);
+      border-radius: 16px;
+      padding: 30px 34px 28px;
+      margin-bottom: 18px;
+      text-align: center;
+    }
+    .paywall-hero h2 {
+      font-size: 24px;
+      font-weight: 700;
+      color: white;
+      line-height: 1.3;
+      margin-bottom: 10px;
+    }
+    .paywall-hero p {
+      font-size: 14px;
+      color: rgba(255,255,255,0.65);
+      line-height: 1.6;
+      max-width: 540px;
+      margin: 0 auto 22px;
+    }
+    .paywall-cta {
+      display: inline-block;
+      background: var(--gold);
+      color: white;
+      font-size: 14px;
+      font-weight: 700;
+      padding: 13px 28px;
+      border-radius: 8px;
+      text-decoration: none;
+    }
+    .paywall-cta:hover { background: var(--gold-hover); }
+    .paywall-fineprint {
+      margin-top: 12px;
+      font-size: 11px;
+      color: rgba(255,255,255,0.4);
+    }
+
+    /* ── Locked cards ─────────────────────────────────────────────────── */
+    .locked-card {
+      background: white;
+      border-radius: 16px;
+      padding: 28px 32px;
+      margin-bottom: 14px;
+      border: 1px solid rgba(255,255,255,0.07);
+      position: relative;
+      overflow: hidden;
+    }
+    .locked-card::after {
+      content: '';
+      position: absolute;
+      left: 0; right: 0; bottom: 0;
+      height: 110px;
+      background: linear-gradient(180deg, rgba(255,255,255,0) 0%, white 80%);
+      pointer-events: none;
+    }
+    .locked-head {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      margin-bottom: 10px;
+    }
+    .locked-icon {
+      width: 22px;
+      height: 22px;
+      border-radius: 50%;
+      background: var(--gold-pale);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+    }
+    .locked-num {
+      font-size: 10px;
+      font-weight: 700;
+      letter-spacing: 0.14em;
+      text-transform: uppercase;
+      color: var(--gold);
+    }
+    .locked-title {
+      font-size: 19px;
+      font-weight: 700;
+      color: var(--gray-900);
+      margin-bottom: 8px;
+      line-height: 1.3;
+    }
+    .locked-sub {
+      font-size: 13px;
+      color: var(--gray-500);
+      line-height: 1.6;
+      margin-bottom: 16px;
+    }
+    .locked-preview {
+      position: relative;
+      filter: blur(2.5px);
+      opacity: 0.85;
+      user-select: none;
+      pointer-events: none;
+    }
+    .preview-row {
+      display: flex;
+      justify-content: space-between;
+      padding: 8px 0;
+      border-bottom: 1px solid var(--gray-100);
+      font-size: 13px;
+    }
+    .preview-row strong { color: var(--gray-900); }
+    .preview-row span { color: var(--gray-600); }
+    .preview-list { list-style: none; }
+    .preview-list li {
+      padding: 8px 0;
+      border-bottom: 1px solid var(--gray-100);
+      font-size: 13px;
+      color: var(--gray-700);
+    }
+    .locked-cta-row {
+      position: absolute;
+      left: 0; right: 0; bottom: 18px;
+      text-align: center;
+      z-index: 2;
+    }
+    .locked-cta-row .pill {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      background: white;
+      border: 1px solid var(--gold);
+      color: var(--gold);
+      font-size: 12px;
+      font-weight: 700;
+      padding: 8px 16px;
+      border-radius: 999px;
+      box-shadow: 0 4px 12px rgba(200,122,47,0.18);
+    }
+
+    /* ── Action queue rows (locked) ───────────────────────────────────── */
+    .action-row {
+      display: grid;
+      grid-template-columns: 60px 1fr 90px;
+      gap: 16px;
+      padding: 12px 0;
+      border-bottom: 1px solid var(--gray-100);
+      align-items: center;
+    }
+    .action-window {
+      font-size: 11px;
+      font-weight: 700;
+      letter-spacing: 0.06em;
+      text-transform: uppercase;
+      color: var(--gold);
+    }
+    .action-title {
+      font-size: 13px;
+      color: var(--gray-800);
+      line-height: 1.5;
+    }
+    .action-impact {
+      font-size: 11px;
+      font-weight: 700;
+      letter-spacing: 0.04em;
+      text-transform: uppercase;
+      color: var(--gray-400);
+      text-align: right;
+    }
+
+    /* ── Footer CTA ───────────────────────────────────────────────────── */
+    .footer-cta {
+      background: var(--navy-header);
+      border: 1px solid rgba(255,255,255,0.07);
+      border-radius: 16px;
+      padding: 30px 34px;
+      margin-top: 28px;
+      display: flex;
+      gap: 24px;
+      align-items: center;
+      flex-wrap: wrap;
+    }
+    .footer-cta .text {
+      flex: 1;
+      min-width: 280px;
+    }
+    .footer-cta h3 {
+      font-size: 18px;
+      font-weight: 700;
+      color: white;
+      margin-bottom: 6px;
+    }
+    .footer-cta p {
+      font-size: 13px;
+      color: rgba(255,255,255,0.55);
+      line-height: 1.6;
+    }
+    .footer-cta .btn {
+      background: var(--gold);
+      color: white;
+      font-size: 13px;
+      font-weight: 700;
+      padding: 12px 22px;
+      border-radius: 8px;
+      text-decoration: none;
+      flex-shrink: 0;
+    }
+
+    /* ── Page footer ──────────────────────────────────────────────────── */
+    .report-footer {
+      margin-top: 40px;
+      text-align: center;
+      font-size: 11px;
+      color: rgba(255,255,255,0.3);
+      line-height: 1.7;
+    }
+    .report-footer a { color: rgba(255,255,255,0.5); text-decoration: none; }
+
+    @media (max-width: 640px) {
+      .platform-grid { grid-template-columns: 1fr; }
+      .cite-row { grid-template-columns: 100px 1fr; }
+      .cite-status { grid-column: 1 / -1; justify-self: start; }
+      .toc { grid-template-columns: 1fr; }
+      .score-row { flex-direction: column; align-items: flex-start; gap: 18px; }
+      .hero, .card { padding: 24px 22px; }
+      .action-row { grid-template-columns: 1fr; gap: 4px; }
+      .action-impact { text-align: left; }
+    }
+  </style>
+</head>
+<body>
+
+  <div class="preview-banner">Static mockup — Full report v2 — Maxifi Digital · AI Visibility Snapshot</div>
+
+  <!-- Site header -->
+  <header class="site-header">
+    <a href="#"><img class="logo" src="../public/maxifi-logo-white.png" alt="Maxifi Digital"></a>
+    <a class="back-link" href="#">← maxifidigital.com</a>
+  </header>
+
+  <div class="page">
+
+    <p class="eyebrow">AI Visibility Snapshot &nbsp;·&nbsp; Free report</p>
+
+    <!-- ══════════════════════════════════════════════════════════ HERO ═══ -->
+    <section class="card hero">
+      <p class="hero-meta">Maxifi Digital · Marketing &amp; Advertising · Head of / VP · Generated 20 May 2026</p>
+      <h1 class="hero-h1">Leanne, you're showing up — but the wrong story is being told about you.</h1>
+      <p class="hero-lead">
+        Across the AI platforms your buyers use most (ChatGPT, Perplexity), your brand
+        surfaces in only 2 of 6 query categories. When buyers ask for AEO-focused
+        agencies in your sector, three competitors are cited where you should be.
+      </p>
+
+      <div class="score-row">
+        <div class="score-circle">
+          <div style="position:relative;z-index:1;text-align:center;">
+            <div class="num">47</div>
+            <div class="denom">/ 100</div>
+          </div>
+        </div>
+        <div class="score-text">
+          <p class="score-label">Your AI Visibility Score</p>
+          <p class="score-head">Below industry median (62) — competitor displacement is the dominant failure pattern.</p>
+          <span class="score-band">⚠ Caution band · 40–59</span>
+        </div>
+      </div>
+    </section>
+
+
+    <!-- ─── Inline TOC ───────────────────────────────────────────────── -->
+    <nav class="toc">
+      <h4>What's in this report</h4>
+      <a href="#cite"><span class="badge free">Free</span>1 · Current citation snapshot</a>
+      <a href="#failure"><span class="badge free">Free</span>2 · Failure mode diagnosis</a>
+      <a href="#platforms"><span class="badge free">Free</span>3 · Platform visibility overview</a>
+      <a href="#benchmark"><span class="badge free">Free</span>4 · Industry benchmark comparison</a>
+      <a href="#competitor"><span class="badge locked">Locked</span>5 · Competitor displacement</a>
+      <a href="#positioning"><span class="badge locked">Locked</span>6 · Positioning gap</a>
+      <a href="#queries"><span class="badge locked">Locked</span>7 · Target query gap</a>
+      <a href="#queue"><span class="badge locked">Locked</span>8 · 60-day action queue</a>
+    </nav>
+
+
+    <!-- ══════════════════════════════════════════════════ 1. CITATION ═══ -->
+    <section class="card" id="cite">
+      <p class="section-num">Section 1 &nbsp;·&nbsp; Free</p>
+      <h2 class="section-h2">Current citation snapshot</h2>
+      <p class="section-sub">
+        How Maxifi Digital surfaces today across the six AI platforms your buyers
+        use most. Each row shows the dominant pattern from our test query batch.
+      </p>
+
+      <div>
+        <div class="cite-row">
+          <div class="cite-platform"><span class="platform-dot amber"></span>ChatGPT</div>
+          <div class="cite-finding">
+            Cited inconsistently — appears on 2 of 5 brand-adjacent queries,
+            but consistently displaced on "best AEO agency" style searches.
+            <em>Example: query "marketing agency AI visibility UK" → competitors A, B, C cited; Maxifi not mentioned.</em>
+          </div>
+          <span class="cite-status displaced">Displaced</span>
+        </div>
+
+        <div class="cite-row">
+          <div class="cite-platform"><span class="platform-dot green"></span>Perplexity</div>
+          <div class="cite-finding">
+            Strongest performance. Cited as a primary source on positioning and
+            measurement queries, with link-backs to your blog.
+            <em>Example: "what is answer engine optimisation" → Maxifi cited with two paragraph excerpts.</em>
+          </div>
+          <span class="cite-status cited">Cited</span>
+        </div>
+
+        <div class="cite-row">
+          <div class="cite-platform"><span class="platform-dot red"></span>Google AI Overviews</div>
+          <div class="cite-finding">
+            Not surfacing on AI Overviews for any tested query — site-level
+            structure may not be parseable for AIO extraction.
+            <em>0 citations across 12 sector-relevant queries.</em>
+          </div>
+          <span class="cite-status missing">Missing</span>
+        </div>
+
+        <div class="cite-row">
+          <div class="cite-platform"><span class="platform-dot amber"></span>Microsoft Copilot</div>
+          <div class="cite-finding">
+            Cited with outdated description — references a service offering you
+            sunset 14 months ago. Buyers reading this will form the wrong mental model.
+            <em>Quote: "Maxifi Digital — paid social agency" (incorrect since 2024).</em>
+          </div>
+          <span class="cite-status outdated">Outdated</span>
+        </div>
+
+        <div class="cite-row">
+          <div class="cite-platform"><span class="platform-dot red"></span>Claude</div>
+          <div class="cite-finding">
+            No citations detected across tested queries. Brand entity unknown
+            to the model.
+          </div>
+          <span class="cite-status missing">Missing</span>
+        </div>
+
+        <div class="cite-row">
+          <div class="cite-platform"><span class="platform-dot red"></span>Gemini</div>
+          <div class="cite-finding">
+            Not surfacing. Three named competitors hold the citation slots on
+            queries you should win.
+          </div>
+          <span class="cite-status displaced">Displaced</span>
+        </div>
+      </div>
+    </section>
+
+
+    <!-- ══════════════════════════════════════════════ 2. FAILURE MODE ═══ -->
+    <section class="card" id="failure">
+      <p class="section-num">Section 2 &nbsp;·&nbsp; Free</p>
+      <h2 class="section-h2">Failure mode diagnosis</h2>
+      <p class="section-sub">
+        Across all four signals in our scoring model, one pattern dominates your
+        result. This shapes the entire action plan that follows.
+      </p>
+
+      <div class="failure-callout">
+        <span class="tag">⚠ Dominant failure pattern</span>
+        <h3>Competitor displacement — three named rivals are being cited on the queries that should be yours.</h3>
+        <p>
+          You are not invisible. You are being out-cited. The brand entities surfacing
+          on your highest-value buyer queries (Forge &amp; Loom, Brightline AEO, North Lane Studios)
+          are not necessarily larger or better — they have published clearer answer-shaped
+          content that AI systems can extract.
+        </p>
+      </div>
+
+      <div class="root-causes">
+        <h4>Root causes our scoring model surfaced</h4>
+        <ul>
+          <li>
+            <span>
+              <strong>Thin positioning signal.</strong> Your homepage and service pages
+              describe what you do in agency-generic language. AI models cannot extract
+              a sharp "this is the firm for X" phrase to surface in answers.
+            </span>
+          </li>
+          <li>
+            <span>
+              <strong>No answer-shaped long-form.</strong> Competitors winning your
+              queries publish 1,200–2,000 word explainers structured as
+              question → direct answer → evidence. Your blog is news-format.
+            </span>
+          </li>
+          <li>
+            <span>
+              <strong>Outdated brand description on Copilot.</strong> Your prior
+              positioning ("paid social agency") is still cached in answer outputs.
+              Without a structured re-introduction, this persists.
+            </span>
+          </li>
+          <li>
+            <span>
+              <strong>Missing schema and entity signals.</strong> No Organization
+              schema, no clear author bios, no structured FAQ blocks. AI engines
+              lack the metadata to confidently surface you.
+            </span>
+          </li>
+        </ul>
+      </div>
+    </section>
+
+
+    <!-- ═════════════════════════════════════════════════ 3. PLATFORMS ═══ -->
+    <section class="card" id="platforms">
+      <p class="section-num">Section 3 &nbsp;·&nbsp; Free</p>
+      <h2 class="section-h2">Platform visibility overview</h2>
+      <p class="section-sub">
+        Estimated visibility across each platform based on citations per tested
+        query batch. Your two primary platforms (ChatGPT, Perplexity) are
+        highlighted.
+      </p>
+
+      <div class="platform-grid">
+        <div class="platform-card primary">
+          <div class="head">
+            <span class="name">ChatGPT</span>
+            <span class="rank">Primary · #1</span>
+          </div>
+          <div class="visibility">22%</div>
+          <p class="meta">Cited on 2 of 9 buyer-intent queries</p>
+          <p class="note">Inconsistent. Strong on "what is" queries; absent on "best/top" recommendation queries.</p>
+        </div>
+
+        <div class="platform-card primary">
+          <div class="head">
+            <span class="name">Perplexity</span>
+            <span class="rank">Primary · #2</span>
+          </div>
+          <div class="visibility">71%</div>
+          <p class="meta">Cited on 5 of 7 buyer-intent queries</p>
+          <p class="note">Your strongest channel. Blog content is being extracted cleanly with attribution.</p>
+        </div>
+
+        <div class="platform-card">
+          <div class="head">
+            <span class="name">Google AI Overviews</span>
+          </div>
+          <div class="visibility">0%</div>
+          <p class="meta">Not surfacing</p>
+          <p class="note">Highest-priority gap by buyer reach. Needs schema + answer-shaped content to unlock.</p>
+        </div>
+
+        <div class="platform-card">
+          <div class="head">
+            <span class="name">Microsoft Copilot</span>
+          </div>
+          <div class="visibility">14%</div>
+          <p class="meta">Cited inaccurately on 1 of 7 queries</p>
+          <p class="note">Outdated brand description is actively hurting more than it helps.</p>
+        </div>
+
+        <div class="platform-card">
+          <div class="head">
+            <span class="name">Claude</span>
+          </div>
+          <div class="visibility">0%</div>
+          <p class="meta">Brand entity unknown</p>
+          <p class="note">Lower buyer reach but rising fast — worth establishing baseline citations.</p>
+        </div>
+
+        <div class="platform-card">
+          <div class="head">
+            <span class="name">Gemini</span>
+          </div>
+          <div class="visibility">0%</div>
+          <p class="meta">Displaced by competitors on 4 of 6 queries</p>
+          <p class="note">Same content pattern as AI Overviews — fixing one tends to lift the other.</p>
+        </div>
+      </div>
+    </section>
+
+
+    <!-- ═════════════════════════════════════════════════ 4. BENCHMARK ═══ -->
+    <section class="card" id="benchmark">
+      <p class="section-num">Section 4 &nbsp;·&nbsp; Free</p>
+      <h2 class="section-h2">Industry benchmark comparison</h2>
+      <p class="section-sub">
+        How you compare against 31 Marketing &amp; Advertising firms in our
+        benchmark set. The scale runs 0 (invisible) to 100 (dominant).
+      </p>
+
+      <div class="benchmark-bar">
+        <div class="benchmark-marker you" style="left:47%;"><span class="label">You · 47</span></div>
+        <div class="benchmark-marker median" style="left:62%;"><span class="label">Median · 62</span></div>
+        <div class="benchmark-marker leader" style="left:88%;"><span class="label">Leader · 88</span></div>
+      </div>
+      <div class="benchmark-scale">
+        <span>0</span>
+        <span>25</span>
+        <span>50</span>
+        <span>75</span>
+        <span>100</span>
+      </div>
+
+      <div class="benchmark-readout">
+        You sit <strong>15 points below the sector median</strong> and 41 below the
+        category leader (Brightline AEO). Of the 31 firms benchmarked, 21 score
+        higher than you — but the gap is closeable: leaders typically out-score
+        you on positioning signal and answer-shaped content, both of which can
+        improve within 60 days.
+      </div>
+    </section>
+
+
+    <!-- ══════════════════════════════════════════════════ PAYWALL HERO ═══ -->
+    <div class="paywall-divider"><span class="ribbon">▼ Unlocked in full report</span></div>
+
+    <div class="paywall-hero">
+      <h2>The four sections below answer "what should I actually do about it?"</h2>
+      <p>
+        Your free snapshot tells you where you stand. The full report tells you
+        which competitor to displace first, what your positioning sentence needs
+        to say, which queries to win in order, and exactly what to ship in the next
+        60 days — sequenced by impact and effort.
+      </p>
+      <a href="#" class="paywall-cta">Unlock the full report →</a>
+      <p class="paywall-fineprint">Includes all 4 sections below · delivered to your inbox · no sales call required</p>
+    </div>
+
+
+    <!-- ════════════════════════════════════════════ 5. COMPETITOR ═══════ -->
+    <section class="locked-card" id="competitor">
+      <div class="locked-head">
+        <span class="locked-icon">
+          <svg width="10" height="11" viewBox="0 0 20 20" fill="#C87A2F"><path fill-rule="evenodd" d="M10 1a4.5 4.5 0 00-4.5 4.5V9H5a2 2 0 00-2 2v6a2 2 0 002 2h10a2 2 0 002-2v-6a2 2 0 00-2-2h-.5V5.5A4.5 4.5 0 0010 1zm3 8V5.5a3 3 0 10-6 0V9h6z" clip-rule="evenodd"/></svg>
+        </span>
+        <span class="locked-num">Section 5 · Locked</span>
+      </div>
+      <h3 class="locked-title">Competitor displacement analysis</h3>
+      <p class="locked-sub">
+        Named ranking of the competitors currently holding citation slots that
+        belong to you, with the exact queries they're winning and why.
+      </p>
+      <div class="locked-preview">
+        <div class="preview-row">
+          <strong>Forge &amp; Loom</strong>
+          <span>Wins 7 of 12 queries · positioning: "the AEO firm B2B SaaS teams call"</span>
+        </div>
+        <div class="preview-row">
+          <strong>Brightline AEO</strong>
+          <span>Wins 6 of 12 queries · positioning: "category-defining content explainers"</span>
+        </div>
+        <div class="preview-row">
+          <strong>North Lane Studios</strong>
+          <span>Wins 4 of 12 queries · positioning: "outcome-led measurement focus"</span>
+        </div>
+        <div class="preview-row">
+          <strong>Anvil &amp; Echo</strong>
+          <span>Wins 2 of 12 queries · adjacent rather than direct competitor</span>
+        </div>
+      </div>
+      <div class="locked-cta-row">
+        <span class="pill">
+          <svg width="11" height="12" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M10 1a4.5 4.5 0 00-4.5 4.5V9H5a2 2 0 00-2 2v6a2 2 0 002 2h10a2 2 0 002-2v-6a2 2 0 00-2-2h-.5V5.5A4.5 4.5 0 0010 1zm3 8V5.5a3 3 0 10-6 0V9h6z" clip-rule="evenodd"/></svg>
+          Unlock to see the full ranking, queries &amp; counter-moves
+        </span>
+      </div>
+    </section>
+
+
+    <!-- ════════════════════════════════════════════ 6. POSITIONING ══════ -->
+    <section class="locked-card" id="positioning">
+      <div class="locked-head">
+        <span class="locked-icon">
+          <svg width="10" height="11" viewBox="0 0 20 20" fill="#C87A2F"><path fill-rule="evenodd" d="M10 1a4.5 4.5 0 00-4.5 4.5V9H5a2 2 0 00-2 2v6a2 2 0 002 2h10a2 2 0 002-2v-6a2 2 0 00-2-2h-.5V5.5A4.5 4.5 0 0010 1zm3 8V5.5a3 3 0 10-6 0V9h6z" clip-rule="evenodd"/></svg>
+        </span>
+        <span class="locked-num">Section 6 · Locked</span>
+      </div>
+      <h3 class="locked-title">Positioning gap analysis</h3>
+      <p class="locked-sub">
+        The exact one-sentence positioning your buyers will accept (and AI engines
+        can extract), benchmarked against what you submitted and what your
+        competitors say.
+      </p>
+      <div class="locked-preview">
+        <div class="preview-row">
+          <strong>Your stated positioning</strong>
+          <span>"Performance marketing for ambitious brands"</span>
+        </div>
+        <div class="preview-row">
+          <strong>What AI engines surface</strong>
+          <span>"Generalist digital agency · UK · paid social heritage"</span>
+        </div>
+        <div class="preview-row">
+          <strong>Recommended sharper claim</strong>
+          <span>"The AEO partner B2B SaaS marketing leaders call when…"</span>
+        </div>
+        <div class="preview-row">
+          <strong>Evidence required</strong>
+          <span>3 case studies · 2 measurable outcome statements · 1 named POV</span>
+        </div>
+      </div>
+      <div class="locked-cta-row">
+        <span class="pill">
+          <svg width="11" height="12" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M10 1a4.5 4.5 0 00-4.5 4.5V9H5a2 2 0 00-2 2v6a2 2 0 002 2h10a2 2 0 002-2v-6a2 2 0 00-2-2h-.5V5.5A4.5 4.5 0 0010 1zm3 8V5.5a3 3 0 10-6 0V9h6z" clip-rule="evenodd"/></svg>
+          Unlock to see the full positioning workshop output
+        </span>
+      </div>
+    </section>
+
+
+    <!-- ════════════════════════════════════════════════ 7. QUERIES ══════ -->
+    <section class="locked-card" id="queries">
+      <div class="locked-head">
+        <span class="locked-icon">
+          <svg width="10" height="11" viewBox="0 0 20 20" fill="#C87A2F"><path fill-rule="evenodd" d="M10 1a4.5 4.5 0 00-4.5 4.5V9H5a2 2 0 00-2 2v6a2 2 0 002 2h10a2 2 0 002-2v-6a2 2 0 00-2-2h-.5V5.5A4.5 4.5 0 0010 1zm3 8V5.5a3 3 0 10-6 0V9h6z" clip-rule="evenodd"/></svg>
+        </span>
+        <span class="locked-num">Section 7 · Locked</span>
+      </div>
+      <h3 class="locked-title">Target query gap analysis</h3>
+      <p class="locked-sub">
+        The 12 buyer-intent queries we recommend you win, ranked by reachable
+        impact. For each: current state, blocking factor, and content brief.
+      </p>
+      <div class="locked-preview">
+        <ul class="preview-list">
+          <li>1 · "best AEO agency for B2B SaaS"  ·  competitor-held  ·  high reachability</li>
+          <li>2 · "how to measure AI brand citation"  ·  partial visibility  ·  fastest win</li>
+          <li>3 · "answer engine optimisation explained"  ·  Perplexity-only  ·  expand to ChatGPT</li>
+          <li>4 · "AEO vs SEO 2026"  ·  unranked  ·  category-defining piece needed</li>
+          <li>5 · "AI visibility audit firm UK"  ·  competitor-held  ·  evidence gap</li>
+        </ul>
+      </div>
+      <div class="locked-cta-row">
+        <span class="pill">
+          <svg width="11" height="12" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M10 1a4.5 4.5 0 00-4.5 4.5V9H5a2 2 0 00-2 2v6a2 2 0 002 2h10a2 2 0 002-2v-6a2 2 0 00-2-2h-.5V5.5A4.5 4.5 0 0010 1zm3 8V5.5a3 3 0 10-6 0V9h6z" clip-rule="evenodd"/></svg>
+          Unlock all 12 queries with full briefs
+        </span>
+      </div>
+    </section>
+
+
+    <!-- ══════════════════════════════════════════════ 8. ACTION QUEUE ═══ -->
+    <section class="locked-card" id="queue">
+      <div class="locked-head">
+        <span class="locked-icon">
+          <svg width="10" height="11" viewBox="0 0 20 20" fill="#C87A2F"><path fill-rule="evenodd" d="M10 1a4.5 4.5 0 00-4.5 4.5V9H5a2 2 0 00-2 2v6a2 2 0 002 2h10a2 2 0 002-2v-6a2 2 0 00-2-2h-.5V5.5A4.5 4.5 0 0010 1zm3 8V5.5a3 3 0 10-6 0V9h6z" clip-rule="evenodd"/></svg>
+        </span>
+        <span class="locked-num">Section 8 · Locked</span>
+      </div>
+      <h3 class="locked-title">60-day prioritised action queue</h3>
+      <p class="locked-sub">
+        Ten actions sequenced by impact and effort. Each includes the exact
+        deliverable, who should own it, and how to measure that it landed.
+      </p>
+      <div class="locked-preview">
+        <div class="action-row">
+          <span class="action-window">Wk 1–2</span>
+          <span class="action-title">Ship Organization + Author schema across the site. Foundation for every other action.</span>
+          <span class="action-impact">High impact</span>
+        </div>
+        <div class="action-row">
+          <span class="action-window">Wk 2–3</span>
+          <span class="action-title">Publish the AEO category-defining explainer (2,000 words, Q→A structured).</span>
+          <span class="action-impact">High impact</span>
+        </div>
+        <div class="action-row">
+          <span class="action-window">Wk 3–4</span>
+          <span class="action-title">Submit corrected entity description to Microsoft Copilot via Bing Webmaster.</span>
+          <span class="action-impact">Med impact</span>
+        </div>
+        <div class="action-row">
+          <span class="action-window">Wk 4–6</span>
+          <span class="action-title">Land 2 named POV pieces from senior practitioners — prerequisite for citation trust.</span>
+          <span class="action-impact">High impact</span>
+        </div>
+        <div class="action-row">
+          <span class="action-window">Wk 6–8</span>
+          <span class="action-title">Counter-positioning piece directly addressing Forge &amp; Loom's "AEO for B2B SaaS" claim.</span>
+          <span class="action-impact">High impact</span>
+        </div>
+      </div>
+      <div class="locked-cta-row">
+        <span class="pill">
+          <svg width="11" height="12" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M10 1a4.5 4.5 0 00-4.5 4.5V9H5a2 2 0 00-2 2v6a2 2 0 002 2h10a2 2 0 002-2v-6a2 2 0 00-2-2h-.5V5.5A4.5 4.5 0 0010 1zm3 8V5.5a3 3 0 10-6 0V9h6z" clip-rule="evenodd"/></svg>
+          Unlock all 10 actions with owners, briefs &amp; measurement
+        </span>
+      </div>
+    </section>
+
+
+    <!-- ══════════════════════════════════════════════ FOOTER CTA ════════ -->
+    <div class="footer-cta">
+      <div class="text">
+        <h3>Ready to fix this in 60 days?</h3>
+        <p>The full report comes with a sequenced plan you can hand to your team — or have us run for you. Book a 20-minute walkthrough to decide which.</p>
+      </div>
+      <a class="btn" href="#">Book a walkthrough →</a>
+    </div>
+
+    <p class="report-footer">
+      AI Visibility Snapshot · Generated for Maxifi Digital, 20 May 2026 ·
+      <a href="#">Privacy</a> · <a href="#">Methodology</a> · <a href="#">Share this report</a>
+    </p>
+
+  </div>
+</body>
+</html>
