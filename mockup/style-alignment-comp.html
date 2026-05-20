@@ -1,0 +1,536 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<title>Visibility Snapshot — Style Alignment Comp</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root {
+    /* Current palette */
+    --c-bg: #f9fafb;
+    --c-card: #ffffff;
+    --c-accent: #534AB7;
+    --c-accent-soft: #EEEDFE;
+    --c-accent-dark: #3C3489;
+    --c-navy: #1a2744;
+    --c-text: #111827;
+    --c-text-2: #374151;
+    --c-text-3: #6b7280;
+    --c-text-4: #9ca3af;
+    --c-border: #f3f4f6;
+
+    /* Proposed palette (Option B — Hybrid) */
+    --p-navy: #0f1c3a;
+    --p-navy-2: #1a2744;
+    --p-gold: #D4A13F;
+    --p-gold-hover: #b8862d;
+    --p-cream: #f5efe0;
+    --p-card: #ffffff;
+    --p-text: #0f1c3a;
+    --p-text-2: #374151;
+    --p-text-3: #6b7280;
+    --p-text-4: #9ca3af;
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    font-family: 'DM Sans', -apple-system, BlinkMacSystemFont, sans-serif;
+    background: #e9ecf2;
+    color: #0f1c3a;
+    -webkit-font-smoothing: antialiased;
+  }
+  .page {
+    max-width: 1300px;
+    margin: 0 auto;
+    padding: 40px 24px 80px;
+  }
+  .page-header {
+    margin-bottom: 36px;
+  }
+  .page-header h1 {
+    font-size: 28px;
+    margin: 0 0 6px;
+    font-weight: 700;
+    letter-spacing: -0.01em;
+  }
+  .page-header p {
+    margin: 0;
+    color: #4a5878;
+    font-size: 14px;
+  }
+  .columns {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 28px;
+  }
+  .col {
+    min-width: 0;
+  }
+  .col-label {
+    display: inline-block;
+    font-size: 11px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    padding: 4px 10px;
+    border-radius: 999px;
+    margin-bottom: 14px;
+  }
+  .col-label.current  { background: #d1d5db; color: #1f2937; }
+  .col-label.proposed { background: var(--p-gold); color: var(--p-navy); }
+  .section-title {
+    font-size: 12px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    color: #6b7280;
+    margin: 30px 0 10px;
+  }
+
+  /* ─── Wrapper backgrounds (mimic page bg) ───────────────────────── */
+  .frame {
+    border-radius: 16px;
+    overflow: hidden;
+    border: 1px solid #d6dbe6;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.04);
+  }
+  .frame.current  { background: var(--c-bg); }
+  .frame.proposed { background: var(--p-navy); }
+
+  /* ─── Brand pill (current vs proposed) ──────────────────────────── */
+  .brandpill {
+    padding: 24px 28px 18px;
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    border-bottom: 1px solid;
+  }
+  .brandpill.current  { border-color: #f3f4f6; }
+  .brandpill.proposed { border-color: rgba(255,255,255,0.06); }
+  .brandpill .logo {
+    width: 36px; height: 36px; border-radius: 8px;
+    display: flex; align-items: center; justify-content: center;
+    font-weight: 800; font-size: 14px;
+  }
+  .brandpill.current  .logo { background: var(--c-navy); color: white; letter-spacing: 0.04em; }
+  .brandpill.proposed .logo { background: var(--p-gold); color: var(--p-navy); letter-spacing: 0.04em; }
+  .brandpill .title {
+    font-size: 18px; font-weight: 700; letter-spacing: 0.04em;
+  }
+  .brandpill.current  .title { color: var(--c-navy); }
+  .brandpill.proposed .title { color: white; }
+
+  /* ─── Form card (Step 1 — abbreviated) ──────────────────────────── */
+  .form-wrap {
+    padding: 28px 28px 32px;
+  }
+  .form-card {
+    border-radius: 16px;
+    padding: 26px;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.04);
+  }
+  .form-card.current  { background: var(--c-card); border: 1px solid var(--c-border); }
+  .form-card.proposed { background: var(--p-card); border: 1px solid #e6e8ee; }
+
+  .progress {
+    display: flex; gap: 6px; margin-bottom: 20px;
+  }
+  .progress .dot { height: 4px; flex: 1; border-radius: 2px; }
+  .progress.current .dot.active { background: var(--c-accent); }
+  .progress.current .dot.inactive { background: #e5e7eb; }
+  .progress.proposed .dot.active { background: var(--p-gold); }
+  .progress.proposed .dot.inactive { background: #e5e7eb; }
+
+  h2.step {
+    font-size: 22px; font-weight: 700; margin: 0 0 6px;
+    color: var(--c-text);
+  }
+  p.step-sub {
+    font-size: 13px; color: var(--c-text-3); margin: 0 0 18px;
+  }
+
+  .field { margin-bottom: 14px; }
+  .field label {
+    display: block; font-size: 12px; font-weight: 600;
+    color: #374151; margin-bottom: 6px;
+  }
+  .field input {
+    width: 100%;
+    padding: 10px 12px;
+    font-size: 14px;
+    border: 1px solid #e5e7eb;
+    border-radius: 8px;
+    font-family: inherit;
+    background: white;
+  }
+  .field input:focus { outline: none; }
+  .field.current input:focus  { border-color: var(--c-accent); box-shadow: 0 0 0 3px var(--c-accent-soft); }
+  .field.proposed input:focus { border-color: var(--p-gold); box-shadow: 0 0 0 3px rgba(212,161,63,0.18); }
+
+  .cta {
+    display: inline-flex; align-items: center; gap: 6px;
+    padding: 11px 22px;
+    border-radius: 10px;
+    font-size: 14px;
+    font-weight: 600;
+    border: 0;
+    cursor: pointer;
+    font-family: inherit;
+    margin-top: 8px;
+  }
+  .cta.current  { background: var(--c-accent); color: white; }
+  .cta.current:hover { background: var(--c-accent-dark); }
+  .cta.proposed { background: var(--p-gold); color: var(--p-navy); }
+  .cta.proposed:hover { background: var(--p-gold-hover); }
+
+  /* ─── Score card section (from results page) ────────────────────── */
+  .score-section { padding: 0; margin-top: 28px; }
+  .score-wrap { padding: 28px; }
+
+  .score-card {
+    border-radius: 14px;
+    padding: 22px 24px;
+    margin-bottom: 14px;
+  }
+  .score-card.current  { background: #ffffff; border: 1px solid var(--c-border); }
+  .score-card.proposed { background: #ffffff; border: 1px solid #e6e8ee; }
+
+  .score-eyebrow {
+    font-size: 11px; font-weight: 700; text-transform: uppercase;
+    letter-spacing: 0.1em; color: var(--c-text-4); margin: 0 0 6px;
+  }
+  .score-headline {
+    font-size: 16px; font-weight: 700; margin: 0 0 18px;
+    color: var(--c-text);
+  }
+  table.score {
+    width: 100%; border-collapse: collapse; font-size: 13px;
+  }
+  table.score th, table.score td {
+    text-align: left; padding: 10px 0;
+    border-bottom: 1px solid #f3f4f6;
+  }
+  table.score th {
+    color: var(--c-text-4); font-weight: 500; font-size: 11px;
+    text-transform: uppercase; letter-spacing: 0.05em;
+  }
+  table.score td.signal { font-weight: 600; color: #374151; }
+  table.score td.weight  { text-align: right; font-weight: 700; }
+  table.score.current  td.weight { color: var(--c-accent); }
+  table.score.proposed td.weight { color: var(--p-gold); }
+
+  tr.total td { font-weight: 700; padding: 14px 0; border-bottom: 0; }
+  tr.total.current  td { background: var(--c-accent-soft); color: var(--c-accent-dark); }
+  tr.total.proposed td { background: #fbf3df; color: var(--p-navy); }
+
+  /* Pipeline callout — current = navy, proposed = navy (kept) */
+  .pipeline {
+    margin-top: 16px;
+    border-radius: 14px;
+    padding: 22px;
+  }
+  .pipeline.current  { background: var(--c-navy); color: white; }
+  .pipeline.proposed { background: var(--p-navy); color: white; border: 1px solid rgba(212,161,63,0.25); }
+  .pipeline .eyebrow {
+    font-size: 11px; font-weight: 700; text-transform: uppercase;
+    letter-spacing: 0.1em; margin: 0 0 8px;
+  }
+  .pipeline.current  .eyebrow { color: #93c5fd; }
+  .pipeline.proposed .eyebrow { color: var(--p-gold); }
+  .pipeline .big {
+    font-size: 22px; font-weight: 700; line-height: 1.25; margin: 0 0 12px;
+  }
+  .pipeline ul { margin: 0; padding-left: 16px; font-size: 13px; line-height: 1.7; }
+  .pipeline.current  ul { color: #c7d2fe; }
+  .pipeline.proposed ul { color: #e6e8ee; }
+
+  /* ─── CTA card (upsell — Option A) ──────────────────────────────── */
+  .upsell { padding: 28px; }
+  .upsell-card {
+    border-radius: 14px;
+    padding: 24px;
+  }
+  .upsell-card.current  { background: var(--c-accent); color: white; }
+  .upsell-card.proposed { background: var(--p-navy); color: white; border: 1px solid rgba(212,161,63,0.25); }
+  .upsell-card h3 {
+    margin: 0 0 10px; font-size: 18px; font-weight: 700;
+  }
+  .upsell-card p {
+    margin: 0 0 16px; font-size: 13px; line-height: 1.6;
+  }
+  .upsell-card.current  p { color: #ddd6fe; }
+  .upsell-card.proposed p { color: #e6e8ee; }
+  .upsell-card .button {
+    display: inline-block;
+    padding: 11px 20px;
+    border-radius: 8px;
+    font-size: 13px;
+    font-weight: 700;
+    text-decoration: none;
+  }
+  .upsell-card.current  .button { background: white; color: var(--c-accent); }
+  .upsell-card.proposed .button { background: var(--p-gold); color: var(--p-navy); }
+  .upsell-card small {
+    display: block; margin-top: 14px; font-size: 11px; line-height: 1.6;
+  }
+  .upsell-card.current  small { color: #c4b5fd; }
+  .upsell-card.proposed small { color: rgba(245,239,224,0.65); }
+
+  /* ─── Notes block ───────────────────────────────────────────────── */
+  .notes {
+    margin-top: 40px;
+    background: white;
+    border: 1px solid #d6dbe6;
+    border-radius: 14px;
+    padding: 22px 26px;
+  }
+  .notes h2 { margin: 0 0 12px; font-size: 16px; }
+  .notes ul { margin: 0; padding-left: 18px; font-size: 13px; line-height: 1.7; color: #374151; }
+  .notes code {
+    background: #f3f4f6; padding: 1px 6px; border-radius: 4px;
+    font-size: 12px; font-family: ui-monospace, Menlo, monospace;
+  }
+  .swatch {
+    display: inline-block; width: 12px; height: 12px;
+    border-radius: 3px; vertical-align: middle; margin-right: 6px;
+    border: 1px solid rgba(0,0,0,0.08);
+  }
+</style>
+</head>
+<body>
+<div class="page">
+
+  <div class="page-header">
+    <h1>Visibility Snapshot — Style Alignment Comp</h1>
+    <p>Left: current production styling. Right: proposed Option B (Hybrid) — gold accent replaces purple, dark-navy bands on chrome moments, light form card retained for usability.</p>
+  </div>
+
+  <!-- ═══════════ SECTION 1 — Form entry ═══════════════════════════ -->
+  <div class="section-title">1 · Form entry — landing experience from the marketing CTA</div>
+  <div class="columns">
+
+    <!-- CURRENT -->
+    <div class="col">
+      <span class="col-label current">Current</span>
+      <div class="frame current">
+        <div class="brandpill current">
+          <div class="logo">M</div>
+          <div class="title">AI Visibility Snapshot</div>
+        </div>
+        <div class="form-wrap">
+          <div class="form-card current">
+            <div class="progress current">
+              <div class="dot active"></div>
+              <div class="dot inactive"></div>
+              <div class="dot inactive"></div>
+              <div class="dot inactive"></div>
+              <div class="dot inactive"></div>
+            </div>
+            <h2 class="step">Let's start with the basics</h2>
+            <p class="step-sub">We'll personalise your AEO action plan to your role and company.</p>
+            <div class="field current">
+              <label>First name</label>
+              <input type="text" value="Sarah" />
+            </div>
+            <div class="field current">
+              <label>Business email</label>
+              <input type="email" value="sarah@example.com" />
+            </div>
+            <div class="field current">
+              <label>Website URL</label>
+              <input type="url" placeholder="https://example.com" />
+            </div>
+            <button class="cta current">Next →</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- PROPOSED -->
+    <div class="col">
+      <span class="col-label proposed">Proposed</span>
+      <div class="frame proposed">
+        <div class="brandpill proposed">
+          <div class="logo">M</div>
+          <div class="title">AI Visibility Snapshot</div>
+        </div>
+        <div class="form-wrap">
+          <div class="form-card proposed">
+            <div class="progress proposed">
+              <div class="dot active"></div>
+              <div class="dot inactive"></div>
+              <div class="dot inactive"></div>
+              <div class="dot inactive"></div>
+              <div class="dot inactive"></div>
+            </div>
+            <h2 class="step">Let's start with the basics</h2>
+            <p class="step-sub">We'll personalise your AEO action plan to your role and company.</p>
+            <div class="field proposed">
+              <label>First name</label>
+              <input type="text" value="Sarah" />
+            </div>
+            <div class="field proposed">
+              <label>Business email</label>
+              <input type="email" value="sarah@example.com" />
+            </div>
+            <div class="field proposed">
+              <label>Website URL</label>
+              <input type="url" placeholder="https://example.com" />
+            </div>
+            <button class="cta proposed">Next →</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- ═══════════ SECTION 2 — Score card ═══════════════════════════ -->
+  <div class="section-title">2 · Results — scoring methodology block</div>
+  <div class="columns">
+
+    <!-- CURRENT -->
+    <div class="col">
+      <span class="col-label current">Current</span>
+      <div class="frame current">
+        <div class="score-wrap">
+          <div class="score-card current">
+            <p class="score-eyebrow">How your score was calculated</p>
+            <p class="score-headline">Your score of 38% puts you 24 points below the SaaS benchmark.</p>
+            <table class="score current">
+              <thead>
+                <tr><th>Signal</th><th>Your result</th><th style="text-align:right;">Weight</th></tr>
+              </thead>
+              <tbody>
+                <tr><td class="signal">Platform presence</td><td>Not cited</td><td class="weight">30%</td></tr>
+                <tr><td class="signal">Competitor displacement</td><td>Competitor cited</td><td class="weight">30%</td></tr>
+                <tr><td class="signal">Query coverage</td><td>0 of 3 queries</td><td class="weight">25%</td></tr>
+                <tr><td class="signal">Awareness consistency</td><td>Self-reported</td><td class="weight">15%</td></tr>
+                <tr class="total current">
+                  <td>Your AI Visibility Score</td><td>38%</td><td style="text-align:right;">100%</td>
+                </tr>
+              </tbody>
+            </table>
+            <div class="pipeline current">
+              <p class="eyebrow">What this means for your pipeline</p>
+              <p class="big">6 out of 10 AI-assisted referrals in your category are going to other brands.</p>
+              <ul>
+                <li>Your brand appears in approximately 4 in 10 buyer searches.</li>
+                <li>Your named competitors appear in 6 or more of those same situations.</li>
+              </ul>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- PROPOSED -->
+    <div class="col">
+      <span class="col-label proposed">Proposed</span>
+      <div class="frame proposed">
+        <div class="score-wrap">
+          <div class="score-card proposed">
+            <p class="score-eyebrow">How your score was calculated</p>
+            <p class="score-headline">Your score of 38% puts you 24 points below the SaaS benchmark.</p>
+            <table class="score proposed">
+              <thead>
+                <tr><th>Signal</th><th>Your result</th><th style="text-align:right;">Weight</th></tr>
+              </thead>
+              <tbody>
+                <tr><td class="signal">Platform presence</td><td>Not cited</td><td class="weight">30%</td></tr>
+                <tr><td class="signal">Competitor displacement</td><td>Competitor cited</td><td class="weight">30%</td></tr>
+                <tr><td class="signal">Query coverage</td><td>0 of 3 queries</td><td class="weight">25%</td></tr>
+                <tr><td class="signal">Awareness consistency</td><td>Self-reported</td><td class="weight">15%</td></tr>
+                <tr class="total proposed">
+                  <td>Your AI Visibility Score</td><td>38%</td><td style="text-align:right;">100%</td>
+                </tr>
+              </tbody>
+            </table>
+            <div class="pipeline proposed">
+              <p class="eyebrow">What this means for your pipeline</p>
+              <p class="big">6 out of 10 AI-assisted referrals in your category are going to other brands.</p>
+              <ul>
+                <li>Your brand appears in approximately 4 in 10 buyer searches.</li>
+                <li>Your named competitors appear in 6 or more of those same situations.</li>
+              </ul>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- ═══════════ SECTION 3 — Upsell ═══════════════════════════════ -->
+  <div class="section-title">3 · CTA — full report upsell card</div>
+  <div class="columns">
+
+    <!-- CURRENT -->
+    <div class="col">
+      <span class="col-label current">Current</span>
+      <div class="frame current">
+        <div class="upsell">
+          <div class="upsell-card current">
+            <h3>Find out exactly where you stand across all AI platforms — and what to fix first.</h3>
+            <p>Your free snapshot shows the gap. Your AI Visibility Report shows exactly why — and gives you a prioritised fix queue to close it. One report. No subscription, no sales call.</p>
+            <a href="#" class="button">Get My Full AI Visibility Report →</a>
+            <small>AI citation positions shift as platforms update their data sources — sometimes significantly within a single quarter.</small>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- PROPOSED -->
+    <div class="col">
+      <span class="col-label proposed">Proposed</span>
+      <div class="frame proposed">
+        <div class="upsell">
+          <div class="upsell-card proposed">
+            <h3>Find out exactly where you stand across all AI platforms — and what to fix first.</h3>
+            <p>Your free snapshot shows the gap. Your AI Visibility Report shows exactly why — and gives you a prioritised fix queue to close it. One report. No subscription, no sales call.</p>
+            <a href="#" class="button">Get My Full AI Visibility Report →</a>
+            <small>AI citation positions shift as platforms update their data sources — sometimes significantly within a single quarter.</small>
+          </div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- ═══════════ Notes ════════════════════════════════════════════ -->
+  <div class="notes">
+    <h2>Proposed palette tokens</h2>
+    <ul>
+      <li><span class="swatch" style="background:#0f1c3a"></span><code>--navy</code> <code>#0f1c3a</code> — page chrome (header band, footer, dark sections). Matches the marketing-site background.</li>
+      <li><span class="swatch" style="background:#1a2744"></span><code>--navy-2</code> <code>#1a2744</code> — elevated dark panels (pipeline callout, CTA card). Already in use today.</li>
+      <li><span class="swatch" style="background:#D4A13F"></span><code>--gold</code> <code>#D4A13F</code> — primary accent. Replaces <code>#534AB7</code> everywhere (buttons, focus rings, weights, links).</li>
+      <li><span class="swatch" style="background:#b8862d"></span><code>--gold-hover</code> <code>#b8862d</code> — button hover state.</li>
+      <li><span class="swatch" style="background:#fbf3df"></span><code>--gold-soft</code> <code>#fbf3df</code> — soft gold for the score total row (replaces <code>#EEEDFE</code>).</li>
+      <li><span class="swatch" style="background:#ffffff;border-color:#ccc"></span><code>--card</code> <code>#ffffff</code> — form card stays white for readability and accessibility on long data-entry steps.</li>
+    </ul>
+
+    <h2 style="margin-top:22px;">What changes in code</h2>
+    <ul>
+      <li>Find/replace <code>#534AB7</code> → <code>#D4A13F</code> across components and emails (~30 occurrences).</li>
+      <li>Find/replace <code>#6B5DD3</code> → <code>#D4A13F</code> (~10 occurrences) and <code>#3C3489</code> → <code>#b8862d</code>.</li>
+      <li>Replace <code>#EEEDFE</code> backgrounds with <code>#fbf3df</code>.</li>
+      <li><code>MultiStepForm.tsx</code> wrapper: add dark-navy header band behind the BrandPill.</li>
+      <li><code>BrandPill.tsx</code>: white text on dark background instead of navy text on white.</li>
+      <li>Upsell card (results page Option A + email): swap purple background for navy with gold button.</li>
+      <li>Pipeline callout: tint the eyebrow text gold instead of blue.</li>
+    </ul>
+
+    <h2 style="margin-top:22px;">Trade-offs to weigh</h2>
+    <ul>
+      <li><strong>Dark band around form vs full dark form.</strong> This mockup keeps the form card light because data-entry forms with dark backgrounds tend to have weaker contrast on placeholders and validation states. If you want full dark-mode (Option A), the form fields would need a separate pass for input contrast and focus indicators.</li>
+      <li><strong>Score total row.</strong> The current purple-tinted total row (<code>#EEEDFE</code> / <code>#3C3489</code>) translates to a warm-cream tint with navy text. Reads softer than the current purple; preserves "this is the conclusion" hierarchy.</li>
+      <li><strong>Pipeline callout.</strong> Already navy in production — only the small eyebrow accent colour changes (blue-300 → gold). Minimal disruption, high brand-cue payoff.</li>
+    </ul>
+  </div>
+
+</div>
+</body>
+</html>
