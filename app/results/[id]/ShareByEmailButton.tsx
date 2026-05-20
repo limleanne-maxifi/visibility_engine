@@ -46,7 +46,7 @@ export default function ShareByEmailButton({ defaultEmail, firstName, company }:
         </div>
         <button
           onClick={() => { setStatus('idle'); setEmail(''); }}
-          className="text-xs text-[#534AB7] hover:underline"
+          className="text-xs text-[#C87A2F] hover:underline"
         >
           Send to another address →
         </button>
@@ -63,12 +63,12 @@ export default function ShareByEmailButton({ defaultEmail, firstName, company }:
           onChange={(e) => { setEmail(e.target.value); if (status === 'error') setStatus('idle'); }}
           onKeyDown={(e) => e.key === 'Enter' && send()}
           placeholder="Email address"
-          className="flex-1 text-sm border border-gray-200 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-[#534AB7]/30 focus:border-[#534AB7] transition-colors"
+          className="flex-1 text-sm border border-gray-200 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-[#C87A2F]/30 focus:border-[#C87A2F] transition-colors"
         />
         <button
           onClick={send}
           disabled={status === 'sending' || !email.trim()}
-          className="flex items-center gap-2 text-sm font-semibold text-white bg-[#534AB7] hover:bg-[#4640a0] disabled:opacity-60 disabled:cursor-not-allowed rounded-lg px-4 py-2 transition-colors whitespace-nowrap"
+          className="flex items-center gap-2 text-sm font-semibold text-white bg-[#C87A2F] hover:bg-[#A8651E] disabled:opacity-60 disabled:cursor-not-allowed rounded-lg px-4 py-2 transition-colors whitespace-nowrap"
         >
           {status === 'sending' ? (
             <>
