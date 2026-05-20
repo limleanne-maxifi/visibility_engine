@@ -27,6 +27,10 @@ export type AeoOutcome =
   | "I don't know where I currently stand"
   | '';
 
+export type BusinessModelOverride = 'B2G' | 'B2B' | 'B2C' | 'mixed' | '';
+export type PharmaRole = 'Drug Developer' | 'CRO / CMO' | 'Biotech Platform' | 'Other' | '';
+export type DefenseChannel = 'Military' | 'Commercial Aviation' | 'Space / Satellite' | 'Mixed' | '';
+
 export interface Platform {
   value: string;
   priority: 'primary' | 'secondary';
@@ -54,6 +58,11 @@ export interface FormData {
   positioning: string;
   targetQueries: string;
 
+  // Phase 2: Business Model & Sector Context (optional overrides)
+  buyerModelPrimary?: BusinessModelOverride;
+  pharmaRole?: PharmaRole;
+  defenseChannel?: DefenseChannel;
+
   // Step 5 — Consent
   consent: boolean;
 
@@ -79,6 +88,9 @@ export const initialFormData: FormData = {
   competitors: '',
   positioning: '',
   targetQueries: '',
+  buyerModelPrimary: '',
+  pharmaRole: '',
+  defenseChannel: '',
   consent: false,
   utmSource: '',
   utmMedium: '',
