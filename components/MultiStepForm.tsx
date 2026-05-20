@@ -41,8 +41,7 @@ function validateStep(step: number, data: FormData): Errors {
   }
 
   if (step === 4) {
-    if (data.challenges.length === 0) errors.challenges = 'Please select at least one challenge.';
-    if (!data.aeoOutcome) errors.aeoOutcome = 'Please select your desired outcome.';
+    if (!data.aeoOutcome) errors.aeoOutcome = 'Please select your visibility gap.';
   }
 
   if (step === 5) {
