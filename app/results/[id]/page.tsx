@@ -676,7 +676,7 @@ export default async function ResultsPage({ params }: Props) {
                 {competitors.length === 0 && lead.awareness === 'Yes — competitors were cited instead of me' && (
                   <p className="text-xs text-gray-500 mt-3 leading-relaxed">
                     You indicated competitors are appearing instead of you but didn&rsquo;t name them.
-                    Your full AEO Visibility Report identifies exactly which brands are displacing you on each platform.{' '}
+                    Your full AI Visibility Report identifies exactly which brands are displacing you on each platform.{' '}
                     <a href={reportUrl} target="_blank" rel="noopener noreferrer" className="text-[#534AB7] font-medium hover:underline">Get the full report →</a>
                   </p>
                 )}
@@ -874,7 +874,7 @@ export default async function ResultsPage({ params }: Props) {
               <span className="inline-block self-start text-xs font-bold text-[#534AB7] bg-[#EEEDFE] px-2 py-0.5 rounded mb-3 mt-1">A</span>
               <h3 className="text-sm font-bold text-gray-900 mb-2">Get the full picture</h3>
               <p className="text-xs text-gray-500 leading-relaxed flex-1 mb-4">
-                AEO Visibility Report — one report, no subscription.
+                AI Visibility Report — one report, no subscription.
                 Covers every fix in order of impact, plus the exact sources AI is drawing on about you.
               </p>
               <a
@@ -892,7 +892,7 @@ export default async function ResultsPage({ params }: Props) {
               <span className="inline-block self-start text-xs font-bold text-[#534AB7] bg-[#EEEDFE] px-2 py-0.5 rounded mb-3">B</span>
               <h3 className="text-sm font-bold text-gray-900 mb-2">Track your position every month</h3>
               <p className="text-xs text-gray-500 leading-relaxed flex-1 mb-4">
-                AEO Visibility Engine — monthly tracking across all AI platforms.
+                AI Visibility Engine — monthly tracking across all AI platforms.
                 Alerts when competitors move. Quarterly strategy review included.
               </p>
               <a
