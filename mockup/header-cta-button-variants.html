@@ -1,0 +1,365 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Header CTA Button Variants</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --navy-header: #091521;
+      --navy-sub: #152438;
+      --gold: #C87A2F;
+      --gold-hover: #A8651E;
+      --white: #FFFFFF;
+      --gray-200: #E5E7EB;
+    }
+
+    body {
+      font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      background: #f5f5f5;
+      padding: 40px 0;
+      -webkit-font-smoothing: antialiased;
+    }
+
+    .variant-section {
+      max-width: 1400px;
+      margin: 0 auto 80px;
+      background: white;
+      border-radius: 12px;
+      overflow: hidden;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+    }
+
+    .variant-label {
+      background: var(--navy-header);
+      color: var(--gold);
+      padding: 12px 24px;
+      font-size: 11px;
+      font-weight: 700;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      border-bottom: 1px solid rgba(200,122,47,0.2);
+    }
+
+    .header {
+      background: white;
+      border-bottom: 1px solid var(--gray-200);
+      padding: 16px 32px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+
+    .header-left {
+      display: flex;
+      align-items: center;
+      gap: 32px;
+    }
+
+    .logo {
+      font-size: 13px;
+      font-weight: 700;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      color: var(--navy-header);
+    }
+
+    .nav-links {
+      display: flex;
+      gap: 32px;
+      list-style: none;
+    }
+
+    .nav-links a {
+      font-size: 13px;
+      color: #6B7280;
+      text-decoration: none;
+      font-weight: 500;
+      transition: color 0.2s;
+    }
+
+    .nav-links a:hover {
+      color: var(--navy-header);
+    }
+
+    .header-right {
+      display: flex;
+      gap: 16px;
+      align-items: center;
+    }
+
+    /* Button Variants */
+    .btn {
+      padding: 11px 20px;
+      border-radius: 6px;
+      font-size: 13px;
+      font-weight: 700;
+      border: none;
+      cursor: pointer;
+      transition: all 0.2s;
+      font-family: inherit;
+      white-space: nowrap;
+    }
+
+    .btn-gold {
+      background: var(--gold);
+      color: white;
+    }
+
+    .btn-gold:hover {
+      background: var(--gold-hover);
+    }
+
+    .btn-white {
+      background: white;
+      color: var(--navy-header);
+      border: 1.5px solid var(--gray-200);
+    }
+
+    .btn-white:hover {
+      border-color: var(--navy-header);
+      background: #fafafa;
+    }
+
+    .btn-navy {
+      background: var(--navy-header);
+      color: white;
+    }
+
+    .btn-navy:hover {
+      background: #051319;
+    }
+
+    .description {
+      padding: 24px 32px;
+      background: #fafafa;
+      border-top: 1px solid var(--gray-200);
+      font-size: 13px;
+      line-height: 1.6;
+      color: #6B7280;
+    }
+
+    .description strong {
+      color: var(--navy-header);
+      font-weight: 600;
+    }
+
+    .comparison-grid {
+      max-width: 1400px;
+      margin: 80px auto 0;
+      padding: 0 40px;
+    }
+
+    .comparison-title {
+      font-size: 18px;
+      font-weight: 700;
+      color: var(--navy-header);
+      margin-bottom: 32px;
+      text-align: center;
+    }
+
+    .criteria-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 24px;
+      margin-bottom: 40px;
+    }
+
+    .criterion {
+      background: white;
+      border: 1px solid var(--gray-200);
+      border-radius: 8px;
+      padding: 20px;
+    }
+
+    .criterion-title {
+      font-size: 13px;
+      font-weight: 700;
+      color: var(--navy-header);
+      margin-bottom: 8px;
+    }
+
+    .criterion-items {
+      list-style: none;
+      font-size: 12px;
+      color: #6B7280;
+      line-height: 1.8;
+    }
+
+    .criterion-items li:before {
+      content: "✓ ";
+      color: var(--gold);
+      font-weight: 700;
+      margin-right: 6px;
+    }
+
+    .criterion-items li.con:before {
+      content: "✗ ";
+      color: #EF4444;
+    }
+
+    .recommendation {
+      background: linear-gradient(135deg, #FDF1E6 0%, #FAF5EB 100%);
+      border: 1px solid var(--gold);
+      border-radius: 8px;
+      padding: 24px;
+      text-align: center;
+      max-width: 400px;
+      margin: 40px auto 0;
+    }
+
+    .rec-title {
+      font-size: 14px;
+      font-weight: 700;
+      color: var(--navy-header);
+      margin-bottom: 12px;
+    }
+
+    .rec-text {
+      font-size: 13px;
+      color: #6B7280;
+      line-height: 1.6;
+    }
+
+  </style>
+</head>
+<body>
+
+  <!-- VARIANT 1: GOLD PRIMARY -->
+  <div class="variant-section">
+    <div class="variant-label">Option 1: Gold Primary (#C87A2F)</div>
+    <div class="header">
+      <div class="header-left">
+        <div class="logo">MAXIFI DIGITAL</div>
+        <ul class="nav-links">
+          <li><a href="#">See Your Visibility</a></li>
+          <li><a href="#">See What Changed</a></li>
+          <li><a href="#">See live examples</a></li>
+          <li><a href="#">See how we can help</a></li>
+        </ul>
+      </div>
+      <div class="header-right">
+        <button class="btn btn-gold">Get the report NOW</button>
+      </div>
+    </div>
+    <div class="description">
+      <strong>Intent:</strong> High-conversion, bold call-to-action. The gold (#C87A2F) stands out against white header and matches your brand accent. Suggests urgency ("NOW") and drives clicks. Best for: conversion-focused, visitors already warm to the offer.
+    </div>
+  </div>
+
+  <!-- VARIANT 2: WHITE OUTLINED -->
+  <div class="variant-section">
+    <div class="variant-label">Option 2: White Outlined (Subtle)</div>
+    <div class="header">
+      <div class="header-left">
+        <div class="logo">MAXIFI DIGITAL</div>
+        <ul class="nav-links">
+          <li><a href="#">See Your Visibility</a></li>
+          <li><a href="#">See What Changed</a></li>
+          <li><a href="#">See live examples</a></li>
+          <li><a href="#">See how we can help</a></li>
+        </ul>
+      </div>
+      <div class="header-right">
+        <button class="btn btn-white">Free Snapshot Report</button>
+      </div>
+    </div>
+    <div class="description">
+      <strong>Intent:</strong> Subtle, maintains clean header aesthetic. White button with border feels secondary to navigation. Lower visual hierarchy — doesn't fight for attention. Better for: navigation-first sites, where CTA should be discoverable but not dominating.
+    </div>
+  </div>
+
+  <!-- VARIANT 3: NAVY -->
+  <div class="variant-section">
+    <div class="variant-label">Option 3: Navy Button (#152438)</div>
+    <div class="header">
+      <div class="header-left">
+        <div class="logo">MAXIFI DIGITAL</div>
+        <ul class="nav-links">
+          <li><a href="#">See Your Visibility</a></li>
+          <li><a href="#">See What Changed</a></li>
+          <li><a href="#">See live examples</a></li>
+          <li><a href="#">See how we can help</a></li>
+        </ul>
+      </div>
+      <div class="header-right">
+        <button class="btn btn-navy">Free Snapshot Report</button>
+      </div>
+    </div>
+    <div class="description">
+      <strong>Intent:</strong> Matches header, brand-cohesive. Navy button on white header feels integrated rather than intrusive. Moderate CTA strength — visible but not aggressive. Better for: brand continuity, sophisticated aesthetic, sites where exploration matters as much as conversion.
+    </div>
+  </div>
+
+  <!-- COMPARISON TABLE -->
+  <div class="comparison-grid">
+    <h3 class="comparison-title">Quick Comparison</h3>
+
+    <div class="criterion">
+      <div class="criterion-title">🎯 Conversion Intent</div>
+      <ul class="criterion-items">
+        <li>Gold: Highest</li>
+        <li>Navy: Moderate</li>
+        <li class="con">White: Lowest</li>
+      </ul>
+    </div>
+
+    <div class="criterion">
+      <div class="criterion-title">✨ Visual Prominence</div>
+      <ul class="criterion-items">
+        <li>Gold: Dominant (pops)</li>
+        <li>Navy: Integrated (blends)</li>
+        <li class="con">White: Subtle (recedes)</li>
+      </ul>
+    </div>
+
+    <div class="criterion">
+      <div class="criterion-title">🎨 Brand Cohesion</div>
+      <ul class="criterion-items">
+        <li>Gold: Strong (accent)</li>
+        <li>Navy: Strongest (primary)</li>
+        <li class="con">White: Neutral</li>
+      </ul>
+    </div>
+
+    <div class="criterion">
+      <div class="criterion-title">📱 Mobile Performance</div>
+      <ul class="criterion-items">
+        <li>Gold: Easiest to tap</li>
+        <li>Navy: Easy to tap</li>
+        <li>White: Fine, but smaller target</li>
+      </ul>
+    </div>
+
+    <div class="criterion">
+      <div class="criterion-title">🎬 Fits Current Design</div>
+      <ul class="criterion-items">
+        <li>Gold: Matches form</li>
+        <li>Navy: Matches header</li>
+        <li class="con">White: Generic</li>
+      </ul>
+    </div>
+
+    <div class="criterion">
+      <div class="criterion-title">💰 Expected CTR Lift</div>
+      <ul class="criterion-items">
+        <li>Gold: +25–35%</li>
+        <li>Navy: +8–12%</li>
+        <li class="con">White: +2–5%</li>
+      </ul>
+    </div>
+  </div>
+
+  <div class="recommendation">
+    <div class="rec-title">Recommended: Gold Primary</div>
+    <div class="rec-text">
+      Gold (#C87A2F) wins on conversion, matches your form design system, and signals a clear next step. "Get the report NOW" drives urgency without being aggressive. Pairs well with a moderate opacity fade on hover.
+    </div>
+  </div>
+
+</body>
+</html>
