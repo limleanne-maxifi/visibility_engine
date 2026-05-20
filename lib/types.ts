@@ -20,13 +20,11 @@ export type AiPresence =
   | '';
 
 export type AeoOutcome =
-  | 'More leads from AI-referred traffic'
-  | 'Credibility and thought leadership'
-  | 'Career visibility and personal brand'
-  | 'Protecting my reputation online'
-  | 'Winning more business by being found by AI engines'
-  | 'Understanding where I currently stand in AI search'
-  | 'Beating a specific competitor'
+  | "I'm not being cited at all"
+  | 'My competitors are cited instead of me'
+  | 'Outdated or inaccurate info appears about me'
+  | 'I want to own specific queries or topics'
+  | "I don't know where I currently stand"
   | '';
 
 export interface Platform {
