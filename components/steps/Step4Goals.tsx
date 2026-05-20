@@ -24,13 +24,13 @@ const AEO_CHALLENGES = [
 ];
 
 const AEO_OUTCOMES: AeoOutcome[] = [
-  'More leads from AI-referred traffic',
-  'Credibility and thought leadership',
-  'Career visibility and personal brand',
-  'Protecting my reputation online',
-  'Winning more business by being found by AI engines',
   'Understanding where I currently stand in AI search',
+  'Be cited when buyers ask AI tools for recommendations',
+  'Fix inaccurate or outdated information about my brand',
+  'Protecting my reputation online',
+  'Credibility and thought leadership',
   'Beating a specific competitor',
+  'Other - please state',
 ];
 
 // ─── Industry family mapping ──────────────────────────────────────────────────
@@ -246,6 +246,27 @@ export default function Step4Goals({ data, onChange, onNext, onBack, errors, ind
         )}
       </fieldset>
 
+      {/* Outcome */}
+      <fieldset className="mb-6">
+        <legend className="text-[17px] text-gray-700 mb-3">
+          What outcome matters most to you?{' '}
+          <span className="text-red-500">*</span>
+        </legend>
+        <div className="space-y-2">
+          {AEO_OUTCOMES.map((outcome) => (
+            <ChoiceCard
+              key={outcome}
+              label={outcome}
+              selected={data.aeoOutcome === outcome}
+              onSelect={() => onChange({ aeoOutcome: outcome })}
+            />
+          ))}
+        </div>
+        {errors.aeoOutcome && (
+          <p className="mt-1 text-xs text-red-500">{errors.aeoOutcome}</p>
+        )}
+      </fieldset>
+
       {/* Competitors */}
       <div className="mb-5">
         <label htmlFor="competitors" className="block text-[17px] text-gray-700 mb-1">
@@ -321,27 +342,6 @@ export default function Step4Goals({ data, onChange, onNext, onBack, errors, ind
           </p>
         </div>
       )}
-
-      {/* Outcome */}
-      <fieldset className="mb-6">
-        <legend className="text-[17px] text-gray-700 mb-3">
-          What outcome matters most to you?{' '}
-          <span className="text-red-500">*</span>
-        </legend>
-        <div className="space-y-2">
-          {AEO_OUTCOMES.map((outcome) => (
-            <ChoiceCard
-              key={outcome}
-              label={outcome}
-              selected={data.aeoOutcome === outcome}
-              onSelect={() => onChange({ aeoOutcome: outcome })}
-            />
-          ))}
-        </div>
-        {errors.aeoOutcome && (
-          <p className="mt-1 text-xs text-red-500">{errors.aeoOutcome}</p>
-        )}
-      </fieldset>
 
       <div className="mt-6 flex gap-3">
         <button
