@@ -1,6 +1,6 @@
 'use client';
 
-import { FormData, Occupation } from '@/lib/types';
+import { FormData, Occupation, BusinessModelOverride, PharmaRole, DefenseChannel } from '@/lib/types';
 
 interface Props {
   data: FormData;
@@ -143,6 +143,59 @@ export default function Step2Context({ data, onChange, onNext, onBack, errors }:
             </p>
           )}
         </div>
+
+        {/* Phase 2: Pharma Role (conditional) */}
+        {data.industry === 'Pharmaceuticals & Biotech' && (
+          <div>
+            <label htmlFor="pharma-role" className="block text-[17px] text-gray-700 mb-1">
+              Your role in pharma/biotech{' '}
+              <span className="text-gray-400 font-normal">(optional)</span>
+            </label>
+            <select
+              id="pharma-role"
+              value={data.pharmaRole ?? ''}
+              onChange={(e) => onChange({ pharmaRole: e.target.value as PharmaRole })}
+              className={`${inputBase} ${inputNormal}`}
+            >
+              <option value="">Select role…</option>
+              <option value="Drug Developer">Drug Developer</option>
+              <option value="CRO / CMO">CRO / CMO</option>
+              <option value="Biotech Platform">Biotech Platform</option>
+              <option value="Other">Other</option>
+            </select>
+            <p className="mt-1 text-xs text-gray-400">
+              Helps tailor guidance to your specific regulatory and market context.
+            </p>
+          </div>
+        )}
+
+        {/* Phase 2: Defense/Aerospace Channel (conditional) */}
+        {(data.industry === 'Defense & Government Systems' || data.industry === 'Defense' ||
+          data.industry === 'Aviation, ATC & Aerospace' || data.industry === 'Aviation & Aerospace') && (
+          <div>
+            <label htmlFor="defense-channel" className="block text-[17px] text-gray-700 mb-1">
+              Primary procurement channel{' '}
+              <span className="text-gray-400 font-normal">(optional)</span>
+            </label>
+            <select
+              id="defense-channel"
+              value={data.defenseChannel ?? ''}
+              onChange={(e) => onChange({ defenseChannel: e.target.value as DefenseChannel })}
+              className={`${inputBase} ${inputNormal}`}
+            >
+              <option value="">Select channel…</option>
+              <option value="Military">Military / Government</option>
+              <option value="Commercial Aviation">Commercial Aviation</option>
+              {(data.industry === 'Defense & Government Systems' || data.industry === 'Defense') && (
+                <option value="Space / Satellite">Space / Satellite</option>
+              )}
+              <option value="Mixed">Mixed</option>
+            </select>
+            <p className="mt-1 text-xs text-gray-400">
+              Different channels have different export controls and visibility strategies.
+            </p>
+          </div>
+        )}
       </div>
 
       <div className="mt-6 flex gap-3">
