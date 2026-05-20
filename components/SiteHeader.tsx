@@ -21,8 +21,8 @@ export default function SiteHeader() {
       </a>
       <a
         href="https://maxifidigital.com"
-        className="text-xs tracking-tight transition-colors"
-        style={{ color: 'rgba(255,255,255,0.38)' }}
+        className="text-sm font-medium tracking-tight transition-colors hover:text-white"
+        style={{ color: 'rgba(255,255,255,0.75)' }}
       >
         ← maxifidigital.com
       </a>
