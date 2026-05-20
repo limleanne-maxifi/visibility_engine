@@ -20,7 +20,7 @@ export default function BrandPill() {
           className="text-2xl whitespace-nowrap"
           style={{ fontFamily: 'var(--font-dm-sans)', fontWeight: 700, whiteSpace: 'nowrap', color: '#1a2744', letterSpacing: '0.05em' }}
         >
-          AEO Visibility Snapshot
+          AI Visibility Snapshot
         </p>
       </div>
     </div>

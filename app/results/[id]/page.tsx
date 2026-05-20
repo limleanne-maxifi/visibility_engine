@@ -468,12 +468,12 @@ export default async function ResultsPage({ params }: Props) {
                 className="text-2xl whitespace-nowrap"
                 style={{ fontFamily: 'var(--font-dm-sans)', fontWeight: 700, whiteSpace: 'nowrap', color: '#1a2744', letterSpacing: '0.05em' }}
               >
-                AEO Visibility Snapshot
+                AI Visibility Snapshot
               </p>
             </div>
           </div>
           <h1 className="text-2xl font-bold text-gray-900 leading-snug mb-2">
-            {toTitleCase(lead.first_name)}&rsquo;s AEO Visibility Snapshot
+            {toTitleCase(lead.first_name)}&rsquo;s AI Visibility Snapshot
           </h1>
           <p className="text-sm text-gray-500 mb-5">
             {entityName} · {lead.industry} · {lead.occupation} · Generated {snapshotDate}

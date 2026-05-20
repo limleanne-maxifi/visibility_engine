@@ -12,6 +12,7 @@ interface Props {
 
 const OCCUPATIONS: Occupation[] = [
   'Executive / Founder',
+  'Head of / VP',
   'Marketing & Communications',
   'Sales & Business Development',
   'Operations & Strategy',
