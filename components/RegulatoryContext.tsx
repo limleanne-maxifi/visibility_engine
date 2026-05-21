@@ -1,13 +1,21 @@
 'use client';
 
 import { FormData, REGULATED_INDUSTRIES } from '@/lib/types';
+import {
+  isDefenseIndustry,
+  isAviationIndustry,
+  isHealthcareIndustry,
+  isFinanceIndustry,
+  isLegalIndustry,
+  shouldShowExportStatus,
+  shouldShowDataResidency,
+} from '@/lib/industryConstants';
 
 interface Props {
   data: FormData;
   gap?: string; // Phase 5: visibility gap context
   onChange: (updates: Partial<FormData>) => void;
 }
-
 
 const DEFENSE_CERTIFICATIONS = [
   'ITAR',
@@ -61,39 +69,33 @@ const DATA_RESIDENCY_OPTIONS = [
   'Not data-handling relevant',
 ];
 
-function getSectorCertifications(industry: string): string[] | null {
-  if (['Defense & Government Systems', 'Defense'].includes(industry)) {
-    return DEFENSE_CERTIFICATIONS;
-  }
-  if (['Aviation, ATC & Aerospace', 'Aviation & Aerospace'].includes(industry)) {
-    return AVIATION_CERTIFICATIONS;
-  }
-  if (['Healthcare & Life Sciences', 'Healthcare Technology / Digital Health', 'Pharmaceuticals & Biotech'].includes(industry)) {
-    return HEALTHCARE_CERTIFICATIONS;
-  }
-  if (['Financial Services & Banking', 'Insurance'].includes(industry)) {
-    return FINANCE_CERTIFICATIONS;
-  }
-  if (['Legal & Legal Services', 'Legal'].includes(industry)) {
-    return null; // Legal doesn't have specific cert list
-  }
+type SectorConfig = {
+  certifications: string[];
+  formKey: keyof FormData;
+};
+
+const SECTOR_CONFIGS: Record<string, SectorConfig> = {
+  defense: { certifications: DEFENSE_CERTIFICATIONS, formKey: 'defenseCertifications' },
+  aviation: { certifications: AVIATION_CERTIFICATIONS, formKey: 'aviationCertifications' },
+  healthcare: { certifications: HEALTHCARE_CERTIFICATIONS, formKey: 'healthcareCertifications' },
+  finance: { certifications: FINANCE_CERTIFICATIONS, formKey: 'financeCertifications' },
+};
+
+function getSectorConfig(industry: string): SectorConfig | null {
+  if (isDefenseIndustry(industry)) return SECTOR_CONFIGS.defense;
+  if (isAviationIndustry(industry)) return SECTOR_CONFIGS.aviation;
+  if (isHealthcareIndustry(industry)) return SECTOR_CONFIGS.healthcare;
+  if (isFinanceIndustry(industry)) return SECTOR_CONFIGS.finance;
+  if (isLegalIndustry(industry)) return null;
   return null;
 }
 
+function getSectorCertifications(industry: string): string[] | null {
+  return getSectorConfig(industry)?.certifications ?? null;
+}
+
 function getCertificationsKey(industry: string): keyof FormData | null {
-  if (['Defense & Government Systems', 'Defense'].includes(industry)) {
-    return 'defenseCertifications';
-  }
-  if (['Aviation, ATC & Aerospace', 'Aviation & Aerospace'].includes(industry)) {
-    return 'aviationCertifications';
-  }
-  if (['Healthcare & Life Sciences', 'Healthcare Technology / Digital Health', 'Pharmaceuticals & Biotech'].includes(industry)) {
-    return 'healthcareCertifications';
-  }
-  if (['Financial Services & Banking', 'Insurance'].includes(industry)) {
-    return 'financeCertifications';
-  }
-  return null;
+  return getSectorConfig(industry)?.formKey ?? null;
 }
 
 export default function RegulatoryContext({ data, onChange }: Props) {
@@ -148,7 +150,7 @@ export default function RegulatoryContext({ data, onChange }: Props) {
       )}
 
       {/* Export Status */}
-      {['Defense & Government Systems', 'Defense', 'Aviation, ATC & Aerospace', 'Aviation & Aerospace'].includes(data.industry) && (
+      {shouldShowExportStatus(data.industry) && (
         <div className="mb-5">
           <label htmlFor="export-status" className="block text-xs font-medium text-gray-700 mb-2">
             Export control status <span className="text-gray-400">(optional)</span>
@@ -173,7 +175,7 @@ export default function RegulatoryContext({ data, onChange }: Props) {
       )}
 
       {/* Data Residency */}
-      {['Healthcare & Life Sciences', 'Healthcare Technology / Digital Health', 'Financial Services & Banking', 'Insurance'].includes(data.industry) && (
+      {shouldShowDataResidency(data.industry) && (
         <div>
           <label htmlFor="data-residency" className="block text-xs font-medium text-gray-700 mb-2">
             Data residency requirements <span className="text-gray-400">(optional)</span>

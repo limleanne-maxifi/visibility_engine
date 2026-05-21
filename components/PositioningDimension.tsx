@@ -59,6 +59,7 @@ const EXAMPLE_STRATEGIES: Record<PosDim, string> = {
   niche: 'Build thought leadership in your vertical, community authority, specialized expertise, vertical-specific content',
   integration: 'Appear in ecosystem research, integration guides, API documentation, partner visibility, platform reviews',
   other: 'Custom positioning strategy',
+  '': '',
 };
 
 export default function PositioningDimension({ data, freeText, onChange, family }: Props) {

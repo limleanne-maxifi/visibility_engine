@@ -1,6 +1,7 @@
 'use client';
 
 import { FormData, Occupation, BusinessModelOverride, PharmaRole, DefenseChannel } from '@/lib/types';
+import { shouldShowPharmaRole, shouldShowDefenseChannel, isDefenseIndustry } from '@/lib/industryConstants';
 
 interface Props {
   data: FormData;
@@ -145,7 +146,7 @@ export default function Step2Context({ data, onChange, onNext, onBack, errors }:
         </div>
 
         {/* Phase 2: Pharma Role (conditional) */}
-        {data.industry === 'Pharmaceuticals & Biotech' && (
+        {shouldShowPharmaRole(data.industry) && (
           <div>
             <label htmlFor="pharma-role" className="block text-[17px] text-gray-700 mb-1">
               Your role in pharma/biotech{' '}
@@ -170,8 +171,7 @@ export default function Step2Context({ data, onChange, onNext, onBack, errors }:
         )}
 
         {/* Phase 2: Defense/Aerospace Channel (conditional) */}
-        {(data.industry === 'Defense & Government Systems' || data.industry === 'Defense' ||
-          data.industry === 'Aviation, ATC & Aerospace' || data.industry === 'Aviation & Aerospace') && (
+        {shouldShowDefenseChannel(data.industry) && (
           <div>
             <label htmlFor="defense-channel" className="block text-[17px] text-gray-700 mb-1">
               Primary procurement channel{' '}
@@ -186,7 +186,7 @@ export default function Step2Context({ data, onChange, onNext, onBack, errors }:
               <option value="">Select channel…</option>
               <option value="Military">Military / Government</option>
               <option value="Commercial Aviation">Commercial Aviation</option>
-              {(data.industry === 'Defense & Government Systems' || data.industry === 'Defense') && (
+              {isDefenseIndustry(data.industry) && (
                 <option value="Space / Satellite">Space / Satellite</option>
               )}
               <option value="Mixed">Mixed</option>

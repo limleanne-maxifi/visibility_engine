@@ -6,6 +6,7 @@ import type {
 } from '@/lib/types';
 import { VISIBILITY_GAP_LABELS, REGULATED_INDUSTRIES } from '@/lib/types';
 import { inferBusinessModel, type BusinessModel } from '@/lib/scoring';
+import { isDefenseIndustry, isAviationIndustry } from '@/lib/industryConstants';
 
 const BUYER_MODEL_CONTEXT: Record<string, string> = {
   B2G: 'Buyer model: B2G (procurement-led). This organisation wins business through formal tender, RFP, and vendor shortlisting processes — not inbound lead generation. AEO value is being cited when procurement teams, evaluators, and advisors use AI to research vendors, build longlists, or validate suppliers. Frame every recommendation around vendor credibility, trust signals, and appearing in AI-assisted due diligence — not "leads", "referrals", or consumer discovery.',
@@ -243,11 +244,8 @@ function resolveSectorConstraint(data: FormData): string | null {
     }
   }
 
-  // Defense/Aerospace channel-based constraint selection (Phase 2.3)
-  if (
-    (industry === 'Defense & Government Systems' || industry === 'Defense') &&
-    defenseChannel
-  ) {
+  // Defense channel-based constraint selection (Phase 2.3)
+  if (isDefenseIndustry(industry) && defenseChannel) {
     const channelLabel = defenseChannel === 'Military' ? 'Military' : 'Commercial';
     const key = `Defense & Government Systems — ${channelLabel}`;
     if (key in SECTOR_CONSTRAINTS) {
@@ -256,11 +254,7 @@ function resolveSectorConstraint(data: FormData): string | null {
   }
 
   // Aviation channel-based constraint (Phase 2.3)
-  if (
-    (industry === 'Aviation, ATC & Aerospace' ||
-      industry === 'Aviation & Aerospace') &&
-    defenseChannel
-  ) {
+  if (isAviationIndustry(industry) && defenseChannel) {
     const key = `Aviation, ATC & Aerospace — ${defenseChannel}`;
     if (key in SECTOR_CONSTRAINTS) {
       return SECTOR_CONSTRAINTS[key];
@@ -332,7 +326,7 @@ export function buildUserMessage(data: FormData): string {
       : null;
 
   // Phase 5: Map visibility gap to human-readable label
-  const visibilityGapLabel = VISIBILITY_GAP_LABELS[data.visibilityGap] || data.visibilityGap || 'Not specified';
+  const visibilityGapLabel = (data.visibilityGap && VISIBILITY_GAP_LABELS[data.visibilityGap as keyof typeof VISIBILITY_GAP_LABELS]) || 'Not specified';
 
   const lines = [
     `Write a personalised AEO action plan for:`,
