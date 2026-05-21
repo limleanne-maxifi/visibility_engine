@@ -275,6 +275,7 @@ function resolveSectorConstraint(data: FormData): string | null {
  * PHASE 1: Defensive null-checks on arrays/objects
  * PHASE 2: Business model & sector role validation
  * PHASE 3: Competitive intelligence, positioning, regulatory context
+ * PHASE 5: Visibility gap as primary diagnostic
  */
 export function buildUserMessage(data: FormData): string {
   // Phase 1.1: Defensive null-checks for array fields
@@ -329,6 +330,16 @@ export function buildUserMessage(data: FormData): string {
       ? `Competitor AI visibility: ${data.competitorAiPresence}`
       : null;
 
+  // Phase 5: Map visibility gap to human-readable label
+  const visibilityGapLabels: Record<string, string> = {
+    'not-cited': "I'm not being cited at all",
+    'competitors-cited': 'My competitors are cited instead of me',
+    'inaccurate-info': 'Outdated or inaccurate info appears about me',
+    'own-queries': 'I want to own specific queries or topics',
+    'unknown-baseline': "I don't know where I currently stand",
+  };
+  const visibilityGapLabel = visibilityGapLabels[data.visibilityGap] || data.visibilityGap || 'Not specified';
+
   const lines = [
     `Write a personalised AEO action plan for:`,
     `Name: ${data.firstName}`,
@@ -339,8 +350,7 @@ export function buildUserMessage(data: FormData): string {
     `AI awareness: ${data.aiPresence}`,
     `Primary AI platform: ${primaryPlatform}`,
     secondaryPlatform ? `Secondary AI platform: ${secondaryPlatform}` : null,
-    `Biggest challenges: ${challenges.join('; ') || 'not specified'}`,
-    `Most important outcome: ${data.aeoOutcome}`,
+    `Visibility gap (primary concern): ${visibilityGapLabel}`,
     data.targetQueries ? `Target queries: ${data.targetQueries}` : null,
     ``,
     `Competitive & Market Context:`,
