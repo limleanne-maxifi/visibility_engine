@@ -22,6 +22,17 @@ function getUrls() {
   };
 }
 
+function formatVisibilityGapLabel(gap: string): string {
+  const labels: Record<string, string> = {
+    'not-cited': "I'm not being cited at all",
+    'competitors-cited': 'My competitors are cited instead of me',
+    'inaccurate-info': 'Outdated or inaccurate info appears about me',
+    'own-queries': 'I want to own specific queries or topics',
+    'unknown-baseline': "I don't know where I currently stand",
+  };
+  return labels[gap] || gap;
+}
+
 // ─── Email 1: User snapshot email ────────────────────────────────────────────
 
 export async function sendUserPlanEmail(lead: AeoLeadRow): Promise<void> {
@@ -238,7 +249,7 @@ export async function sendInternalNotification(lead: AeoLeadRow): Promise<void> 
     `platform:      ${lead.platform}`,
     `platform_other:${lead.platform_other ?? '—'}`,
     `challenge:     ${lead.challenge}`,
-    `outcome:       ${lead.outcome}`,
+    `visibility_gap:${formatVisibilityGapLabel(lead.outcome)}`,
     ``,
     `── Attribution ───────────────────────────────`,
     `utm_source:    ${lead.utm_source ?? '—'}`,
