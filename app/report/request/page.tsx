@@ -3,10 +3,7 @@ import { createClient } from '@supabase/supabase-js'
 import type { AeoLeadRow } from '@/lib/supabase'
 import RequestForm from './RequestForm'
 
-const supabase = createClient(
-  process.env.NEXT_PUBLIC_SUPABASE_URL!,
-  process.env.SUPABASE_SERVICE_ROLE_KEY!
-)
+export const dynamic = 'force-dynamic'
 
 interface Props {
   searchParams: { lead_id?: string }
@@ -16,6 +13,11 @@ export default async function ReportRequestPage({ searchParams }: Props) {
   const { lead_id } = searchParams
 
   if (!lead_id) notFound()
+
+  const supabase = createClient(
+    process.env.NEXT_PUBLIC_SUPABASE_URL!,
+    process.env.SUPABASE_SERVICE_ROLE_KEY!
+  )
 
   const { data: lead, error } = await supabase
     .from('aeo_leads')
