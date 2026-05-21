@@ -702,19 +702,41 @@ export default async function ResultsPage({ params }: Props) {
           </div>
 
           {/* Root cause */}
-          <div className="p-6 border-b border-gray-100">
-            <p className="text-xs font-semibold text-gray-400 uppercase tracking-wide mb-2">Root cause</p>
+          <div className="p-6 border-b border-gray-100 bg-blue-50/30">
+            <p className="text-xs font-semibold text-[#534AB7] uppercase tracking-wide mb-2">
+              Diagnostic hypotheses
+            </p>
             <p className="text-base font-bold text-gray-900 leading-snug mb-3">{rootCauseHeadline}</p>
-            <ul className="space-y-3">
+
+            <p className="text-xs text-gray-600 mb-4 leading-relaxed">
+              Based on your reported AI testing, these are the most likely reasons for your visibility gap.
+              However, these are hypotheses, not confirmed diagnoses. Your full AEO Visibility Report
+              includes website audit to confirm which factor is actually your constraint.
+            </p>
+
+            <ul className="space-y-4">
               {rootCauses.map((cause, i) => (
                 <li key={i} className="flex items-start gap-3">
                   <span className="flex-shrink-0 w-5 h-5 rounded-full bg-[#FDF1E6] text-[#C87A2F] text-xs font-bold flex items-center justify-center mt-0.5">
                     {i + 1}
                   </span>
-                  <p className="text-sm text-gray-700 leading-relaxed">{cause}</p>
+                  <div>
+                    <p className="text-sm text-gray-700 leading-relaxed">{cause}</p>
+                    <p className="text-xs text-gray-500 mt-2">
+                      <em>Test this hypothesis by implementing the recommended fix and measuring impact over 4-6 weeks.</em>
+                    </p>
+                  </div>
                 </li>
               ))}
             </ul>
+
+            <div className="mt-4 pt-4 border-t border-blue-100">
+              <p className="text-xs text-gray-600 leading-relaxed">
+                <strong>Measurement approach:</strong> If you implement fixes based on the primary hypothesis
+                and don't see improvement in 6 weeks, the actual constraint is likely one of the other factors.
+                Your full report helps you test and measure impact systematically.
+              </p>
+            </div>
           </div>
 
           {/* Why this matters now */}

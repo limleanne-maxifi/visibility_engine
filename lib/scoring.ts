@@ -105,6 +105,57 @@ export const INDUSTRY_BENCHMARKS: Record<string, number> = {
   'Education & Training':                   52,
 };
 
+/**
+ * Provides industry context for benchmark interpretation
+ *
+ * Distinguishes between:
+ * - HIGH-benchmark industries (>50%): B2B, B2C where AI drives discovery
+ * - LOW-benchmark industries (<40%): B2G, procurement-led where AI has limited role
+ */
+export function getBenchmarkContext(
+  score: number,
+  benchAvg: number,
+  industry: string
+): {
+  gap: number;
+  isLowBenchmark: boolean;
+  contextExplanation: string;
+  interpretation: string;
+} {
+  const gap = benchAvg - score;
+  const isLowBenchmark = benchAvg < 40;
+
+  let contextExplanation = '';
+  let interpretation = '';
+
+  if (isLowBenchmark) {
+    // Defense, Aviation, Manufacturing, etc.
+    contextExplanation = `${industry} has a low AI visibility benchmark (${benchAvg}%) because procurement and vendor evaluation processes rely on formal RFPs and vendor shortlisting, not AI discovery. AI plays a limited role in initial vendor research.`;
+
+    if (gap > 0) {
+      interpretation = `You are ${Math.abs(gap)} points below the benchmark. In low-benchmark sectors, this gap is less critical than in high-discovery industries. The opportunity is focused on the scenarios where AI IS used (e.g., competitive research, capability evaluation).`;
+    } else {
+      interpretation = `You are at or above the benchmark. This indicates strong positioning for AI visibility in a sector where AI plays a limited overall role.`;
+    }
+  } else {
+    // B2B SaaS, Consulting, Legal, etc.
+    contextExplanation = `${industry} has a high AI visibility benchmark (${benchAvg}%) because AI tools are frequently used by buyers to discover vendors, compare solutions, and evaluate options.`;
+
+    if (gap > 0) {
+      interpretation = `You are ${Math.abs(gap)} points below the benchmark. This gap represents measurable lost opportunities in buyer conversations that are mediated by AI tools.`;
+    } else {
+      interpretation = `You are at or above the benchmark. This indicates competitive AI visibility in a market where AI discovery is central to buyer research.`;
+    }
+  }
+
+  return {
+    gap,
+    isLowBenchmark,
+    contextExplanation,
+    interpretation
+  };
+}
+
 export function getIndustryBenchmark(industry: string): number {
   return INDUSTRY_BENCHMARKS[industry] ?? 40;
 }
@@ -165,8 +216,97 @@ export function getPipelineLabel(model: BusinessModel): {
   }
 }
 
+/**
+ * Suggests which gap is most likely to be the actual constraint
+ * based on user context clues
+ */
+export function predictPrimaryGap(
+  awareness: string,
+  competitors: string[],
+  industry: string,
+  daysSinceCompanyFounding?: number
+): {
+  gap: 'structure' | 'authority' | 'citations';
+  confidence: 'high' | 'medium' | 'low';
+  reasoning: string;
+} {
+  const monthsOld = daysSinceCompanyFounding ? Math.floor(daysSinceCompanyFounding / 30) : null;
+
+  // Signal 1: Very new companies (< 3 months)
+  if (monthsOld && monthsOld < 3) {
+    return {
+      gap: 'authority',
+      confidence: 'high',
+      reasoning: `Company is very new (${monthsOld} months). AI systems likely haven't encountered enough training data about you yet. Structure fixes won't help until you have external presence.`
+    };
+  }
+
+  // Signal 2: Displaced by competitors (not just invisible)
+  if (awareness === 'Yes — competitors were cited instead of me') {
+    return {
+      gap: 'structure',
+      confidence: 'medium',
+      reasoning: `Competitors are actively displacing you. This usually indicates they have better content structure matching buyer language. Try structure fixes first (4-6 week test window).`
+    };
+  }
+
+  // Signal 3: Completely invisible + established brand
+  if (awareness === "Yes — but I wasn't mentioned at all" && monthsOld && monthsOld > 12) {
+    return {
+      gap: 'citations',
+      confidence: 'medium',
+      reasoning: `You're established but invisible. This suggests lack of third-party validation. Focus on PR, analyst relations, review platform presence.`
+    };
+  }
+
+  // Signal 4: Inaccurate or outdated information being returned
+  if (awareness === 'Yes — but details about me were wrong' ||
+      awareness === 'Yes — but old/outdated info appeared') {
+    return {
+      gap: 'authority',
+      confidence: 'medium',
+      reasoning: `You have presence, but it's being described incorrectly or outdated. This is an authority consistency problem. You need to be the definitive source across web properties.`
+    };
+  }
+
+  // Default: structure (most common reason for invisibility)
+  return {
+    gap: 'structure',
+    confidence: 'low',
+    reasoning: `Most commonly, invisibility is due to content structure. But confidence is low without additional context. Test structure fixes and measure impact.`
+  };
+}
+
+/**
+ * Estimates likelihood of brand appearing in buyer conversations
+ *
+ * METHODOLOGY:
+ * Linear scale: conversationRate = score / 10
+ * Maps 0-100% visibility score to 0-10 conversation likelihood
+ *
+ * CALIBRATION STATUS: Estimated (not validated against live AI data)
+ * CONFIDENCE LEVEL: Theoretical (formula-based, not measured)
+ *
+ * RESEARCH NEEDED:
+ * - Validate correlation between 4-signal visibility score and actual ChatGPT citation frequency
+ * - Test if linear relationship holds across score ranges (0-20%, 50-70%, 90-100%)
+ * - Adjust formula if correlation is non-linear
+ * - Measure impact of query specificity on appearance rates
+ *
+ * KNOWN LIMITATIONS:
+ * - Assumes linear correlation (may not hold at extremes)
+ * - Based on theory, not live measurement
+ * - Doesn't account for query specificity variance
+ * - Single-vendor focused (only user's primary platform)
+ * - Doesn't measure actual conversation impact (only likelihood)
+ *
+ * USE CASES:
+ * ✓ "We estimate roughly X out of 10 relevant searches would include you"
+ * ✗ "You guarantee to appear in X conversations" (DON'T claim this)
+ * ✗ "Competitors appear in Y conversations" (Unvalidated)
+ */
 export function buyerConversations(score: number, benchAvg: number): { x: number; y: number } {
-  const x = Math.max(0, Math.min(9, Math.round(score / 10)));
+  const x = Math.max(0, Math.round(score / 10));
   const y = Math.max(1, Math.min(10, Math.round((benchAvg || 1) / 10)));
   return { x, y };
 }
