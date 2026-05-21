@@ -66,7 +66,7 @@ export async function insertLead(
       platform: primaryPlatform,
       platform_other: secondaryPlatform,
       challenge: formData.challenges.join('; ') || '',
-      outcome: formData.aeoOutcome,
+      outcome: formData.visibilityGap,
       utm_source: formData.utmSource || null,
       utm_medium: formData.utmMedium || null,
       utm_campaign: formData.utmCampaign || null,

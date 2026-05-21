@@ -1,0 +1,203 @@
+'use client';
+
+import { FormData, REGULATED_INDUSTRIES } from '@/lib/types';
+import {
+  isDefenseIndustry,
+  isAviationIndustry,
+  isHealthcareIndustry,
+  isFinanceIndustry,
+  isLegalIndustry,
+  shouldShowExportStatus,
+  shouldShowDataResidency,
+} from '@/lib/industryConstants';
+
+interface Props {
+  data: FormData;
+  gap?: string; // Phase 5: visibility gap context
+  onChange: (updates: Partial<FormData>) => void;
+}
+
+const DEFENSE_CERTIFICATIONS = [
+  'ITAR',
+  'EAR',
+  'CMMC',
+  'Common Criteria',
+  'MIL-STD',
+  'Other',
+];
+
+const HEALTHCARE_CERTIFICATIONS = [
+  'HIPAA',
+  'MHRA Approved',
+  'FDA Cleared',
+  'FDA 510(k)',
+  'ISO 13485',
+  'Other',
+];
+
+const FINANCE_CERTIFICATIONS = [
+  'FCA Licensed',
+  'PRA Regulated',
+  'SOC 2',
+  'PCI-DSS',
+  'ISO 27001',
+  'Other',
+];
+
+const AVIATION_CERTIFICATIONS = [
+  'DO-178C',
+  'DO-254',
+  'EASA Certified',
+  'FAA Certified',
+  'ICAO Compliant',
+  'Other',
+];
+
+const EXPORT_STATUS_OPTIONS = [
+  'Subject to ITAR / EAR restrictions',
+  'No export restrictions',
+  'Encrypted / anonymized data only',
+  'Restricted to specific regions',
+  'Unknown',
+];
+
+const DATA_RESIDENCY_OPTIONS = [
+  'EU-only (GDPR)',
+  'US-only (HIPAA)',
+  'Global with DPA agreements',
+  'Region-specific requirements',
+  'Not data-handling relevant',
+];
+
+type SectorConfig = {
+  certifications: string[];
+  formKey: keyof FormData;
+};
+
+const SECTOR_CONFIGS: Record<string, SectorConfig> = {
+  defense: { certifications: DEFENSE_CERTIFICATIONS, formKey: 'defenseCertifications' },
+  aviation: { certifications: AVIATION_CERTIFICATIONS, formKey: 'aviationCertifications' },
+  healthcare: { certifications: HEALTHCARE_CERTIFICATIONS, formKey: 'healthcareCertifications' },
+  finance: { certifications: FINANCE_CERTIFICATIONS, formKey: 'financeCertifications' },
+};
+
+function getSectorConfig(industry: string): SectorConfig | null {
+  if (isDefenseIndustry(industry)) return SECTOR_CONFIGS.defense;
+  if (isAviationIndustry(industry)) return SECTOR_CONFIGS.aviation;
+  if (isHealthcareIndustry(industry)) return SECTOR_CONFIGS.healthcare;
+  if (isFinanceIndustry(industry)) return SECTOR_CONFIGS.finance;
+  if (isLegalIndustry(industry)) return null;
+  return null;
+}
+
+function getSectorCertifications(industry: string): string[] | null {
+  return getSectorConfig(industry)?.certifications ?? null;
+}
+
+function getCertificationsKey(industry: string): keyof FormData | null {
+  return getSectorConfig(industry)?.formKey ?? null;
+}
+
+export default function RegulatoryContext({ data, onChange }: Props) {
+  if (!REGULATED_INDUSTRIES.has(data.industry)) {
+    return null;
+  }
+
+  const certKey = getCertificationsKey(data.industry);
+  const certifications = certKey ? (data[certKey] as string[] | undefined) ?? [] : [];
+  const sectorCerts = getSectorCertifications(data.industry);
+
+  const toggleCertification = (cert: string) => {
+    if (!certKey) return;
+    const current = certifications as string[];
+    if (current.includes(cert)) {
+      onChange({ [certKey]: current.filter((c) => c !== cert) });
+    } else {
+      onChange({ [certKey]: [...current, cert] });
+    }
+  };
+
+  return (
+    <div className="mb-6 border-l-4 border-amber-500 bg-amber-50 rounded-r-lg px-4 py-4">
+      <h2 className="text-[17px] text-gray-800 font-medium mb-3">
+        Compliance & Regulatory Context
+      </h2>
+
+      <p className="text-xs text-gray-600 mb-4">
+        Helps us tailor recommendations to your regulatory constraints and compliance posture.
+      </p>
+
+      {/* Certifications */}
+      {sectorCerts && (
+        <div className="mb-5">
+          <label className="block text-xs font-medium text-gray-700 mb-2">
+            Which certifications do you have? <span className="text-gray-400">(optional)</span>
+          </label>
+          <div className="space-y-1.5">
+            {sectorCerts.map((cert) => (
+              <label key={cert} className="flex items-center gap-2 cursor-pointer">
+                <input
+                  type="checkbox"
+                  checked={(certifications as string[]).includes(cert)}
+                  onChange={() => toggleCertification(cert)}
+                  className="rounded"
+                />
+                <span className="text-sm text-gray-700">{cert}</span>
+              </label>
+            ))}
+          </div>
+        </div>
+      )}
+
+      {/* Export Status */}
+      {shouldShowExportStatus(data.industry) && (
+        <div className="mb-5">
+          <label htmlFor="export-status" className="block text-xs font-medium text-gray-700 mb-2">
+            Export control status <span className="text-gray-400">(optional)</span>
+          </label>
+          <select
+            id="export-status"
+            value={data.exportStatus ?? ''}
+            onChange={(e) => onChange({ exportStatus: e.target.value as any })}
+            className="w-full px-3 py-2 rounded-lg border border-amber-200 bg-white text-sm outline-none focus:border-amber-500 transition-colors"
+          >
+            <option value="">Select status…</option>
+            {EXPORT_STATUS_OPTIONS.map((opt) => (
+              <option key={opt} value={opt}>
+                {opt}
+              </option>
+            ))}
+          </select>
+          <p className="mt-1 text-xs text-gray-500">
+            Guides AEO strategy around content visibility and distribution constraints.
+          </p>
+        </div>
+      )}
+
+      {/* Data Residency */}
+      {shouldShowDataResidency(data.industry) && (
+        <div>
+          <label htmlFor="data-residency" className="block text-xs font-medium text-gray-700 mb-2">
+            Data residency requirements <span className="text-gray-400">(optional)</span>
+          </label>
+          <select
+            id="data-residency"
+            value={data.dataResidency ?? ''}
+            onChange={(e) => onChange({ dataResidency: e.target.value as any })}
+            className="w-full px-3 py-2 rounded-lg border border-amber-200 bg-white text-sm outline-none focus:border-amber-500 transition-colors"
+          >
+            <option value="">Select requirement…</option>
+            {DATA_RESIDENCY_OPTIONS.map((opt) => (
+              <option key={opt} value={opt}>
+                {opt}
+              </option>
+            ))}
+          </select>
+          <p className="mt-1 text-xs text-gray-500">
+            Influences recommendations around data handling, platforms, and geographic visibility.
+          </p>
+        </div>
+      )}
+    </div>
+  );
+}

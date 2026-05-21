@@ -1,5 +1,6 @@
 import { Resend } from 'resend';
 import type { AeoLeadRow } from '@/lib/supabase';
+import { VISIBILITY_GAP_LABELS } from '@/lib/types';
 import {
   getAllCompetitors,
   getVisibilityScore,
@@ -20,6 +21,10 @@ function getUrls() {
     REPORT_URL: process.env.REPORT_CHECKOUT_URL ?? calendly,
     MONITOR_URL: process.env.MONITOR_CHECKOUT_URL ?? calendly,
   };
+}
+
+function formatVisibilityGapLabel(gap: string): string {
+  return VISIBILITY_GAP_LABELS[gap as keyof typeof VISIBILITY_GAP_LABELS] || gap;
 }
 
 // ─── Email 1: User snapshot email ────────────────────────────────────────────
@@ -238,7 +243,7 @@ export async function sendInternalNotification(lead: AeoLeadRow): Promise<void> 
     `platform:      ${lead.platform}`,
     `platform_other:${lead.platform_other ?? '—'}`,
     `challenge:     ${lead.challenge}`,
-    `outcome:       ${lead.outcome}`,
+    `visibility_gap:${formatVisibilityGapLabel(lead.outcome)}`,
     ``,
     `── Attribution ───────────────────────────────`,
     `utm_source:    ${lead.utm_source ?? '—'}`,
