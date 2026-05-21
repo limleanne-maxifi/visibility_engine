@@ -21,6 +21,31 @@ export type PositioningDimension =
   | 'other'
   | '';
 
+// Visibility gap labels - shared across form, prompt builder, and email
+export const VISIBILITY_GAP_LABELS: Record<VisibilityGap, string> = {
+  'not-cited': "I'm not being cited at all",
+  'competitors-cited': 'My competitors are cited instead of me',
+  'inaccurate-info': 'Outdated or inaccurate info appears about me',
+  'own-queries': 'I want to own specific queries or topics',
+  'unknown-baseline': "I don't know where I currently stand",
+  '': '',
+};
+
+// Regulated industries - shared across form validation and prompt building
+export const REGULATED_INDUSTRIES = new Set([
+  'Defense & Government Systems',
+  'Defense', // legacy compat
+  'Aviation, ATC & Aerospace',
+  'Aviation & Aerospace', // legacy compat
+  'Healthcare & Life Sciences',
+  'Healthcare Technology / Digital Health',
+  'Pharmaceuticals & Biotech',
+  'Financial Services & Banking',
+  'Insurance',
+  'Legal & Legal Services',
+  'Legal', // legacy compat
+]);
+
 // Phase 3: Compliance certifications by sector
 export type DefenseCertification =
   | 'ITAR'

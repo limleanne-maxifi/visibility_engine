@@ -1,5 +1,6 @@
 import { Resend } from 'resend';
 import type { AeoLeadRow } from '@/lib/supabase';
+import { VISIBILITY_GAP_LABELS } from '@/lib/types';
 import {
   getAllCompetitors,
   getVisibilityScore,
@@ -23,14 +24,7 @@ function getUrls() {
 }
 
 function formatVisibilityGapLabel(gap: string): string {
-  const labels: Record<string, string> = {
-    'not-cited': "I'm not being cited at all",
-    'competitors-cited': 'My competitors are cited instead of me',
-    'inaccurate-info': 'Outdated or inaccurate info appears about me',
-    'own-queries': 'I want to own specific queries or topics',
-    'unknown-baseline': "I don't know where I currently stand",
-  };
-  return labels[gap] || gap;
+  return VISIBILITY_GAP_LABELS[gap as keyof typeof VISIBILITY_GAP_LABELS] || gap;
 }
 
 // ─── Email 1: User snapshot email ────────────────────────────────────────────

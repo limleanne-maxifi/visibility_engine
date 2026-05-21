@@ -1,6 +1,6 @@
 'use client';
 
-import { FormData } from '@/lib/types';
+import { FormData, REGULATED_INDUSTRIES } from '@/lib/types';
 
 interface Props {
   data: FormData;
@@ -8,20 +8,6 @@ interface Props {
   onChange: (updates: Partial<FormData>) => void;
 }
 
-// Industry family to sector mapping
-const REGULATED_SECTORS = new Set([
-  'Defense & Government Systems',
-  'Defense',
-  'Aviation, ATC & Aerospace',
-  'Aviation & Aerospace',
-  'Healthcare & Life Sciences',
-  'Healthcare Technology / Digital Health',
-  'Pharmaceuticals & Biotech',
-  'Financial Services & Banking',
-  'Insurance',
-  'Legal & Legal Services',
-  'Legal',
-]);
 
 const DEFENSE_CERTIFICATIONS = [
   'ITAR',
@@ -111,7 +97,7 @@ function getCertificationsKey(industry: string): keyof FormData | null {
 }
 
 export default function RegulatoryContext({ data, onChange }: Props) {
-  if (!REGULATED_SECTORS.has(data.industry)) {
+  if (!REGULATED_INDUSTRIES.has(data.industry)) {
     return null;
   }
 

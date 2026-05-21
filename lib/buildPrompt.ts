@@ -4,6 +4,7 @@ import type {
   PositioningStructured,
   PositioningDimension,
 } from '@/lib/types';
+import { VISIBILITY_GAP_LABELS, REGULATED_INDUSTRIES } from '@/lib/types';
 import { inferBusinessModel, type BusinessModel } from '@/lib/scoring';
 
 const BUYER_MODEL_CONTEXT: Record<string, string> = {
@@ -185,7 +186,7 @@ export function validateFormData(data: FormData): {
     data.financeCertifications?.length ||
     data.aviationCertifications?.length;
 
-  if (!hasRegulatoryContext && ['Defense & Government Systems', 'Aviation, ATC & Aerospace', 'Healthcare & Life Sciences', 'Healthcare Technology / Digital Health', 'Pharmaceuticals & Biotech', 'Financial Services & Banking', 'Legal & Legal Services'].includes(data.industry)) {
+  if (!hasRegulatoryContext && REGULATED_INDUSTRIES.has(data.industry)) {
     contextGaps.push('Regulated sector without compliance/certification context (plan may lack legal groundedness)');
   }
 
@@ -331,14 +332,7 @@ export function buildUserMessage(data: FormData): string {
       : null;
 
   // Phase 5: Map visibility gap to human-readable label
-  const visibilityGapLabels: Record<string, string> = {
-    'not-cited': "I'm not being cited at all",
-    'competitors-cited': 'My competitors are cited instead of me',
-    'inaccurate-info': 'Outdated or inaccurate info appears about me',
-    'own-queries': 'I want to own specific queries or topics',
-    'unknown-baseline': "I don't know where I currently stand",
-  };
-  const visibilityGapLabel = visibilityGapLabels[data.visibilityGap] || data.visibilityGap || 'Not specified';
+  const visibilityGapLabel = VISIBILITY_GAP_LABELS[data.visibilityGap] || data.visibilityGap || 'Not specified';
 
   const lines = [
     `Write a personalised AEO action plan for:`,
