@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useEffect, useRef } from 'react';
-import { FormData, AeoOutcome } from '@/lib/types';
+import { FormData, VisibilityGap, VISIBILITY_GAP_LABELS } from '@/lib/types';
 import ChoiceCard from '@/components/ChoiceCard';
 
 interface Props {
@@ -15,12 +15,12 @@ interface Props {
 
 // ─── Static option lists ─────────────────────────────────────────────────────
 
-const VISIBILITY_GAPS: AeoOutcome[] = [
-  "I'm not being cited at all",
-  'My competitors are cited instead of me',
-  'Outdated or inaccurate info appears about me',
-  'I want to own specific queries or topics',
-  "I don't know where I currently stand",
+const VISIBILITY_GAPS: VisibilityGap[] = [
+  'not-cited',
+  'competitors-cited',
+  'inaccurate-info',
+  'own-queries',
+  'unknown-baseline',
 ];
 
 // ─── Industry family mapping ──────────────────────────────────────────────────
@@ -119,7 +119,7 @@ export default function Step4Goals({ data, onChange, onNext, onBack, errors, ind
   };
 
   const family = getFamily(industry);
-  const showTargetQueries = data.aeoOutcome === 'I want to own specific queries or topics';
+  const showTargetQueries = data.visibilityGap === 'own-queries';
 
   // Positioning phrase rotation
   const [posIdx, setPosIdx] = useState(0);
@@ -181,14 +181,14 @@ export default function Step4Goals({ data, onChange, onNext, onBack, errors, ind
           {VISIBILITY_GAPS.map((gap) => (
             <ChoiceCard
               key={gap}
-              label={gap}
-              selected={data.aeoOutcome === gap}
-              onSelect={() => onChange({ aeoOutcome: gap })}
+              label={VISIBILITY_GAP_LABELS[gap]}
+              selected={data.visibilityGap === gap}
+              onSelect={() => onChange({ visibilityGap: gap })}
             />
           ))}
         </div>
-        {errors.aeoOutcome && (
-          <p className="mt-1 text-xs text-red-500">{errors.aeoOutcome}</p>
+        {errors.visibilityGap && (
+          <p className="mt-1 text-xs text-red-500">{errors.visibilityGap}</p>
         )}
       </fieldset>
 

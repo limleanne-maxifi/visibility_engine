@@ -40,7 +40,7 @@ function validateStep(step: number, data: FormData): Errors {
   }
 
   if (step === 4) {
-    if (!data.aeoOutcome) errors.aeoOutcome = 'Please select your visibility gap.';
+    if (!data.visibilityGap) errors.visibilityGap = 'Please select your visibility gap.';
   }
 
   if (step === 5) {
