@@ -6,14 +6,19 @@ import { CompetitorsStructured } from '@/lib/types';
 interface Props {
   data?: CompetitorsStructured;
   freeText: string;
+  gap?: string; // Phase 5: visibility gap context
   onChange: (updates: {
     competitorsStructured?: CompetitorsStructured;
     competitors?: string;
   }) => void;
 }
 
-export default function CompetitorIntelligence({ data, freeText, onChange }: Props) {
-  const [showStructured, setShowStructured] = useState(!!data?.direct?.length || !!data?.indirect?.length);
+export default function CompetitorIntelligence({ data, freeText, gap, onChange }: Props) {
+  // Phase 5: Auto-switch to detailed mode if gap is "competitors-cited" (Gap 2)
+  const isCompetitiveGap = gap === 'competitors-cited';
+  const [showStructured, setShowStructured] = useState(
+    isCompetitiveGap || !!data?.direct?.length || !!data?.indirect?.length
+  );
   const [direct, setDirect] = useState((data?.direct ?? []).join(', '));
   const [indirect, setIndirect] = useState((data?.indirect ?? []).join(', '));
   const [noteworthy, setNoteworthy] = useState(data?.noteworthy ?? '');
@@ -69,7 +74,9 @@ export default function CompetitorIntelligence({ data, freeText, onChange }: Pro
         </div>
 
         <p className="text-xs text-gray-600 mb-3">
-          Help us understand your competitive position. Separate multiple names with commas.
+          {isCompetitiveGap
+            ? 'Tell us which competitors are cited instead of you — this helps us analyze displacement opportunities.'
+            : 'Help us understand your competitive position. Separate multiple names with commas.'}
         </p>
 
         <div className="space-y-3">

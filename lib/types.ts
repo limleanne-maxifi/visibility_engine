@@ -97,6 +97,15 @@ export interface PositioningStructured {
   proof?: string; // e.g., "Sub-1-hour setup vs competitor's 3 days"
 }
 
+// Phase 5: Visibility gap (primary diagnostic)
+export type VisibilityGap =
+  | 'not-cited'
+  | 'competitors-cited'
+  | 'inaccurate-info'
+  | 'own-queries'
+  | 'unknown-baseline'
+  | '';
+
 export type AiPresence =
   | "No, I haven't tried this yet"
   | 'Yes — and the results were accurate'
@@ -138,12 +147,15 @@ export interface FormData {
   aiPresence: AiPresence;
   platforms: Platform[];
 
-  // Step 4 — Goals
+  // Step 4 — Visibility Gap & Goals
+  visibilityGap?: VisibilityGap;
   challenges: string[];
-  aeoOutcome: AeoOutcome;
   competitors: string;
   positioning: string;
   targetQueries: string;
+  competitorPrimaryFocus?: string; // Phase 5: Which competitor is primary focus (for Gap 2)
+  inaccuracyExamples?: string; // Phase 5: What inaccuracies noticed (for Gap 3)
+  platformPreferences?: string[]; // Phase 5: Which platforms to prioritize
 
   // Phase 2: Business Model & Sector Context (optional overrides)
   buyerModelPrimary?: BusinessModelOverride;
@@ -186,15 +198,18 @@ export const initialFormData: FormData = {
   aiPresence: '',
   platforms: [],
   challenges: [],
-  aeoOutcome: '',
   competitors: '',
   positioning: '',
   targetQueries: '',
+  visibilityGap: '',
   buyerModelPrimary: '',
   pharmaRole: '',
   defenseChannel: '',
   competitorsStructured: undefined,
   competitorAiPresence: '',
+  competitorPrimaryFocus: '',
+  inaccuracyExamples: '',
+  platformPreferences: undefined,
   positioningStructured: undefined,
   defenseCertifications: undefined,
   healthcareCertifications: undefined,

@@ -4,6 +4,7 @@ import { FormData } from '@/lib/types';
 
 interface Props {
   data: FormData;
+  gap?: string; // Phase 5: visibility gap context
   onChange: (updates: Partial<FormData>) => void;
 }
 

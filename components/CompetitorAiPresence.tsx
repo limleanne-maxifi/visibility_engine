@@ -30,8 +30,8 @@ const OPTIONS: { value: CompAiPresence; label: string; description: string }[] =
   },
   {
     value: 'Unknown',
-    label: `Don't know`,
-    description: `Haven't checked competitor AI visibility yet`,
+    label: "I haven't verified — just suspect they're ahead",
+    description: 'You think competitors have advantage but want us to audit it',
   },
 ];
 
