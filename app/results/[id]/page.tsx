@@ -861,6 +861,30 @@ export default async function ResultsPage({ params }: Props) {
           </p>
         </div>
 
+        {/* 6.5. Plan steps */}
+        {lead.plan_steps?.length > 0 && (
+          <div className="mb-8">
+            <h2 className="text-xl font-bold text-[#042C53] mb-4">
+              Your personalised action plan
+            </h2>
+            {lead.plan_steps.slice(0, 3).map(step => (
+              <div key={step.num} className="mb-4">
+                <p className="font-semibold text-[#042C53]">
+                  {step.num}. {step.title}
+                </p>
+                <p className="text-[#042C53]/70 text-sm mt-1">{step.body}</p>
+              </div>
+            ))}
+            {lead.plan_quick_win && (
+              <div className="bg-[#1D9E75]/10 rounded-lg p-4 mt-4">
+                <p className="text-sm font-semibold text-[#1D9E75]">
+                  Quick win: {lead.plan_quick_win}
+                </p>
+              </div>
+            )}
+          </div>
+        )}
+
         {/* 7. Three-option path forward */}
         <div className="mb-8">
           <h2 className="text-xl font-bold text-gray-900 mb-1">What would you like to do next?</h2>
@@ -878,9 +902,7 @@ export default async function ResultsPage({ params }: Props) {
                 Covers every fix in order of impact, plus the exact sources AI is drawing on about you.
               </p>
               <a
-                href={reportUrl}
-                target="_blank"
-                rel="noopener noreferrer"
+                href={`/report/request?lead_id=${lead.id}`}
                 className="block text-center text-sm font-semibold text-white bg-[#C87A2F] hover:bg-[#A8651E] rounded-lg px-4 py-2.5 transition-colors"
               >
                 Get the report →
