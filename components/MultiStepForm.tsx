@@ -124,7 +124,11 @@ export default function MultiStepForm() {
         throw new Error(data.error ?? 'Something went wrong. Please try again.');
       }
 
-      router.push(`/results/${data.id}`);
+      if (data.reportToken) {
+        router.push(`/r/${data.reportToken}`);
+      } else {
+        router.push(`/results/${data.id}`);
+      }
     } catch (err) {
       setIsLoading(false);
       setSubmitError(
