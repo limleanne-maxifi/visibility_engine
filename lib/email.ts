@@ -43,8 +43,7 @@ export async function sendUserPlanEmail(lead: AeoLeadRow): Promise<void> {
   const entity         = lead.company_name ?? lead.first_name;
 
   const scoreDisplay   = score > 0 ? `${score}%` : '—';
-  const entityShort = entity.length > 20 ? entity.slice(0, 20) + '...' : entity;
-  const subject        = `Your AEO Snapshot — ${entityShort}${score > 0 ? ` (${score}%)` : ' (undiagnosed)'}`;
+  const subject        = `Your AI Visibility Snapshot — ${entity} is at ${score > 0 ? `${score}%` : 'an undiagnosed'} visibility`;
 
   const benchmarkContext = score > 0 ? getBenchmarkContext(score, benchAvg, lead.industry) : null;
 
