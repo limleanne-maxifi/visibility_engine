@@ -52,11 +52,6 @@ function validateFormData(data: FormData): string[] {
     errors.push('Invalid awareness state');
   }
 
-  // Challenges validation
-  if (!data.challenges?.length) {
-    errors.push('Please specify at least one challenge');
-  }
-
   // String length validation
   if ((data.competitors?.length ?? 0) > 500) {
     errors.push('Competitors field exceeds maximum length');
