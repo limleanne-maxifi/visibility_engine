@@ -25,5 +25,5 @@ export interface GenerateResponse {
 
 export interface GenerateErrorResponse {
   error: string;
-  code: 'VALIDATION_ERROR' | 'PARSE_ERROR' | 'API_ERROR' | 'NOT_FOUND';
+  code: 'VALIDATION_ERROR' | 'PARSE_ERROR' | 'API_ERROR' | 'NOT_FOUND' | 'DATABASE_ERROR' | 'RATE_LIMIT';
 }

@@ -43,7 +43,8 @@ export async function sendUserPlanEmail(lead: AeoLeadRow): Promise<void> {
   const entity         = lead.company_name ?? lead.first_name;
 
   const scoreDisplay   = score > 0 ? `${score}%` : '—';
-  const subject        = `Your AI Visibility Snapshot — ${entity} is at ${score > 0 ? `${score}%` : 'an undiagnosed'} visibility`;
+  const entityShort = entity.length > 20 ? entity.slice(0, 20) + '...' : entity;
+  const subject        = `Your AEO Snapshot — ${entityShort}${score > 0 ? ` (${score}%)` : ' (undiagnosed)'}`;
 
   const benchmarkContext = score > 0 ? getBenchmarkContext(score, benchAvg, lead.industry) : null;
 
@@ -196,6 +197,18 @@ export async function sendUserPlanEmail(lead: AeoLeadRow): Promise<void> {
       <a href="${CALENDLY}" style="color:#6B5DD3;font-weight:600;text-decoration:none;">
         Book a strategy call &rarr;
       </a>
+    </p>
+  </td></tr>
+
+  <!-- Quick Disclaimer -->
+  <tr><td style="padding-top:24px;border-top:1px solid #e5e7eb;">
+    <p style="margin:0;font-size:11px;color:#9ca3af;text-align:center;line-height:1.6;">
+      This snapshot is based on your self-reported testing and automated analysis.
+      AI citation patterns shift with platform updates.
+      <a href="${REPORT_URL}" style="color:#6B5DD3;text-decoration:underline;">
+        Get your full AEO Visibility Report
+      </a>
+      for detailed audit.
     </p>
   </td></tr>
 

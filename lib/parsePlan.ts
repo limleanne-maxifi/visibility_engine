@@ -38,6 +38,15 @@ export function parsePlan(raw: string): Plan {
     throw new Error('QUICKWIN not found in Claude response');
   }
 
+  // Validate step count — detect truncation or malformation
+  const expectedSteps = raw.includes("No, I haven't tried this yet") ? 3 : 5;
+  if (steps.length < expectedSteps) {
+    console.warn(
+      `[parse] Expected ${expectedSteps} steps but got ${steps.length}. Response may be incomplete.`
+    );
+    // Don't fail hard, but log for monitoring
+  }
+
   return {
     steps,
     quickWin: quickWinMatch[1].trim(),

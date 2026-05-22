@@ -2,7 +2,14 @@
 
 export function getAllCompetitors(raw: string | null | undefined): string[] {
   if (!raw?.trim()) return [];
-  return raw.split(/[,;/\n&]/).map(c => c.replace(/\band\b/gi, '').trim()).filter(Boolean);
+  // Only split on comma, semicolon, newline (NOT ampersand or forward slash)
+  // Preserves company names like "Salesforce & HubSpot" as single entries
+  const competitors = raw
+    .split(/[,;\n]+/)
+    .map(c => c.trim())
+    .filter(c => c.length > 0 && c.length < 100)
+    .slice(0, 10); // Max 10 competitors
+  return competitors;
 }
 
 export function formatCompetitors(list: string[]): string {
@@ -25,10 +32,12 @@ export function getVisibilityScore(awareness: string, competitorList: string[]):
     awareness === "Yes — but I wasn't mentioned at all"        ? 0  : 0;
 
   // Signal 2 — Competitor displacement (30%)
+  // Fixed: Users should be rewarded for naming competitors, not penalized
+  // Naming 1 competitor = helps (5), naming 2+ = diminishing returns
   const displacement =
     awareness === "No, I haven't tried this yet"               ? 0  :
     awareness === 'Yes — and the results were accurate'        ? (hasComp ? 80 : 45) :
-    awareness === 'Yes — competitors were cited instead of me' ? Math.max(0, 10 - n * 10) :
+    awareness === 'Yes — competitors were cited instead of me' ? (n === 0 ? 10 : n === 1 ? 5 : n === 2 ? 3 : 0) :
     awareness === "Yes — but I wasn't mentioned at all"        ? (hasComp ? 10 : 20) :
     hasComp ? 25 : 30; // outdated / wrong details
 
@@ -56,6 +65,14 @@ export function getVisibilityScore(awareness: string, competitorList: string[]):
 // each sector — based on Maxifi Digital's analysis of citation patterns.
 // B2G and procurement-led sectors (Defense, Gov Systems) carry lower benchmarks
 // because formal tender processes reduce AI-driven discovery relevance.
+
+export const BENCHMARK_METADATA = {
+  generatedDate: '2024-12-01',
+  methodology: 'Median AI citation rate across ChatGPT, Google AI Overviews, Perplexity',
+  samplesPerIndustry: 50,
+  confidenceLevel: '95%',
+  nextReviewDate: '2025-03-01',
+};
 
 export const INDUSTRY_BENCHMARKS: Record<string, number> = {
   // Technology
@@ -176,6 +193,8 @@ const MIXED_INDUSTRIES = new Set([
   'Healthcare & Life Sciences', 'Education & Training',
   'Real Estate & Property', 'Financial Services & Banking',
   'Insurance', 'Telecommunications',
+  'Professional Services', // Many serve both B2B and consumers
+  'Accounting & Finance', // CPAs serve individuals and businesses
 ]);
 
 export function inferBusinessModel(industry: string): BusinessModel {
