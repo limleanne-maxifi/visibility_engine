@@ -155,7 +155,7 @@ export default function CompetitorIntelligence({ data, freeText, gap, onChange }
         onChange={(e) => onChange({ competitors: e.target.value })}
         placeholder="Your closest competitors by name"
         autoComplete="new-password"
-        className="w-full px-4 py-3 rounded-lg border border-gray-200 text-sm outline-none focus:border-[#534AB7] transition-colors"
+        className="w-full px-4 py-3 rounded-lg border border-gray-200 text-sm outline-none focus:border-brand-gold transition-colors"
       />
       <p className="mt-1 text-xs text-gray-400">
         Optional — add competitors to unlock side-by-side displacement analysis in your plan.
