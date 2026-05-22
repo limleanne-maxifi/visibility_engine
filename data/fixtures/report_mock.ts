@@ -246,6 +246,10 @@ const PAID_SECTIONS: Pick<ReportData, 's5Competitors' | 's6PositioningGap' | 's7
       {
         query: 'Orbis Analytics review',
         status: 'inaccurate',
+        inaccuracyDetail:
+          'ChatGPT describes Orbis Analytics as "a general-purpose BI tool for enterprise teams" — omitting the mid-market and finance-team specialisation entirely.',
+        fixSuggestion:
+          'Add an Organisation schema description to your home page that explicitly states the mid-market finance focus; update your G2 and Crunchbase "About" fields to match.',
         priority: 'medium',
       },
     ],

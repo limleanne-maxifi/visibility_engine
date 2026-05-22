@@ -570,6 +570,18 @@ function S7QueryGap({ data }: { data: NonNullable<ReportData['s7QueryGap']> }) {
                   Cited instead: <span className="font-medium text-orange-700">{row.competitorCited}</span>
                 </p>
               )}
+              {row.inaccuracyDetail && (
+                <p className="text-xs text-gray-500 mt-1.5 leading-relaxed">
+                  <span className="font-semibold text-gray-700">What AI said: </span>
+                  {row.inaccuracyDetail}
+                </p>
+              )}
+              {row.fixSuggestion && (
+                <p className="text-xs mt-1 leading-relaxed" style={{ color: '#C87A2F' }}>
+                  <span className="font-semibold">Fix: </span>
+                  {row.fixSuggestion}
+                </p>
+              )}
             </div>
           );
         })}
@@ -807,18 +819,22 @@ export default function ReportPage({ data }: { data: ReportData }) {
 
             {/* Score */}
             <div className="sm:flex-shrink-0">
-              <ScoreCircle score={score.score} band={score.band} />
+              <ScoreCircle score={score.score} band={score.band} showScore={paid} />
               <div className="mt-3 text-center">
-                <p className="text-[10px] text-white/40 mb-0.5">Industry benchmark</p>
+                <p className="text-[10px] text-white/40 mb-0.5">
+                  {score.benchmarkLabel} median
+                </p>
                 <p className="text-sm font-bold text-white/70">{score.benchmarkAvg}%</p>
               </div>
             </div>
           </div>
 
-          {/* Scoring note */}
-          <p className="mt-6 text-[11px] text-white/30 leading-relaxed border-t border-white/5 pt-4">
-            {score.scoringNote}
-          </p>
+          {/* Scoring note — only shown in free tier; paid score is measured, not estimated */}
+          {!paid && (
+            <p className="mt-6 text-[11px] text-white/30 leading-relaxed border-t border-white/5 pt-4">
+              {score.scoringNote}
+            </p>
+          )}
         </div>
       </div>
 

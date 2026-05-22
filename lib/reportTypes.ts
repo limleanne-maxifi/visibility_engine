@@ -168,6 +168,10 @@ export interface QueryCoverageRow {
   status: QueryStatus
   /** Competitor cited instead, if applicable */
   competitorCited?: string
+  /** For status=inaccurate: what the AI got wrong */
+  inaccuracyDetail?: string
+  /** For status=inaccurate: recommended one-line fix */
+  fixSuggestion?: string
   priority: 'high' | 'medium' | 'low'
 }
 
