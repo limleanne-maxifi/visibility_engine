@@ -2,7 +2,7 @@
 ## AI Visibility Engine — Measured Output Contract
 ### Visibility View · Stage 6
 
-**Status:** Contract definition — no engine code yet  
+**Status:** FROZEN — v1 contract. Engine build may proceed against this document.  
 **Source of truth:** `lib/reportTypes.ts` (TypeScript interface `ReportData`)  
 **Renderer:** `components/report/ReportPage.tsx`  
 **Last updated:** 2026-05-22
@@ -87,8 +87,8 @@ Every field in `ReportData` has exactly one owner. The engine must produce `MEAS
 | `meta.paid` | **Fulfillment script** | Set `true` after Stripe payment confirmed |
 | `score.score` | **Engine** | Replaces teaser estimate with measured 0–100 integer |
 | `score.band` | **Engine** | Derived from measured score using band thresholds |
-| `score.benchmarkAvg` | **Teaser** (may preserve) | Engine may update with measured industry median |
-| `score.benchmarkLabel` | **Teaser** (may preserve) | Label shown as `"{benchmarkLabel} median"` in renderer |
+| `score.benchmarkAvg` | **Teaser** (preserve — v1) | Engine does NOT compute benchmark in v1. Fulfillment script preserves teaser's static value. No silent overwrite. |
+| `score.benchmarkLabel` | **Teaser** (preserve — v1) | Same as above — preserved as-is by fulfillment script. |
 | `score.scoringNote` | **Engine** (update) | Teaser note is hidden in paid render; update to measurement context |
 | `s1Visibility` | **Teaser** | ASSESSMENT — do not touch |
 | `s2Diagnosis` | **Teaser** | ASSESSMENT — do not touch |
@@ -108,14 +108,12 @@ Every field in `ReportData` has exactly one owner. The engine must produce `MEAS
 
 ### 3.1 `score` (partial update)
 
-The engine updates `score.score`, `score.band`, and `score.scoringNote`. It should preserve `benchmarkAvg` and `benchmarkLabel` unless it has a more accurate measured value.
+The engine updates `score.score`, `score.band`, and `score.scoringNote` only. It does **not** emit `benchmarkAvg` or `benchmarkLabel` in v1 — those are preserved from the teaser by the fulfillment script.
 
 ```json
 {
   "score": 42,
   "band": "Developing",
-  "benchmarkAvg": 76,
-  "benchmarkLabel": "B2B SaaS / Enterprise Software average",
   "scoringNote": "Measured from live cross-LLM citation testing across 47 queries on 2026-05-22. Score reflects citation rate across ChatGPT, Perplexity, Google AI Overviews, and Microsoft Copilot."
 }
 ```
@@ -126,8 +124,8 @@ The engine updates `score.score`, `score.band`, and `score.scoringNote`. It shou
 |---|---|---|---|
 | `score` | `integer` | 0–100 inclusive | Measured citation rate composite; not estimated |
 | `band` | `string` | `Critical` \| `Low` \| `Developing` \| `Established` \| `Strong` | Must match score: 0–20 → Critical, 21–40 → Low, 41–60 → Developing, 61–75 → Established, 76–100 → Strong |
-| `benchmarkAvg` | `integer` | 0–100 | Industry median; may preserve teaser value |
-| `benchmarkLabel` | `string` | Non-empty | Rendered as `"{benchmarkLabel} median"` — do NOT include "median" in value |
+| `benchmarkAvg` | — | **Omit in v1** | Fulfillment script preserves teaser value; engine must not include this field |
+| `benchmarkLabel` | — | **Omit in v1** | Same — preserved from teaser |
 | `scoringNote` | `string` | Non-empty | Hidden in paid render (`!paid` guard) but must be present for type completeness |
 
 **Renderer behaviour:** `ScoreCircle` receives `showScore={paid}`. When `paid=true`, the numeric score is displayed definitively with no disclaimer. The `scoringNote` is **not rendered** in paid reports — it exists solely for the free teaser.
@@ -168,7 +166,7 @@ The engine updates `score.score`, `score.band`, and `score.scoringNote`. It shou
 | Field | Type | Required | Notes |
 |---|---|---|---|
 | `name` | `string` | Yes | Competitor brand name; max 60 chars |
-| `platforms` | `string[]` | Yes | From: `ChatGPT`, `Perplexity`, `Google AI Overviews`, `Microsoft Copilot`, `Claude`, `Gemini` |
+| `platforms` | `string[]` | Yes | **Hard vocabulary** — engine must use exactly: `"ChatGPT"`, `"Perplexity"`, `"Google AI Overviews"`, `"Microsoft Copilot"`, `"Claude"`, `"Gemini"`. No aliases. Enforce via constant/enum on the engine side. |
 | `advantage` | `string` | Yes | Structural reason they appear; 1–3 sentences; no "you should" framing |
 | `yourGap` | `string` | Yes | Entity-specific gap; must name the entity; 1–2 sentences |
 
@@ -216,10 +214,12 @@ The engine updates `score.score`, `score.band`, and `score.scoringNote`. It shou
 
 ### 3.4 `s7QueryGap` — Target Query Coverage
 
+**v1 platform scope:** S7 reports ChatGPT only. `primaryPlatform` must be `"ChatGPT"`. The engine probes all four LLMs for scoring and S5 displacement narrative, but the query-by-query table in S7 covers ChatGPT exclusively — the dominant B2B buyer research platform. The `summary` field must frame this honestly (e.g., `"measured on ChatGPT, the platform your buyers use most"`). Multi-platform S7 rows are a v2 option only.
+
 ```json
 {
   "headline": "Target Query Coverage",
-  "summary": "Engine testing on ChatGPT shows Orbis Analytics is not returning in any of the five target query categories. Competitors appear in four of the five.",
+  "summary": "Measured on ChatGPT, the platform your buyers use most: Orbis Analytics is not returning in any of the five target query categories. Competitors appear in four of the five.",
   "queries": [
     {
       "query": "best analytics platform for mid-market finance teams",
@@ -253,7 +253,7 @@ The engine updates `score.score`, `score.band`, and `score.scoringNote`. It shou
 | `headline` | `string` | Yes | Section h2 |
 | `summary` | `string` | Yes | 1–2 sentences; must reference platform and total query results |
 | `queries` | `QueryCoverageRow[]` | Yes | Minimum 3 rows; typically 5–10 |
-| `primaryPlatform` | `string` | Yes | The platform on which all query tests were run; rendered as "Platform: {primaryPlatform}" |
+| `primaryPlatform` | `string` | Yes | **Must be `"ChatGPT"` in v1.** The platform on which all S7 query tests were run; rendered as "Platform: {primaryPlatform}" |
 | `queriesAnalyzed` | `integer` | Yes | Count of rows in `queries` array |
 | `queriesWon` | `integer` | Yes | Count of rows where `status === 'present'`; rendered as "{queriesWon} of {queriesAnalyzed} queries won" |
 
@@ -340,6 +340,7 @@ The engine produces a **partial JSON object** containing only the measured field
     "score": 42,
     "band": "Developing",
     "scoringNote": "Measured from live cross-LLM citation testing across 47 queries on 2026-06-15."
+    // benchmarkAvg and benchmarkLabel are NOT emitted — preserved from teaser by fulfillment script
   },
   "s5Competitors": {
     "headline": "Competitor Displacement Analysis",
@@ -388,8 +389,8 @@ meta.entityName
 meta.industry
 meta.occupation
 meta.website
-score.benchmarkAvg        (unless engine explicitly provides a better value)
-score.benchmarkLabel      (unless engine explicitly provides a better value)
+score.benchmarkAvg        (always — engine does not compute benchmark in v1)
+score.benchmarkLabel      (always — engine does not compute benchmark in v1)
 s1Visibility              (entire section)
 s2Diagnosis               (entire section)
 s3Platforms               (entire section)
@@ -440,55 +441,54 @@ The `/r/[token]` renderer at `app/r/[token]/page.tsx` already handles the paid p
 
 ---
 
-## 6. Open Items — Mismatches to Resolve Before First Paid Order
+## 6. Resolved Decisions (v1 Frozen)
 
-### OPEN-1: No dedicated per-platform citation summary table
+All five design questions from the initial contract draft have been resolved. The contract below is stable — engine build may proceed.
 
-**Issue:** The spec calls for "the per-platform citation table with real cited/displaced/missing statuses" as a measured output. There is no such field in the current `ReportData` type.
+### DECISION-1: No s9 per-platform citation section
 
-What exists:
-- `s5Competitors[].platforms[]` — which platforms cite *competitors* (not the entity)
-- `s7QueryGap.primaryPlatform` — a single string; query results cover one platform only
-- `s1Visibility.platforms[]` — the teaser assessment statuses; engine must not touch
+Per-platform citation is treated as **implicit** across S5 (competitor displacement, `competitors[].platforms[]`) and S7 (query coverage table). A dedicated `s9PlatformCitation` section will not be added. No type change, no renderer change.
 
-**Resolution needed:** Either:
-- Add a new `s9PlatformCitation` section to `ReportData` (requires renderer update), OR
-- Treat `s7QueryGap` as the per-platform summary (acceptable if the engine runs multi-platform query coverage and lists the primary platform in `primaryPlatform` while summarising the others in `summary`), OR
-- Accept that per-platform citation data is implicit in S5 and S7 and document this as a known scope limit
+**v1 scope limit:** The report does not show a standalone "here is how many times you were cited per platform" table. This is a known limitation. If a future client or analyst review surfaces a strong need for it, add `s9PlatformCitation` in v2.
 
-**Decision required before engine build.**
+### DECISION-2: S7 is single-platform — ChatGPT only
 
-### OPEN-2: `s7QueryGap` covers only `primaryPlatform` — no multi-platform rows
+`s7QueryGap.primaryPlatform` must be `"ChatGPT"` in v1. The engine probes all four LLMs for the composite score and the S5 competitor displacement narrative, but the S7 query-by-query table covers **ChatGPT only** — the dominant B2B buyer research platform.
 
-**Issue:** `QueryGapSection.primaryPlatform` is a single string and `queries` has no `platform` field per row. If the engine tests ChatGPT, Perplexity, and Google AI Overviews, the schema cannot represent cross-platform query results in one section.
+The `summary` field must frame this honestly. Acceptable form: `"Measured on ChatGPT, the platform your buyers use most: …"`. Do not imply multi-platform coverage in S7 copy.
 
-**Current workaround:** Test on the primary platform only for S7; surface cross-platform displacement in S5 narrative.
+Multi-platform query rows (adding a `platform` field to `QueryCoverageRow`) are a v2 option only. No type change needed for v1.
 
-**Longer-term option:** Add `platform: string` to `QueryCoverageRow` and allow `primaryPlatform` to become `platformsTested: string[]`. Requires `ReportPage.tsx` update.
+### DECISION-3: S1 stays assessment-tier in paid report — bridging note added
 
-**Decision required before engine build if multi-platform coverage is in scope.**
+S1 is always `ASSESSMENT` (initial evaluation, not engine-measured). This is defensible: different evidence standards, different sections. The engine does not touch S1.
 
-### OPEN-3: `s1Visibility.platforms` retains "likely-" language in paid report
+**Renderer change (implemented):** A one-line explanatory note is shown beneath the S1 assessment caveat in the paid report only:
 
-**Issue:** The renderer always maps `likely-present` → "Likely cited" and `likely-absent` → "Likely absent" in S1, even in the paid report. Since the engine does not touch S1, these labels remain qualitative even after the full analysis is complete.
+> *Section 1 reflects our initial assessment; see Sections 5–7 for engine-measured results.*
 
-**Impact:** Minor credibility issue — a paid report user sees "Likely cited" in S1 but "Cited ✓" in S7 for the same platform. The two sections use different evidence standards and this is defensible, but may feel inconsistent.
+This note appears only when `meta.paid === true`. No type change required.
 
-**Options:**
-- Accept as-is (S1 is always assessment; S7 is always measured — different standards)
-- Have the fulfillment script update `s1Visibility.platforms` statuses after the engine runs, replacing `likely-present` with a new status value (requires `PlatformStatus` type extension and renderer update)
+### DECISION-4: Platform names are a hard vocabulary (enforced by engine)
 
-### OPEN-4: `CompetitorEntry.platforms` has no validation against known platform names
+`CompetitorEntry.platforms[]` and any other platform name field must use exactly these strings. No aliases, abbreviations, or model names.
 
-**Issue:** `platforms: string[]` on `CompetitorEntry` is free-form. The renderer renders them as plain text pills. If the engine outputs `"GPT-4"` instead of `"ChatGPT"`, the render is visually correct but inconsistent with platform names used elsewhere.
+| Canonical name |
+|---|
+| `ChatGPT` |
+| `Perplexity` |
+| `Google AI Overviews` |
+| `Microsoft Copilot` |
+| `Claude` |
+| `Gemini` |
 
-**Resolution:** Engine should use exactly these strings: `ChatGPT`, `Perplexity`, `Google AI Overviews`, `Microsoft Copilot`, `Claude`, `Gemini`.
+The engine enforces this via a constant/enum on its side. The renderer has no validation — incorrect strings will render silently as unrecognised pills. The engine is the enforcement point.
 
-### OPEN-5: `score.benchmarkAvg` ownership ambiguity
+### DECISION-5: Engine does not compute benchmarks in v1
 
-**Issue:** The teaser sets `benchmarkAvg` from a static lookup table in `lib/scoring.ts`. The engine may derive a more accurate measured benchmark from live data.
+`score.benchmarkAvg` and `score.benchmarkLabel` are **not emitted by the engine**. The fulfillment script unconditionally preserves the teaser's static-table values. No silent overwrite.
 
-**Resolution:** If the engine has a better benchmark, it should explicitly include `benchmarkAvg` and `benchmarkLabel` in its output. If it does not, the fulfillment script preserves the teaser values. Make this explicit in the fulfillment script — no silent overwrites.
+Engine-computed benchmarks (derived from a real scored-company corpus) are a v2 feature. The data does not exist at v1 launch to support a defensible measured benchmark.
 
 ---
 

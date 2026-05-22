@@ -175,7 +175,7 @@ function TableOfContents({ paid }: { paid: boolean }) {
 
 // ─── Section 1: Visibility Assessment ────────────────────────────────────────
 
-function S1Visibility({ data }: { data: ReportData['s1Visibility'] }) {
+function S1Visibility({ data, paid }: { data: ReportData['s1Visibility']; paid: boolean }) {
   return (
     <SectionCard id="section-1">
       <SectionBadge n={1} free />
@@ -203,6 +203,12 @@ function S1Visibility({ data }: { data: ReportData['s1Visibility'] }) {
       <p className="mt-4 text-[11px] text-gray-400 leading-relaxed border-t border-gray-100 pt-3">
         {data.assessmentCaveat}
       </p>
+
+      {paid && (
+        <p className="mt-3 text-[11px] text-gray-400 leading-relaxed italic">
+          Section 1 reflects our initial assessment; see Sections 5–7 for engine-measured results.
+        </p>
+      )}
     </SectionCard>
   );
 }
@@ -842,7 +848,7 @@ export default function ReportPage({ data }: { data: ReportData }) {
       <main className="max-w-3xl mx-auto px-4 sm:px-6 py-8">
         <TableOfContents paid={paid} />
 
-        <S1Visibility data={data.s1Visibility} />
+        <S1Visibility data={data.s1Visibility} paid={paid} />
         <S2Diagnosis data={data.s2Diagnosis} />
         <S3Platforms data={data.s3Platforms} />
         <S4Positioning data={data.s4Positioning} />
