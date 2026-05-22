@@ -1,0 +1,195 @@
+{
+  "_comment": "Sample engine output for Maxifi Digital — used for dry-run testing of fulfil-report.mjs",
+  "measuredAt": "2026-05-22T08:30:00.000Z",
+  "score": {
+    "score": 22,
+    "band": "Critical",
+    "scoringNote": "Measured across 15 probe queries on ChatGPT, Perplexity, and Google AI Overviews. Maxifi Digital was cited in 0 of 15 tested queries."
+  },
+  "s5Competitors": {
+    "headline": "Competitor Displacement Analysis",
+    "summary": "Engine testing across 15 queries on ChatGPT, Perplexity, and Google AI Overviews found four vendors consistently cited in AEO and AI-visibility categories where Maxifi Digital could reasonably appear.",
+    "competitors": [
+      {
+        "name": "BrightEdge",
+        "platforms": ["ChatGPT", "Perplexity", "Google AI Overviews"],
+        "advantage": "Extensive coverage across SEO analyst reports and Gartner publications. AI engines have high-confidence citations from multiple independent sources spanning 10+ years.",
+        "yourGap": "Maxifi Digital lacks the volume of cross-platform citations that would let AI engines confidently select it alongside BrightEdge in enterprise-content queries."
+      },
+      {
+        "name": "Conductor",
+        "platforms": ["ChatGPT", "Perplexity"],
+        "advantage": "Strong G2 category leadership in 'enterprise SEO' and consistent press coverage on Search Engine Land and Search Engine Journal provide reliable citation signals.",
+        "yourGap": "No verified third-party reviews or analyst coverage mentioning Maxifi Digital's AEO specialisation visible to AI engines."
+      },
+      {
+        "name": "Semrush",
+        "platforms": ["ChatGPT", "Perplexity", "Google AI Overviews"],
+        "advantage": "Near-universal brand recognition; cited by default in any 'AI visibility' or 'content discovery' query regardless of specialisation fit.",
+        "yourGap": "Without a distinct, independently-validated category claim (AEO vs. general SEO), AI engines default to broader-market incumbents."
+      },
+      {
+        "name": "Authoritas",
+        "platforms": ["Perplexity"],
+        "advantage": "Emerging AI-search-specific positioning gives it citation preference in Perplexity for queries specifically about AI search optimisation.",
+        "yourGap": "Authoritas has a head start on AEO-specific content; Maxifi Digital needs structured entity content to compete in this narrower category."
+      }
+    ],
+    "displacementPattern": "In 14 of 15 tested queries, at least one of BrightEdge, Conductor, Semrush, or Authoritas appeared in the AI response. Maxifi Digital appeared in 0 of 15. The displacement is consistent across all tested platforms and query types.",
+    "queriesAnalyzed": 15
+  },
+  "s6PositioningGap": {
+    "headline": "Positioning Gap Report",
+    "currentPerception": "AI engines currently have insufficient data to describe Maxifi Digital. When prompted directly on ChatGPT, the model states it has no reliable information about the company — it does not even surface a generic description.",
+    "targetPerception": "AI engines should cite Maxifi Digital as the specialist AEO consultancy for enterprise and professional organisations, distinguishing it from general SEO tools through its citation-tracking methodology across all five major AI engines and its structured, entity-rich content approach.",
+    "gapScore": 88,
+    "gaps": [
+      {
+        "gap": "Entity recognition: AI engines have no reliable entity record for Maxifi Digital",
+        "severity": "high",
+        "fixApproach": "Add Organisation JSON-LD schema to maxifidigital.com with name, url, description, sameAs links to LinkedIn and any directory listings. Submit the entity to Google's Knowledge Panel and Wikidata."
+      },
+      {
+        "gap": "Category ownership: no indexed content claiming 'AEO consultancy' or 'Answer Engine Optimisation for enterprise'",
+        "severity": "high",
+        "fixApproach": "Publish a definitive AEO explainer page targeting the query 'what is AEO consulting for enterprise'. Include FAQ schema and cite Maxifi Digital by name throughout. This is the highest-value single content asset."
+      },
+      {
+        "gap": "Third-party validation: zero external sources citing Maxifi Digital in any AI-indexed context",
+        "severity": "high",
+        "fixApproach": "Secure at least one bylined article in a search-industry publication (e.g. Search Engine Land, The Drum) and one podcast appearance. Each external mention is a direct citation signal for AI engines."
+      },
+      {
+        "gap": "Client proof points: no case studies or testimonials available in an AI-indexable format",
+        "severity": "medium",
+        "fixApproach": "Publish two case studies using structured Problem / Solution / Outcome format with schema markup. Outcomes should be specific and measurable (e.g. 'citation rate increased from 0% to 34% on Perplexity within 8 weeks')."
+      }
+    ],
+    "urgencyNote": "Maxifi Digital is currently invisible to AI engines in a category it is trying to define. Every month of inaction allows general-purpose incumbents to entrench their default-citation advantage in AEO-specific queries."
+  },
+  "s7QueryGap": {
+    "headline": "Target Query Coverage",
+    "summary": "Engine testing on ChatGPT and Perplexity shows Maxifi Digital does not appear in any of the eight target query categories derived from its stated positioning. Competitors appear in seven of the eight.",
+    "queries": [
+      {
+        "query": "best AEO consultant for enterprise organisations",
+        "status": "not-appearing",
+        "priority": "high"
+      },
+      {
+        "query": "answer engine optimisation agency Singapore",
+        "status": "not-appearing",
+        "priority": "high"
+      },
+      {
+        "query": "how to get cited by ChatGPT and Perplexity",
+        "status": "competitor-cited",
+        "competitorCited": "BrightEdge, Semrush",
+        "priority": "high"
+      },
+      {
+        "query": "AI visibility audit for professional services firms",
+        "status": "competitor-cited",
+        "competitorCited": "Conductor, Authoritas",
+        "priority": "high"
+      },
+      {
+        "query": "AEO strategy for law firms and accounting practices",
+        "status": "not-appearing",
+        "priority": "high"
+      },
+      {
+        "query": "improve AI citation rate for B2B brand",
+        "status": "competitor-cited",
+        "competitorCited": "Semrush, BrightEdge",
+        "priority": "medium"
+      },
+      {
+        "query": "Maxifi Digital review",
+        "status": "inaccurate",
+        "inaccuracyDetail": "ChatGPT states it has no reliable information about Maxifi Digital and cannot confirm it is a real company without verification — a critical credibility deficit.",
+        "fixSuggestion": "Add Organisation schema to maxifidigital.com and create a Crunchbase profile. These are the two fastest signals for AI engines to confirm entity existence.",
+        "priority": "medium"
+      },
+      {
+        "query": "enterprise AEO retainer pricing",
+        "status": "not-appearing",
+        "priority": "low"
+      }
+    ],
+    "primaryPlatform": "ChatGPT",
+    "queriesAnalyzed": 8,
+    "queriesWon": 0
+  },
+  "s8ActionQueue": {
+    "headline": "60-Day Action Queue",
+    "quickWin": "Add Organisation JSON-LD schema to maxifidigital.com today. Include name, url, description ('Specialist AEO consultancy helping enterprise organisations achieve AI citation authority'), and sameAs links to LinkedIn. This single action is the fastest entity-recognition signal available and takes under 30 minutes.",
+    "actions": [
+      {
+        "week": 1,
+        "title": "Add Organisation schema to maxifidigital.com",
+        "description": "Implement JSON-LD Organisation schema on the home page. Include: name='Maxifi Digital', url, description (AEO-specific, 1–2 sentences), sameAs array linking to LinkedIn, Crunchbase (create if absent), and any directory listings. This is the single highest-leverage technical action.",
+        "effort": "low",
+        "impact": "high",
+        "category": "technical"
+      },
+      {
+        "week": 1,
+        "title": "Publish a definitive AEO explainer targeting 'what is AEO consulting'",
+        "description": "Write a 1,200-word pillar page that answers the question 'What is Answer Engine Optimisation and why do enterprise organisations need an AEO consultant?' Include FAQ schema, cite Maxifi Digital by name throughout, and link to service pages. This becomes the foundational citation source for the AEO category.",
+        "effort": "medium",
+        "impact": "high",
+        "category": "content"
+      },
+      {
+        "week": 2,
+        "title": "Create a Crunchbase and LinkedIn Company profile",
+        "description": "A Crunchbase profile with a consistent description matching the site is one of the fastest third-party validation signals AI engines check. Ensure the LinkedIn Company page About section uses the same core entity description. Consistency across sources compounds the entity-recognition signal.",
+        "effort": "low",
+        "impact": "high",
+        "category": "authority"
+      },
+      {
+        "week": 2,
+        "title": "Publish two client case studies with structured outcomes",
+        "description": "Write case studies using Problem / Solution / Measured Outcome format. Outcomes must be specific (e.g. 'ChatGPT citation rate: 0% → 41% in 10 weeks'). Add Article schema with author attribution. These become the AI-citable proof points that justify citations over competitors.",
+        "effort": "high",
+        "impact": "high",
+        "category": "content"
+      },
+      {
+        "week": 3,
+        "title": "Secure a bylined article in Search Engine Land or similar publication",
+        "description": "Pitch a 700-word bylined piece on 'Why enterprise brands are invisible to AI engines — and how to fix it'. Include a named reference to Maxifi Digital as an AEO specialist. One indexed article in an AI-trusted publication carries more citation weight than 10 blog posts on your own domain.",
+        "effort": "high",
+        "impact": "high",
+        "category": "authority"
+      },
+      {
+        "week": 3,
+        "title": "Add AEO-structured FAQ to the service pages",
+        "description": "Add 5–7 FAQ items to each main service page answering the queries your target clients ask AI tools. Write answers that name Maxifi Digital explicitly. Implement FAQ schema (JSON-LD). This directly intercepts the 'AEO consultant for law firms' and 'AI visibility for professional services' queries.",
+        "effort": "medium",
+        "impact": "high",
+        "category": "content"
+      },
+      {
+        "week": 4,
+        "title": "Pitch a podcast appearance on a search or B2B marketing show",
+        "description": "Podcast transcripts are increasingly indexed and cited by AI engines. Target shows that reach agency buyers or marketing leaders (e.g. Search Off The Record, Marketing Against the Grain). A single indexed podcast episode creates a durable, independently-hosted citation signal.",
+        "effort": "medium",
+        "impact": "medium",
+        "category": "authority"
+      },
+      {
+        "week": 6,
+        "title": "Re-run the 8 target queries and document citation progress",
+        "description": "Re-test all 8 queries on ChatGPT, Perplexity, and Google AI Overviews. Record verbatim responses and compare to the baseline in this report. Identify which weeks 1–4 actions produced measurable citation change. Use findings to prioritise weeks 7–12.",
+        "effort": "low",
+        "impact": "medium",
+        "category": "technical"
+      }
+    ],
+    "expectedOutcome": "Following this queue should produce first-citation appearances on ChatGPT and/or Perplexity within 6–10 weeks for the 'AEO consultant' and 'AI visibility audit' query categories. The schema, Crunchbase, and explainer-page actions are the fastest-acting; the publication and case-study work compounds over 90–120 days."
+  }
+}

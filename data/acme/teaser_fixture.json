@@ -1,0 +1,58 @@
+{
+  "meta": {
+    "token": "preview-free",
+    "generatedAt": "2026-05-22T06:00:00.000Z",
+    "entityName": "Orbis Analytics",
+    "industry": "B2B SaaS / Enterprise Software",
+    "occupation": "Head of Marketing",
+    "website": "orbisanalytics.io",
+    "paid": false
+  },
+  "score": {
+    "score": 31,
+    "band": "Low",
+    "benchmarkAvg": 76,
+    "benchmarkLabel": "B2B SaaS / Enterprise Software average",
+    "scoringNote": "Score estimated from your self-reported testing across the four visibility signals. A full measured assessment may differ."
+  },
+  "s1Visibility": {
+    "headline": "Current Visibility Assessment",
+    "summary": "Based on self-reported testing.",
+    "platforms": [],
+    "assessmentCaveat": "Statuses are assessments, not measurements."
+  },
+  "s2Diagnosis": {
+    "failureMode": "not-cited",
+    "modeLabel": "Not being cited",
+    "severity": "high",
+    "headline": "Likely failure mode: absent",
+    "explanation": "Not appearing.",
+    "rootCauses": [
+      "Content structure"
+    ],
+    "likelyImpact": "Not cited by AI tools."
+  },
+  "s3Platforms": {
+    "headline": "Platform Priority Overview",
+    "summary": "Qualitative priorities.",
+    "platforms": [],
+    "priorityNote": "Qualitative only."
+  },
+  "s4Positioning": {
+    "headline": "Positioning vs. Sector",
+    "entityPositioning": "Real-time analytics for mid-market finance teams",
+    "sectorContext": "Context.",
+    "alignmentLevel": "partial",
+    "alignmentLabel": "Partial alignment",
+    "observations": [],
+    "opportunities": [],
+    "assessmentCaveat": "Assessment only."
+  },
+  "s5Competitors": null,
+  "s6PositioningGap": null,
+  "s7QueryGap": null,
+  "s8ActionQueue": null,
+  "reportPrice": "$249",
+  "unlockUrl": "#unlock",
+  "calendlyUrl": "#book-walkthrough"
+}
