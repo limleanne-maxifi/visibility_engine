@@ -1,6 +1,7 @@
 import type { Metadata } from 'next';
 import ReportPage from '@/components/report/ReportPage';
 import { mockReportFree, mockReportPaid } from '@/data/fixtures/report_mock';
+import { getReportByToken } from '@/lib/supabase';
 import type { ReportData } from '@/lib/reportTypes';
 
 interface Props {
@@ -8,11 +9,11 @@ interface Props {
   searchParams: Promise<{ paid?: string }>;
 }
 
-// TODO Stage 6: replace with Supabase lookup by token
-async function getReport(token: string, paid: boolean): Promise<ReportData | null> {
-  // Mock routing: preview-free → free, preview-paid → paid, ?paid=1 → paid version of either
-  if (token === 'preview-paid' || paid) return mockReportPaid;
-  return mockReportFree;
+async function getReport(token: string): Promise<ReportData | null> {
+  // Preview tokens bypass Supabase and return fixtures directly
+  if (token === 'preview-free') return mockReportFree;
+  if (token === 'preview-paid') return mockReportPaid;
+  return getReportByToken(token);
 }
 
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
@@ -25,9 +26,9 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
 
 export default async function ReportRoute({ params, searchParams }: Props) {
   const { token } = await params;
-  const { paid } = await searchParams;
+  await searchParams; // reserved for future query params
 
-  const data = await getReport(token, paid === '1' || paid === 'true');
+  const data = await getReport(token);
 
   if (!data) {
     return (

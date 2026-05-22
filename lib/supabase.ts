@@ -1,6 +1,7 @@
 import { createClient, SupabaseClient } from '@supabase/supabase-js';
 import type { FormData } from '@/lib/types';
 import type { Plan, PlanStep } from '@/lib/planTypes';
+import type { ReportData } from '@/lib/reportTypes';
 
 // ─── Client singleton (lazy — avoids build-time crash when env vars are absent)
 
@@ -99,6 +100,37 @@ export async function getLeadById(id: string): Promise<AeoLeadRow | null> {
     throw error;
   }
   return data as AeoLeadRow;
+}
+
+// ─── Insert a new report row ──────────────────────────────────────────────────
+
+export async function insertReport(token: string, reportData: ReportData): Promise<void> {
+  const { error } = await getClient()
+    .from('aeo_reports')
+    .insert({
+      report_token: token,
+      report_data: reportData,
+      paid: false,
+      status: 'teaser_delivered',
+    });
+
+  if (error) throw error;
+}
+
+// ─── Fetch a report by token ──────────────────────────────────────────────────
+
+export async function getReportByToken(token: string): Promise<ReportData | null> {
+  const { data, error } = await getClient()
+    .from('aeo_reports')
+    .select('report_data')
+    .eq('report_token', token)
+    .single();
+
+  if (error) {
+    if (error.code === 'PGRST116') return null;
+    throw error;
+  }
+  return data?.report_data as ReportData ?? null;
 }
 
 // ─── Fetch all leads ──────────────────────────────────────────────────────────
