@@ -179,7 +179,7 @@ export async function sendUserPlanEmail(lead: AeoLeadRow, reportUrl?: string): P
       <a href="${reportUrl}"
          style="display:inline-block;background:#6B5DD3;color:#ffffff;font-size:14px;font-weight:700;
                 text-decoration:none;padding:13px 28px;border-radius:8px;">
-        View My Report &rarr;
+        View My Visibility Report &rarr;
       </a>
     </div>
   </td></tr>` : ''}
