@@ -40,21 +40,31 @@ function scoreToBand(score: number): ScoreBand {
 
 // ─── Section 1 — Visibility Assessment ───────────────────────────────────────
 
-const PLATFORM_AWARENESS_SUMMARIES: Record<string, string> = {
-  'Yes — and the results were accurate':
-    'You tested at least one platform and the results were accurate — this is a positive signal. Our analysis focuses on the platforms you have not yet verified.',
-  'Yes — but I wasn\'t mentioned at all':
-    'Based on your testing, our analysis suggests you are not currently being surfaced when buyers ask AI tools for recommendations in your category.',
-  'Yes — but details about me were wrong':
-    'Based on your testing, our analysis suggests AI platforms are citing you with inaccurate or outdated details — a signal that may be eroding trust even when you do appear.',
-  'Yes — competitors were cited instead of me':
-    'Based on your testing, our analysis suggests competitors are being cited in your place. Your content structure and authority signals likely favour them over you at present.',
-  'Yes — but old/outdated info appeared':
-    'Based on your testing, our analysis suggests AI platforms are drawing on outdated information about you — which could misrepresent your current positioning to buyers.',
-  "No, I haven't tried this yet":
-    'You have not yet tested your AI visibility. Our analysis is based on typical patterns for your industry and occupation; testing would confirm or revise this picture.',
-};
+function buildS1Summary(
+  aiPresence: string,
+  entity: string,
+  testedPlatforms: string[],
+  industry: string,
+): string {
+  const platformMention =
+    testedPlatforms.length === 1 ? ` in ${testedPlatforms[0]}` :
+    testedPlatforms.length >= 2  ? ` in ${testedPlatforms.slice(0, 2).join(' and ')}` : '';
 
+  switch (aiPresence) {
+    case 'Yes — and the results were accurate':
+      return `Based on your self-reported testing${platformMention}, our analysis suggests ${entity} is currently being cited. The untested platforms below represent gaps worth verifying.`;
+    case "Yes — but I wasn't mentioned at all":
+      return `Based on your testing${platformMention}, our analysis suggests ${entity} is not currently being surfaced when buyers ask AI tools for recommendations in ${industry}.`;
+    case 'Yes — competitors were cited instead of me':
+      return `Based on your testing${platformMention}, our analysis suggests competitors are being cited in place of ${entity}. Their content structure and authority signals likely favour them at present.`;
+    case 'Yes — but details about me were wrong':
+      return `Based on your testing${platformMention}, our analysis suggests ${entity} is appearing with inaccurate or outdated details — which may be eroding trust even when you do appear.`;
+    case 'Yes — but old/outdated info appeared':
+      return `Based on your testing${platformMention}, our analysis suggests AI platforms are drawing on outdated information about ${entity}, which could misrepresent your current positioning to buyers.`;
+    default:
+      return `You have not yet tested your AI visibility. Our analysis is based on typical patterns for ${industry}; testing would confirm or revise this picture.`;
+  }
+}
 function mapAiPresenceToStatus(aiPresence: string): PlatformStatus {
   switch (aiPresence) {
     case 'Yes — and the results were accurate':        return 'likely-present';
@@ -93,50 +103,39 @@ const ALL_PLATFORMS = [
   'Gemini',
 ];
 
-const PLATFORM_NOT_TESTED_NOTES: Record<string, string> = {
-  'ChatGPT':             'Not yet checked. Dominant platform for B2B vendor research — high priority to test.',
-  'Perplexity':          'Not yet checked. Widely used by technical and product buyers for structured research.',
-  'Google AI Overviews': 'Not yet checked. Appears in search results for category queries — worth a baseline check.',
-  'Microsoft Copilot':   'Not yet checked. Growing adoption in enterprise procurement workflows.',
-  'Claude':              'Not yet checked. Used by technical buyers and product evaluators.',
-  'Gemini':              'Not yet checked. Worth a baseline check for broader platform coverage.',
-};
-
+// "Not yet checked" notes are derived from PLATFORM_DEFS rationale (defined in S3 below)
+// so S1 and S3 stay in sync automatically.
+// Forward-referenced — buildPlatformRows is called after PLATFORM_DEFS is defined.
 function buildPlatformRows(
   aiPresence: string,
-  testedPlatforms: string[]
+  testedPlatforms: string[],
+  family: IndustryFamily2,
 ): PlatformAssessmentRow[] {
   const testedSet = new Set(testedPlatforms.map((p) => p.toLowerCase()));
-  const status = mapAiPresenceToStatus(aiPresence);
+  const status    = mapAiPresenceToStatus(aiPresence);
   const hasTested = aiPresence !== "No, I haven't tried this yet" && testedPlatforms.length > 0;
 
   return ALL_PLATFORMS.map((platform) => {
-    const isLikelyTested = hasTested && testedSet.has(platform.toLowerCase());
-    if (isLikelyTested) {
-      return {
-        platform,
-        status,
-        note: noteForTestedPlatform(aiPresence, platform),
-      };
+    if (hasTested && testedSet.has(platform.toLowerCase())) {
+      return { platform, status, note: noteForTestedPlatform(aiPresence, platform) };
     }
-    return {
-      platform,
-      status: 'not-tested' as PlatformStatus,
-      note: PLATFORM_NOT_TESTED_NOTES[platform] ?? 'Not yet checked.',
-    };
+    // Pull rationale from the already-industry-specific S3 definitions
+    const def = PLATFORM_DEFS[family]?.[platform];
+    const note = def
+      ? `Not yet checked. ${def.rationale('')}`
+      : 'Not yet checked.';
+    return { platform, status: 'not-tested' as PlatformStatus, note };
   });
 }
 
 function buildS1(formData: FormData, entity: string): VisibilityAssessmentSection {
   const testedPlatforms = formData.platforms?.map((p) => p.value) ?? [];
-  const summary =
-    PLATFORM_AWARENESS_SUMMARIES[formData.aiPresence] ??
-    PLATFORM_AWARENESS_SUMMARIES["No, I haven't tried this yet"];
+  const family          = getIndustryFamily(formData.industry);
 
   return {
-    headline: 'Current Visibility Assessment',
-    summary: summary.replace('you are', `${entity} is`).replace('your', `${entity}'s`),
-    platforms: buildPlatformRows(formData.aiPresence, testedPlatforms),
+    headline:  'Current Visibility Assessment',
+    summary:   buildS1Summary(formData.aiPresence, entity, testedPlatforms, formData.industry),
+    platforms: buildPlatformRows(formData.aiPresence, testedPlatforms, family),
     assessmentCaveat:
       'Statuses above are based on your self-reported testing and are assessments, not live measurements. The full report includes engine-verified citation tests across all platforms.',
   };
@@ -270,18 +269,21 @@ interface PlatformDef {
   buyerPresence: BuyerPresence;
 }
 
-type IndustryFamily2 = 'tech' | 'healthcare' | 'industrial' | 'professional' | 'b2g' | 'consumer' | 'b2b';
+type IndustryFamily2 = 'tech' | 'healthcare' | 'industrial' | 'professional' | 'insurance' | 'b2g' | 'consumer' | 'b2b';
 
 function getIndustryFamily(industry: string): IndustryFamily2 {
   const TECH = new Set(['B2B SaaS / Enterprise Software', 'Cybersecurity', 'Cloud Infrastructure & DevOps', 'Cloud Infrastructure', 'AI & Machine Learning', 'Marketing Technology', 'Fintech / Financial Technology']);
   const HEALTHCARE = new Set(['Healthcare & Life Sciences', 'Healthcare Technology / Digital Health', 'Pharmaceuticals & Biotech']);
   const INDUSTRIAL = new Set(['Manufacturing & Industrial', 'Logistics & Supply Chain', 'Architecture, Engineering & Construction', 'Energy & Utilities', 'Telecommunications']);
-  const PROFESSIONAL = new Set(['Legal & Legal Services', 'Legal', 'Accounting & Finance', 'Financial Services & Banking', 'Insurance', 'Human Resources & Recruitment', 'Consulting & Advisory', 'Professional Services']);
+  // Insurance split out: has both consumer (individual policies) and B2B (corporate risk) buyer patterns
+  const INSURANCE = new Set(['Insurance']);
+  const PROFESSIONAL = new Set(['Legal & Legal Services', 'Legal', 'Accounting & Finance', 'Financial Services & Banking', 'Human Resources & Recruitment', 'Consulting & Advisory', 'Professional Services']);
   const B2G = new Set(['Defense & Government Systems', 'Defense', 'Aviation, ATC & Aerospace', 'Aviation & Aerospace']);
   const CONSUMER = new Set(['Retail & E-commerce', 'Hospitality & Travel', 'Real Estate & Property', 'Media & Publishing', 'Education & Training']);
   if (TECH.has(industry))         return 'tech';
   if (HEALTHCARE.has(industry))   return 'healthcare';
   if (INDUSTRIAL.has(industry))   return 'industrial';
+  if (INSURANCE.has(industry))    return 'insurance';
   if (PROFESSIONAL.has(industry)) return 'professional';
   if (B2G.has(industry))          return 'b2g';
   if (CONSUMER.has(industry))     return 'consumer';
@@ -320,6 +322,17 @@ const PLATFORM_DEFS: Record<IndustryFamily2, Record<string, PlatformDef>> = {
     'Microsoft Copilot':   { priority: 'secondary', rationale: (_) => 'Growing use among corporate and enterprise buyers embedded in Microsoft 365 workflows.', buyerPresence: 'medium' },
     'Claude':              { priority: 'monitor',   rationale: (_) => 'Used by analytically-minded senior decision-makers. Worth monitoring as professional service buyers increase AI use.', buyerPresence: 'low' },
     'Gemini':              { priority: 'monitor',   rationale: (_) => 'Currently lower penetration in professional services research. Worth a baseline check.', buyerPresence: 'low' },
+  },
+  // Insurance has dual buyer patterns: individual consumers (policy comparison, coverage queries)
+  // and corporate buyers (risk managers, CFOs evaluating commercial cover). Google AI Overviews
+  // is primary because consumers routinely Google "best car insurance", "life insurance comparison".
+  insurance: {
+    'ChatGPT':             { priority: 'primary',   rationale: (_) => 'Used by both individual consumers comparing policies and corporate buyers evaluating commercial insurance. High buyer presence across personal and business segments.', buyerPresence: 'high' },
+    'Google AI Overviews': { priority: 'primary',   rationale: (_) => 'Critical for insurance — consumers routinely search for policy comparisons, insurer reviews, and coverage queries on Google. AI overviews dominate these results.', buyerPresence: 'high' },
+    'Perplexity':          { priority: 'secondary', rationale: (_) => 'Used by corporate risk managers, brokers, and informed buyers researching insurers, coverage options, and market comparisons.', buyerPresence: 'medium' },
+    'Gemini':              { priority: 'secondary', rationale: (_) => 'Integrated into Google consumer products — meaningful reach for individual insurance buyers. Worth testing alongside Google AI Overviews.', buyerPresence: 'medium' },
+    'Microsoft Copilot':   { priority: 'secondary', rationale: (_) => 'Relevant for corporate buyers and risk teams in Microsoft 365 environments evaluating business insurance and specialist cover.', buyerPresence: 'medium' },
+    'Claude':              { priority: 'monitor',   rationale: (_) => 'Lower current adoption in insurance buyer research. Worth monitoring as enterprise AI use in risk management grows.', buyerPresence: 'low' },
   },
   b2g: {
     'ChatGPT':             { priority: 'secondary', rationale: (_) => 'Used by procurement researchers for initial vendor longlisting and capability scoping, though formal tender processes dominate selection.', buyerPresence: 'medium' },
