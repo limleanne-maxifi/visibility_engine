@@ -18,6 +18,28 @@ const VALID_AI_PRESENCE = [
   'Yes — but old/outdated info appeared',
 ];
 
+const VALID_COMPETITIVE_STANDING = [
+  "I appear prominently — competitors don't displace me",
+  'I appear alongside competitors roughly equally',
+  'Competitors occasionally appear ahead of me',
+  'Competitors consistently appear, I rarely do',
+  "I haven't checked this",
+];
+
+const VALID_QUERY_COVERAGE = [
+  "I appear for most category and topic queries I've tested",
+  'I appear for some queries but miss many category searches',
+  'I only appear when my exact brand/company name is searched',
+  "I haven't tested multiple query types",
+];
+
+const VALID_PLATFORM_CONSISTENCY = [
+  'Yes — I appear consistently across all major AI platforms',
+  'Yes — but results vary significantly by platform',
+  "I've only checked one platform",
+  "No — I haven't tested across platforms",
+];
+
 const VALID_PLATFORMS = [
   'ChatGPT', 'Google AI Overviews', 'Perplexity',
   'Claude', 'Gemini', 'Microsoft Copilot'
@@ -50,6 +72,17 @@ function validateFormData(data: FormData): string[] {
   // AI Presence validation
   if (!VALID_AI_PRESENCE.includes(data.aiPresence)) {
     errors.push('Invalid awareness state');
+  }
+
+  // New signal validations
+  if (!VALID_COMPETITIVE_STANDING.includes(data.competitiveStanding ?? '')) {
+    errors.push('Invalid competitive standing selection');
+  }
+  if (!VALID_QUERY_COVERAGE.includes(data.queryCoverage ?? '')) {
+    errors.push('Invalid query coverage selection');
+  }
+  if (!VALID_PLATFORM_CONSISTENCY.includes(data.platformConsistency ?? '')) {
+    errors.push('Invalid platform consistency selection');
   }
 
   // String length validation

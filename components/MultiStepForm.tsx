@@ -36,6 +36,9 @@ function validateStep(step: number, data: FormData): Errors {
 
   if (step === 3) {
     if (!data.aiPresence) errors.aiPresence = 'Please select an option.';
+    if (!data.competitiveStanding) errors.competitiveStanding = 'Please select an option.';
+    if (!data.queryCoverage) errors.queryCoverage = 'Please select an option.';
+    if (!data.platformConsistency) errors.platformConsistency = 'Please select an option.';
     if (data.platforms.length === 0) errors.platforms = 'Please select at least one platform.';
   }
 

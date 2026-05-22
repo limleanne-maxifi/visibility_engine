@@ -1,6 +1,6 @@
 'use client';
 
-import { FormData, AiPresence } from '@/lib/types';
+import { FormData, AiPresence, CompetitiveStanding, QueryCoverage, PlatformConsistency } from '@/lib/types';
 import ChoiceCard from '@/components/ChoiceCard';
 
 interface Props {
@@ -18,6 +18,28 @@ const AI_PRESENCE_OPTIONS: AiPresence[] = [
   'Yes — but details about me were wrong',
   'Yes — competitors were cited instead of me',
   'Yes — but old/outdated info appeared',
+];
+
+const COMPETITIVE_STANDING_OPTIONS: CompetitiveStanding[] = [
+  "I appear prominently — competitors don't displace me",
+  'I appear alongside competitors roughly equally',
+  'Competitors occasionally appear ahead of me',
+  'Competitors consistently appear, I rarely do',
+  "I haven't checked this",
+];
+
+const QUERY_COVERAGE_OPTIONS: QueryCoverage[] = [
+  "I appear for most category and topic queries I've tested",
+  'I appear for some queries but miss many category searches',
+  'I only appear when my exact brand/company name is searched',
+  "I haven't tested multiple query types",
+];
+
+const PLATFORM_CONSISTENCY_OPTIONS: PlatformConsistency[] = [
+  'Yes — I appear consistently across all major AI platforms',
+  'Yes — but results vary significantly by platform',
+  "I've only checked one platform",
+  "No — I haven't tested across platforms",
 ];
 
 const PLATFORM_OPTIONS = [
@@ -79,6 +101,69 @@ export default function Step3Awareness({ data, onChange, onNext, onBack, errors 
         </div>
         {errors.aiPresence && (
           <p className="mt-1 text-xs text-red-500">{errors.aiPresence}</p>
+        )}
+      </fieldset>
+
+      {/* Signal 2 — Competitive displacement */}
+      <fieldset className="mb-6">
+        <legend className="text-[17px] text-gray-700 mb-3">
+          When AI answers questions about your category, how do you compare to competitors?{' '}
+          <span className="text-red-500">*</span>
+        </legend>
+        <div className="space-y-2">
+          {COMPETITIVE_STANDING_OPTIONS.map((option) => (
+            <ChoiceCard
+              key={option}
+              label={option}
+              selected={data.competitiveStanding === option}
+              onSelect={() => onChange({ competitiveStanding: option })}
+            />
+          ))}
+        </div>
+        {errors.competitiveStanding && (
+          <p className="mt-1 text-xs text-red-500">{errors.competitiveStanding}</p>
+        )}
+      </fieldset>
+
+      {/* Signal 3 — Query coverage */}
+      <fieldset className="mb-6">
+        <legend className="text-[17px] text-gray-700 mb-3">
+          Beyond your brand name, how broadly do you appear for category or topic queries?{' '}
+          <span className="text-red-500">*</span>
+        </legend>
+        <div className="space-y-2">
+          {QUERY_COVERAGE_OPTIONS.map((option) => (
+            <ChoiceCard
+              key={option}
+              label={option}
+              selected={data.queryCoverage === option}
+              onSelect={() => onChange({ queryCoverage: option })}
+            />
+          ))}
+        </div>
+        {errors.queryCoverage && (
+          <p className="mt-1 text-xs text-red-500">{errors.queryCoverage}</p>
+        )}
+      </fieldset>
+
+      {/* Signal 4 — Cross-platform consistency */}
+      <fieldset className="mb-6">
+        <legend className="text-[17px] text-gray-700 mb-3">
+          Have you checked your visibility across multiple AI platforms?{' '}
+          <span className="text-red-500">*</span>
+        </legend>
+        <div className="space-y-2">
+          {PLATFORM_CONSISTENCY_OPTIONS.map((option) => (
+            <ChoiceCard
+              key={option}
+              label={option}
+              selected={data.platformConsistency === option}
+              onSelect={() => onChange({ platformConsistency: option })}
+            />
+          ))}
+        </div>
+        {errors.platformConsistency && (
+          <p className="mt-1 text-xs text-red-500">{errors.platformConsistency}</p>
         )}
       </fieldset>
 

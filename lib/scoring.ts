@@ -19,45 +19,47 @@ export function formatCompetitors(list: string[]): string {
   return `${list.slice(0, -1).join(', ')}, and ${list[list.length - 1]}`;
 }
 
-export function getVisibilityScore(awareness: string, competitorList: string[]): number {
-  const n = competitorList.length;
-  const hasComp = n > 0;
-
+export function getVisibilityScore(
+  awareness: string,
+  competitiveStanding: string,
+  queryCoverage: string,
+  platformConsistency: string,
+): number {
   // Signal 1 — Platform presence (30%)
-  const platform =
+  // Measures: did the brand search return accurate results?
+  const s1 =
     awareness === 'Yes — and the results were accurate'        ? 90 :
     awareness === 'Yes — but old/outdated info appeared'       ? 40 :
     awareness === 'Yes — but details about me were wrong'      ? 30 :
     awareness === 'Yes — competitors were cited instead of me' ? 15 :
     awareness === "Yes — but I wasn't mentioned at all"        ? 0  : 0;
 
-  // Signal 2 — Competitor displacement (30%)
-  // Fixed: Users should be rewarded for naming competitors, not penalized
-  // Naming 1 competitor = helps (5), naming 2+ = diminishing returns
-  const displacement =
-    awareness === "No, I haven't tried this yet"               ? 0  :
-    awareness === 'Yes — and the results were accurate'        ? (hasComp ? 80 : 45) :
-    awareness === 'Yes — competitors were cited instead of me' ? (n === 0 ? 10 : n === 1 ? 5 : n === 2 ? 3 : 0) :
-    awareness === "Yes — but I wasn't mentioned at all"        ? (hasComp ? 10 : 20) :
-    hasComp ? 25 : 30; // outdated / wrong details
+  // Signal 2 — Competitive displacement (30%)
+  // Measures: does the brand appear ahead of or instead of competitors?
+  const s2 =
+    competitiveStanding === "I appear prominently — competitors don't displace me" ? 90 :
+    competitiveStanding === 'I appear alongside competitors roughly equally'        ? 60 :
+    competitiveStanding === 'Competitors occasionally appear ahead of me'           ? 30 :
+    competitiveStanding === 'Competitors consistently appear, I rarely do'         ? 5  :
+    competitiveStanding === "I haven't checked this"                               ? 0  : 0;
 
   // Signal 3 — Query coverage (25%)
-  const query =
-    awareness === 'Yes — and the results were accurate'        ? 90 :
-    awareness === 'Yes — but old/outdated info appeared'       ? 35 :
-    awareness === 'Yes — but details about me were wrong'      ? 25 :
-    awareness === 'Yes — competitors were cited instead of me' ? 15 :
-    awareness === "Yes — but I wasn't mentioned at all"        ? 0  : 0;
+  // Measures: does the brand appear across a breadth of topic/category queries?
+  const s3 =
+    queryCoverage === "I appear for most category and topic queries I've tested"  ? 90 :
+    queryCoverage === 'I appear for some queries but miss many category searches'  ? 55 :
+    queryCoverage === 'I only appear when my exact brand/company name is searched' ? 20 :
+    queryCoverage === "I haven't tested multiple query types"                      ? 0  : 0;
 
-  // Signal 4 — Awareness consistency (15%)
-  const consistency =
-    awareness === 'Yes — and the results were accurate'        ? 100 :
-    awareness === 'Yes — but old/outdated info appeared'       ? 40  :
-    awareness === 'Yes — but details about me were wrong'      ? 20  :
-    awareness === 'Yes — competitors were cited instead of me' ? 25  :
-    awareness === "Yes — but I wasn't mentioned at all"        ? 0   : 0;
+  // Signal 4 — Cross-platform consistency (15%)
+  // Measures: does the brand appear consistently across multiple AI platforms?
+  const s4 =
+    platformConsistency === 'Yes — I appear consistently across all major AI platforms' ? 100 :
+    platformConsistency === 'Yes — but results vary significantly by platform'          ? 50  :
+    platformConsistency === "I've only checked one platform"                            ? 25  :
+    platformConsistency === "No — I haven't tested across platforms"                   ? 0   : 0;
 
-  return Math.round(platform * 0.30 + displacement * 0.30 + query * 0.25 + consistency * 0.15);
+  return Math.round(s1 * 0.30 + s2 * 0.30 + s3 * 0.25 + s4 * 0.15);
 }
 
 // ─── Industry benchmarks ──────────────────────────────────────────────────────
