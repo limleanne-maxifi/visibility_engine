@@ -30,7 +30,7 @@ function formatVisibilityGapLabel(gap: string): string {
 
 // ─── Email 1: User snapshot email ────────────────────────────────────────────
 
-export async function sendUserPlanEmail(lead: AeoLeadRow): Promise<void> {
+export async function sendUserPlanEmail(lead: AeoLeadRow, reportUrl?: string): Promise<void> {
   const { CALENDLY, REPORT_URL } = getUrls();
   const fromEmail  = process.env.FROM_EMAIL ?? 'hello@maxifidigital.com';
 
@@ -165,6 +165,24 @@ export async function sendUserPlanEmail(lead: AeoLeadRow): Promise<void> {
 
   <!-- Competitor line -->
   ${competitorSection}
+
+  <!-- Report link (when teaser is ready) -->
+  ${reportUrl ? `
+  <tr><td style="padding-bottom:24px;">
+    <div style="background:#f3f4f6;border-radius:12px;padding:24px 28px;text-align:center;">
+      <p style="margin:0 0 6px;font-size:12px;font-weight:600;color:#6B5DD3;letter-spacing:0.06em;text-transform:uppercase;">
+        Your AI Visibility Report
+      </p>
+      <p style="margin:0 0 16px;font-size:14px;color:#374151;line-height:1.6;">
+        Your personalised teaser report is ready — see your platform assessment, failure mode diagnosis, and positioning gaps.
+      </p>
+      <a href="${reportUrl}"
+         style="display:inline-block;background:#6B5DD3;color:#ffffff;font-size:14px;font-weight:700;
+                text-decoration:none;padding:13px 28px;border-radius:8px;">
+        View My Report &rarr;
+      </a>
+    </div>
+  </td></tr>` : ''}
 
   <!-- Upsell card -->
   <tr><td style="padding-bottom:28px;">

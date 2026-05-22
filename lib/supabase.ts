@@ -102,6 +102,21 @@ export async function getLeadById(id: string): Promise<AeoLeadRow | null> {
   return data as AeoLeadRow;
 }
 
+// ─── Insert a new report row ──────────────────────────────────────────────────
+
+export async function insertReport(token: string, reportData: ReportData): Promise<void> {
+  const { error } = await getClient()
+    .from('aeo_reports')
+    .insert({
+      report_token: token,
+      report_data: reportData,
+      paid: false,
+      status: 'teaser_delivered',
+    });
+
+  if (error) throw error;
+}
+
 // ─── Fetch a report by token ──────────────────────────────────────────────────
 
 export async function getReportByToken(token: string): Promise<ReportData | null> {
