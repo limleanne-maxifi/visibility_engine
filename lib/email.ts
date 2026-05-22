@@ -30,8 +30,9 @@ function formatVisibilityGapLabel(gap: string): string {
 
 // ─── Email 1: User snapshot email ────────────────────────────────────────────
 
-export async function sendUserPlanEmail(lead: AeoLeadRow): Promise<void> {
+export async function sendUserPlanEmail(lead: AeoLeadRow, reportUrl?: string): Promise<void> {
   const { CALENDLY, REPORT_URL } = getUrls();
+  const primaryReportUrl = reportUrl ?? REPORT_URL;
   const fromEmail  = process.env.FROM_EMAIL ?? 'hello@maxifidigital.com';
 
   const competitors    = getAllCompetitors(lead.competitors);
@@ -177,10 +178,10 @@ export async function sendUserPlanEmail(lead: AeoLeadRow): Promise<void> {
         and gives you a prioritised fix queue to close it.
         One report. No subscription, no sales call.
       </p>
-      <a href="${REPORT_URL}"
+      <a href="${primaryReportUrl}"
          style="display:inline-block;background:#ffffff;color:#6B5DD3;font-size:14px;font-weight:700;
                 text-decoration:none;padding:13px 24px;border-radius:8px;margin-bottom:16px;">
-        Get My Full AI Visibility Report &rarr;
+        View your free AI Visibility Report &rarr;
       </a>
       <p style="margin:0;font-size:12px;color:#c4b5fd;line-height:1.6;">
         AI citation positions shift as AI platforms update their data sources — sometimes significantly within a single quarter.

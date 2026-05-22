@@ -5,6 +5,7 @@ import { buildUserMessage, SYSTEM_PROMPT } from '@/lib/buildPrompt';
 import { parsePlan } from '@/lib/parsePlan';
 import { insertLead } from '@/lib/supabase';
 import { sendUserPlanEmail, sendInternalNotification } from '@/lib/email';
+import { buildTeaserReport } from '@/lib/buildTeaserReport';
 import type { FormData } from '@/lib/types';
 import type { GenerateResponse, GenerateErrorResponse } from '@/lib/planTypes';
 
@@ -93,18 +94,35 @@ export async function POST(
     );
   }
 
+  // Build free teaser report (programmatic, no second Claude call)
+  const reportToken = crypto.randomUUID();
+  const baseUrl     = process.env.NEXT_PUBLIC_BASE_URL ?? 'https://visibilityview.netlify.app';
+  const reportUrl   = `${baseUrl}/r/${reportToken}`;
+  const unlockUrl   = process.env.REPORT_CHECKOUT_URL ?? process.env.CALENDLY_URL ?? `${baseUrl}/report/unlock`;
+  const calendlyUrl = process.env.CALENDLY_URL ?? 'https://lunacal.ai/maxifidigital/';
+  const reportPrice = process.env.REPORT_PRICE ?? '$249';
+
+  const teaserReport = buildTeaserReport(
+    formData,
+    reportToken,
+    reportPrice,
+    `${unlockUrl}?token=${reportToken}`,
+    calendlyUrl,
+  );
+
   // Persist to Supabase — graceful degradation on failure
   let id: string;
+  let reportTokenOut = reportToken;
   try {
     console.log('[generate] competitors being saved:', formData.competitors || null);
     console.log('[generate] inserting lead to Supabase...');
-    const lead = await insertLead(formData, plan);
+    const lead = await insertLead(formData, plan, { reportToken, reportData: teaserReport });
     id = lead.id;
-    console.log('[generate] lead inserted, id:', id, '| awareness stored:', lead.awareness, '| platform stored:', lead.platform);
+    console.log('[generate] lead inserted, id:', id, '| token:', reportToken, '| awareness:', lead.awareness);
 
     // Fire emails non-blocking — errors logged, never surfaced to user
     Promise.allSettled([
-      sendUserPlanEmail(lead),
+      sendUserPlanEmail(lead, reportUrl),
       sendInternalNotification(lead),
     ]).then((results) => {
       results.forEach((r, i) => {
@@ -116,8 +134,9 @@ export async function POST(
   } catch (err) {
     console.error('[generate] Supabase insert failed — falling back to session ID:', err);
     id = generateSessionId();
+    reportTokenOut = '';
   }
 
   console.log('[generate] returning id:', id);
-  return NextResponse.json({ id, plan }, { status: 200 });
+  return NextResponse.json({ id, plan, reportToken: reportTokenOut, reportUrl }, { status: 200 });
 }

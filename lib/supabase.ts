@@ -1,6 +1,7 @@
 import { createClient, SupabaseClient } from '@supabase/supabase-js';
 import type { FormData } from '@/lib/types';
 import type { Plan, PlanStep } from '@/lib/planTypes';
+import type { ReportData } from '@/lib/reportTypes';
 
 // ─── Client singleton (lazy — avoids build-time crash when env vars are absent)
 
@@ -42,13 +43,26 @@ export interface AeoLeadRow {
   competitors: string | null;
   positioning: string | null;
   target_queries: string | null;
+  // Stage 3 columns
+  report_token: string | null;
+  report_data: ReportData | null;
+  paid: boolean;
+  stripe_session_id: string | null;
+  status: string;
+  founding: boolean;
 }
 
 // ─── Insert a new lead + plan ─────────────────────────────────────────────────
 
+export interface InsertLeadExtras {
+  reportToken: string;
+  reportData: ReportData;
+}
+
 export async function insertLead(
   formData: FormData,
-  plan: Plan
+  plan: Plan,
+  extras: InsertLeadExtras,
 ): Promise<AeoLeadRow> {
   const primaryPlatform = formData.platforms.find((p) => p.priority === 'primary')?.value ?? '';
   const secondaryPlatform = formData.platforms.find((p) => p.priority === 'secondary')?.value ?? null;
@@ -76,6 +90,11 @@ export async function insertLead(
       competitors: formData.competitors || null,
       positioning: formData.positioning || null,
       target_queries: formData.targetQueries || null,
+      report_token: extras.reportToken,
+      report_data: extras.reportData,
+      paid: false,
+      status: 'teaser_sent',
+      founding: false,
     })
     .select()
     .single();
@@ -95,6 +114,22 @@ export async function getLeadById(id: string): Promise<AeoLeadRow | null> {
 
   if (error) {
     // PGRST116 = row not found — expected, not an error worth throwing
+    if (error.code === 'PGRST116') return null;
+    throw error;
+  }
+  return data as AeoLeadRow;
+}
+
+// ─── Fetch a lead by report_token ─────────────────────────────────────────────
+
+export async function getLeadByToken(token: string): Promise<AeoLeadRow | null> {
+  const { data, error } = await getClient()
+    .from('aeo_leads')
+    .select('*')
+    .eq('report_token', token)
+    .single();
+
+  if (error) {
     if (error.code === 'PGRST116') return null;
     throw error;
   }

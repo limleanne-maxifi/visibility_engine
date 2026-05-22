@@ -1,6 +1,7 @@
 import type { Metadata } from 'next';
 import ReportPage from '@/components/report/ReportPage';
 import { mockReportFree, mockReportPaid } from '@/data/fixtures/report_mock';
+import { getLeadByToken } from '@/lib/supabase';
 import type { ReportData } from '@/lib/reportTypes';
 
 interface Props {
@@ -8,26 +9,45 @@ interface Props {
   searchParams: Promise<{ paid?: string }>;
 }
 
-// TODO Stage 6: replace with Supabase lookup by token
-async function getReport(token: string, paid: boolean): Promise<ReportData | null> {
-  // Mock routing: preview-free → free, preview-paid → paid, ?paid=1 → paid version of either
-  if (token === 'preview-paid' || paid) return mockReportPaid;
-  return mockReportFree;
+async function getReport(token: string, paidOverride: boolean): Promise<ReportData | null> {
+  // Dev preview tokens bypass Supabase
+  if (token === 'preview-free') return mockReportFree;
+  if (token === 'preview-paid') return mockReportPaid;
+  if (paidOverride && token === 'preview-paid') return mockReportPaid;
+
+  try {
+    const lead = await getLeadByToken(token);
+    if (!lead) return null;
+
+    // If report_data is stored, return it (with paid state reflecting database)
+    if (lead.report_data) {
+      const reportData = lead.report_data as ReportData;
+      // Override the paid flag from DB so paid unlocks reflect Stripe state
+      reportData.meta.paid = lead.paid;
+      return reportData;
+    }
+  } catch (err) {
+    console.error('[r/token] Supabase lookup failed:', err);
+    return null;
+  }
+
+  return null;
 }
 
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const { token } = await params;
   return {
-    title: `AI Visibility Report — ${token} · Maxifi Digital`,
+    title: `AI Visibility Report · Maxifi Digital`,
     robots: { index: false, follow: false },
   };
 }
 
 export default async function ReportRoute({ params, searchParams }: Props) {
   const { token } = await params;
-  const { paid } = await searchParams;
+  const { paid }  = await searchParams;
+  const paidOverride = paid === '1' || paid === 'true';
 
-  const data = await getReport(token, paid === '1' || paid === 'true');
+  const data = await getReport(token, paidOverride);
 
   if (!data) {
     return (
