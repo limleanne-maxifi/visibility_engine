@@ -245,7 +245,7 @@ export default function Step4Goals({ data, onChange, onNext, onBack, errors, ind
       {showTargetQueries && (
         <div className="mb-5">
           <label htmlFor="targetQueries" className="block text-[17px] text-gray-700 mb-1">
-            Which 2–3 queries or topics do you most want to win?{' '}
+            Which 2–3 queries or topics do you want to own?{' '}
             <span className="text-gray-400 font-normal">(optional)</span>
           </label>
           <textarea
