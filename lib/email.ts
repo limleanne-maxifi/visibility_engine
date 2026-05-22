@@ -1,5 +1,6 @@
 import { Resend } from 'resend';
 import type { AeoLeadRow } from '@/lib/supabase';
+import type { ReportData } from '@/lib/reportTypes';
 import { VISIBILITY_GAP_LABELS } from '@/lib/types';
 import {
   getAllCompetitors,
@@ -36,12 +37,21 @@ export async function sendUserPlanEmail(lead: AeoLeadRow, reportUrl?: string): P
   const fromEmail  = process.env.FROM_EMAIL ?? 'hello@maxifidigital.com';
 
   const competitors    = getAllCompetitors(lead.competitors);
-  const score          = getVisibilityScore(lead.awareness, competitors);
-  const benchAvg       = getIndustryBenchmark(lead.industry);
-  const { x: buyerX, y: buyerY } = buyerConversations(score, benchAvg);
   const businessModel  = inferBusinessModel(lead.industry);
   const pipelineLabel  = getPipelineLabel(businessModel);
   const entity         = lead.company_name ?? lead.first_name;
+
+  // Source score/band/benchmark from stored report_data to guarantee alignment
+  // with the online /r/[token] report. Fall back to live computation for rows
+  // that predate Stage 3.
+  const reportData   = lead.report_data as ReportData | null;
+  const score        = reportData?.score.score        ?? getVisibilityScore(lead.awareness, competitors);
+  const band         = reportData?.score.band         ?? null;
+  const benchAvg     = reportData?.score.benchmarkAvg ?? getIndustryBenchmark(lead.industry);
+  const diagHeadline = reportData?.s2Diagnosis.headline   ?? null;
+  const diagImpact   = reportData?.s2Diagnosis.likelyImpact ?? null;
+
+  const { x: buyerX, y: buyerY } = buyerConversations(score, benchAvg);
 
   const scoreDisplay   = score > 0 ? `${score}%` : '—';
   const subject        = score > 0
@@ -148,11 +158,13 @@ export async function sendUserPlanEmail(lead: AeoLeadRow, reportUrl?: string): P
       <p style="margin:0 0 4px;font-size:11px;font-weight:600;color:#9ca3af;text-transform:uppercase;letter-spacing:0.08em;">
         Your AI Visibility Score
       </p>
-      <p style="margin:0 0 16px;font-size:56px;font-weight:700;color:#111827;line-height:1.1;">
+      <p style="margin:0 0 4px;font-size:56px;font-weight:700;color:#111827;line-height:1.1;">
         ${scoreDisplay}
       </p>
+      ${band ? `<p style="margin:0 0 16px;font-size:13px;font-weight:600;color:#6b7280;text-transform:uppercase;letter-spacing:0.06em;">${band}</p>` : '<p style="margin:0 0 16px;"></p>'}
       <p style="margin:0 0 12px;font-size:14px;color:#374151;line-height:1.6;">${benchmarkLine}</p>
-      ${buyerConvLine ? `<p style="margin:0;font-size:14px;color:#374151;line-height:1.6;">${buyerConvLine}</p>` : ''}
+      ${buyerConvLine ? `<p style="margin:0 0 12px;font-size:14px;color:#374151;line-height:1.6;">${buyerConvLine}</p>` : ''}
+      ${diagHeadline ? `<p style="margin:0;font-size:13px;font-style:italic;color:#6b7280;line-height:1.5;border-top:1px solid #e5e7eb;padding-top:12px;">${diagHeadline}</p>` : ''}
     </div>
   </td></tr>
 
@@ -175,8 +187,9 @@ export async function sendUserPlanEmail(lead: AeoLeadRow, reportUrl?: string): P
       <h2 style="margin:0 0 10px;font-size:20px;font-weight:700;color:#ffffff;line-height:1.4;">
         ${upsellHeadline}
       </h2>
+      ${diagImpact ? `<p style="margin:0 0 12px;font-size:14px;color:#ede9fe;line-height:1.7;">${diagImpact}</p>` : ''}
       <p style="margin:0 0 20px;font-size:14px;color:#ddd6fe;line-height:1.7;">
-        Your free snapshot shows the gap. Your AI Visibility Report shows exactly why &mdash;
+        Your free report shows exactly what&rsquo;s driving this &mdash;
         and gives you a prioritised fix queue to close it.
         One report. No subscription, no sales call.
       </p>
