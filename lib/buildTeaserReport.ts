@@ -3,7 +3,8 @@
 // Language discipline: free sections use "our analysis suggests", "likely",
 // "based on what you reported" — never measurement language.
 
-import type { FormData } from '@/lib/types';
+import type { FormData, AiPresence, VisibilityGap } from '@/lib/types';
+import type { AeoLeadRow } from '@/lib/supabase';
 import type {
   ReportData,
   ReportMeta,
@@ -247,16 +248,19 @@ function getFailureMode(aiPresence: string, visibilityGap: string): FailureModeD
 }
 
 function buildS2(formData: FormData, entity: string): DiagnosisSection {
-  const competitors = getAllCompetitors(formData.competitors);
+  const rawCompetitors = getAllCompetitors(formData.competitors);
+  // Cap each competitor name and positioning text to keep sentences readable
+  const competitors    = rawCompetitors.map((c) => c.slice(0, 60));
+  const positioning    = (formData.positioning ?? '').slice(0, 200);
   const mode = getFailureMode(formData.aiPresence, formData.visibilityGap ?? '');
 
   return {
-    failureMode: mode.key,
-    modeLabel:   mode.label,
-    severity:    mode.severity,
-    headline:    mode.headline(entity),
-    explanation: mode.explanation(entity, formData.industry),
-    rootCauses:  mode.rootCauses(entity, formData.positioning ?? '', competitors),
+    failureMode:  mode.key,
+    modeLabel:    mode.label,
+    severity:     mode.severity,
+    headline:     mode.headline(entity),
+    explanation:  mode.explanation(entity, formData.industry),
+    rootCauses:   mode.rootCauses(entity, positioning, competitors),
     likelyImpact: mode.likelyImpact(entity, formData.industry),
   };
 }
@@ -488,8 +492,59 @@ function buildScore(formData: FormData): ScoreData {
     benchmarkAvg:   benchAvg,
     benchmarkLabel: `${formData.industry} average`,
     scoringNote:
-      'Score estimated from your self-reported testing across the four visibility signals. A full measured assessment may differ.',
+      formData.aiPresence === "No, I haven't tried this yet"
+        ? 'Your baseline is not yet established. "Critical" indicates this is a priority to diagnose — not a confirmed visibility problem.'
+        : 'Score estimated from your self-reported testing across the four visibility signals. A full measured assessment may differ.',
   };
+}
+
+// ─── Reconstruct FormData from a stored AeoLeadRow ───────────────────────────
+// Used to rebuild free reports live so code fixes take effect immediately
+// without requiring re-submission.
+
+function leadToFormData(lead: AeoLeadRow): FormData {
+  const platforms: FormData['platforms'] = [];
+  if (lead.platform)       platforms.push({ value: lead.platform,       priority: 'primary' });
+  if (lead.platform_other) platforms.push({ value: lead.platform_other, priority: 'secondary' });
+
+  return {
+    firstName:     lead.first_name,
+    email:         lead.email,
+    websiteUrl:    lead.website ?? '',
+    occupation:    lead.occupation as FormData['occupation'],
+    industry:      lead.industry,
+    company:       lead.company_name ?? '',
+    aiPresence:    lead.awareness as AiPresence,
+    platforms,
+    visibilityGap: (lead.outcome ?? '') as VisibilityGap,
+    challenges:    lead.challenge ? lead.challenge.split('; ').filter(Boolean) : [],
+    competitors:   lead.competitors  ?? '',
+    positioning:   lead.positioning  ?? '',
+    targetQueries: lead.target_queries ?? '',
+    consent:     true,
+    utmSource:   lead.utm_source   ?? '',
+    utmMedium:   lead.utm_medium   ?? '',
+    utmCampaign: lead.utm_campaign ?? '',
+    sessionId:   lead.session_id   ?? '',
+    timestamp:   lead.created_at,
+  };
+}
+
+// ─── Live rebuild from stored lead row (fixes staleness for free reports) ─────
+// Free reports (paid=false) always call this so any buildTeaserReport code
+// changes are immediately reflected for all existing tokens.
+// Paid reports skip this and serve the stored report_data which contains
+// the analyst-populated S5–S8 sections.
+
+export function buildReportFromLead(
+  lead: AeoLeadRow,
+  reportPrice: string,
+  unlockUrl: string,
+  calendlyUrl: string,
+): ReportData {
+  const formData = leadToFormData(lead);
+  const token    = lead.report_token ?? lead.id;
+  return buildTeaserReport(formData, token, reportPrice, unlockUrl, calendlyUrl);
 }
 
 // ─── Main export ──────────────────────────────────────────────────────────────

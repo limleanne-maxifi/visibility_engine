@@ -2,6 +2,7 @@ import type { Metadata } from 'next';
 import ReportPage from '@/components/report/ReportPage';
 import { mockReportFree, mockReportPaid } from '@/data/fixtures/report_mock';
 import { getLeadByToken } from '@/lib/supabase';
+import { buildReportFromLead } from '@/lib/buildTeaserReport';
 import type { ReportData } from '@/lib/reportTypes';
 
 interface Props {
@@ -9,33 +10,47 @@ interface Props {
   searchParams: Promise<{ paid?: string }>;
 }
 
-async function getReport(token: string, paidOverride: boolean): Promise<ReportData | null> {
-  // Dev preview tokens bypass Supabase
+function getEnv() {
+  const baseUrl     = process.env.NEXT_PUBLIC_BASE_URL ?? 'https://visibilityview.netlify.app';
+  const unlockBase  = `${baseUrl}/report/unlock`;
+  const calendlyUrl = process.env.CALENDLY_URL ?? 'https://lunacal.ai/maxifidigital/';
+  const reportPrice = process.env.REPORT_PRICE ?? 'SGD $2,500';
+  return { unlockBase, calendlyUrl, reportPrice };
+}
+
+async function getReport(token: string): Promise<ReportData | null> {
+  // Dev preview tokens — bypass Supabase entirely
   if (token === 'preview-free') return mockReportFree;
   if (token === 'preview-paid') return mockReportPaid;
-  if (paidOverride && token === 'preview-paid') return mockReportPaid;
 
+  let lead;
   try {
-    const lead = await getLeadByToken(token);
-    if (!lead) return null;
-
-    // If report_data is stored, return it (with paid state reflecting database)
-    if (lead.report_data) {
-      const reportData = lead.report_data as ReportData;
-      // Override the paid flag from DB so paid unlocks reflect Stripe state
-      reportData.meta.paid = lead.paid;
-      return reportData;
-    }
+    lead = await getLeadByToken(token);
   } catch (err) {
     console.error('[r/token] Supabase lookup failed:', err);
     return null;
   }
 
-  return null;
+  if (!lead) return null;
+
+  const { unlockBase, calendlyUrl, reportPrice } = getEnv();
+  const unlockUrl = `${unlockBase}?token=${token}`;
+
+  if (lead.paid && lead.report_data) {
+    // Paid: serve the analyst-populated report_data (contains real S5–S8).
+    // Override paid flag from DB — it's the authoritative source.
+    const reportData = lead.report_data as ReportData;
+    reportData.meta.paid = true;
+    return reportData;
+  }
+
+  // Free: always rebuild live from stored lead fields so any code fixes
+  // take effect immediately for all existing tokens.
+  return buildReportFromLead(lead, reportPrice, unlockUrl, calendlyUrl);
 }
 
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
-  const { token } = await params;
+  await params; // satisfy Next.js async params contract
   return {
     title: `AI Visibility Report · Maxifi Digital`,
     robots: { index: false, follow: false },
@@ -44,10 +59,9 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
 
 export default async function ReportRoute({ params, searchParams }: Props) {
   const { token } = await params;
-  const { paid }  = await searchParams;
-  const paidOverride = paid === '1' || paid === 'true';
+  await searchParams; // retained for future use
 
-  const data = await getReport(token, paidOverride);
+  const data = await getReport(token);
 
   if (!data) {
     return (
