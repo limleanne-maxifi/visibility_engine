@@ -140,7 +140,7 @@ export default function MultiStepForm() {
       <div className="w-full max-w-[520px]">
         {/* Eyebrow */}
         <p
-          className="text-[10px] font-bold uppercase mb-3.5"
+          className="text-[12px] font-bold uppercase mb-3.5"
           style={{ color: '#C87A2F', letterSpacing: '0.14em' }}
         >
           AI Visibility Snapshot &nbsp;·&nbsp; Step {step} of {TOTAL_STEPS}
