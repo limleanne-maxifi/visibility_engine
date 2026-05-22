@@ -15,7 +15,7 @@ export default function SiteHeader() {
           alt="Maxifi Digital"
           height={22}
           width={110}
-          className="h-[22px] w-auto"
+          style={{ height: '22px', width: 'auto' }}
           priority
         />
       </a>
