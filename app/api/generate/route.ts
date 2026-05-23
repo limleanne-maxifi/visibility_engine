@@ -5,8 +5,99 @@ import { buildUserMessage, SYSTEM_PROMPT } from '@/lib/buildPrompt';
 import { parsePlan } from '@/lib/parsePlan';
 import { insertLead } from '@/lib/supabase';
 import { sendUserPlanEmail, sendInternalNotification } from '@/lib/email';
+import { getIndustryBenchmark } from '@/lib/scoring';
 import type { FormData } from '@/lib/types';
 import type { GenerateResponse, GenerateErrorResponse } from '@/lib/planTypes';
+
+const VALID_AI_PRESENCE = [
+  "No, I haven't tried this yet",
+  'Yes — and the results were accurate',
+  "Yes — but I wasn't mentioned at all",
+  'Yes — but details about me were wrong',
+  'Yes — competitors were cited instead of me',
+  'Yes — but old/outdated info appeared',
+];
+
+const VALID_COMPETITIVE_STANDING = [
+  "I appear prominently — competitors don't displace me",
+  'I appear alongside competitors roughly equally',
+  'Competitors occasionally appear ahead of me',
+  'Competitors consistently appear, I rarely do',
+  "I haven't checked this",
+];
+
+const VALID_QUERY_COVERAGE = [
+  "I appear for most category and topic queries I've tested",
+  'I appear for some queries but miss many category searches',
+  'I only appear when my exact brand/company name is searched',
+  "I haven't tested multiple query types",
+];
+
+const VALID_PLATFORM_CONSISTENCY = [
+  'Yes — I appear consistently across all major AI platforms',
+  'Yes — but results vary significantly by platform',
+  "I've only checked one platform",
+  "No — I haven't tested across platforms",
+];
+
+const VALID_PLATFORMS = [
+  'ChatGPT', 'Google AI Overviews', 'Perplexity',
+  'Claude', 'Gemini', 'Microsoft Copilot'
+];
+
+function validateFormData(data: FormData): string[] {
+  const errors: string[] = [];
+
+  // Email validation
+  if (!data.email || !data.email.match(/^[^\s@]+@[^\s@]+\.[^\s@]+$/)) {
+    errors.push('Invalid email format');
+  }
+
+  // Industry validation
+  try {
+    getIndustryBenchmark(data.industry);
+  } catch {
+    errors.push(`Industry not recognized`);
+  }
+
+  // Platform validation
+  if (!data.platforms?.length) {
+    errors.push('Please select at least one AI platform');
+  } else if (!data.platforms.find(p => p.priority === 'primary')) {
+    errors.push('Please select a primary AI platform');
+  } else if (data.platforms.some(p => !VALID_PLATFORMS.includes(p.value))) {
+    errors.push('Invalid platform selection');
+  }
+
+  // AI Presence validation
+  if (!VALID_AI_PRESENCE.includes(data.aiPresence)) {
+    errors.push('Invalid awareness state');
+  }
+
+  // New signal validations
+  if (!VALID_COMPETITIVE_STANDING.includes(data.competitiveStanding ?? '')) {
+    errors.push('Invalid competitive standing selection');
+  }
+  if (!VALID_QUERY_COVERAGE.includes(data.queryCoverage ?? '')) {
+    errors.push('Invalid query coverage selection');
+  }
+  if (!VALID_PLATFORM_CONSISTENCY.includes(data.platformConsistency ?? '')) {
+    errors.push('Invalid platform consistency selection');
+  }
+
+  // String length validation
+  if ((data.competitors?.length ?? 0) > 500) {
+    errors.push('Competitors field exceeds maximum length');
+  }
+  if ((data.positioning?.length ?? 0) > 500) {
+    errors.push('Positioning field exceeds maximum length');
+  }
+  if ((data.targetQueries?.length ?? 0) > 500) {
+    errors.push('Target queries field exceeds maximum length');
+  }
+
+  return errors;
+}
 
 function getAnthropicClient() {
   return new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY });
@@ -29,6 +120,18 @@ export async function POST(
   if (!formData.firstName || !formData.email || !formData.occupation) {
     return NextResponse.json(
       { error: 'Missing required fields: firstName, email, occupation', code: 'VALIDATION_ERROR' },
+      { status: 400 }
+    );
+  }
+
+  // Comprehensive form data validation
+  const validationErrors = validateFormData(formData);
+  if (validationErrors.length > 0) {
+    return NextResponse.json(
+      {
+        error: 'Validation failed: ' + validationErrors.join('; '),
+        code: 'VALIDATION_ERROR'
+      },
       { status: 400 }
     );
   }
@@ -93,7 +196,7 @@ export async function POST(
     );
   }
 
-  // Persist to Supabase — graceful degradation on failure
+  // Persist to Supabase — fail if insert fails
   let id: string;
   try {
     console.log('[generate] competitors being saved:', formData.competitors || null);
@@ -113,11 +216,18 @@ export async function POST(
         }
       });
     });
-  } catch (err) {
-    console.error('[generate] Supabase insert failed — falling back to session ID:', err);
-    id = generateSessionId();
-  }
 
-  console.log('[generate] returning id:', id);
-  return NextResponse.json({ id, plan }, { status: 200 });
+    console.log('[generate] returning id:', id);
+    return NextResponse.json({ id, plan }, { status: 200 });
+
+  } catch (err) {
+    console.error('[generate] Supabase insert failed:', err);
+    return NextResponse.json(
+      {
+        error: 'Failed to save your report. Please try again.',
+        code: 'DATABASE_ERROR',
+      },
+      { status: 500 }
+    );
+  }
 }

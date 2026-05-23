@@ -35,7 +35,12 @@ export async function sendUserPlanEmail(lead: AeoLeadRow): Promise<void> {
   const fromEmail  = process.env.FROM_EMAIL ?? 'hello@maxifidigital.com';
 
   const competitors    = getAllCompetitors(lead.competitors);
-  const score          = getVisibilityScore(lead.awareness, competitors);
+  const score          = getVisibilityScore(
+    lead.awareness,
+    lead.competitive_standing ?? '',
+    lead.query_coverage ?? '',
+    lead.platform_consistency ?? '',
+  );
   const benchAvg       = getIndustryBenchmark(lead.industry);
   const { x: buyerX, y: buyerY } = buyerConversations(score, benchAvg);
   const businessModel  = inferBusinessModel(lead.industry);
@@ -196,6 +201,18 @@ export async function sendUserPlanEmail(lead: AeoLeadRow): Promise<void> {
       <a href="${CALENDLY}" style="color:#6B5DD3;font-weight:600;text-decoration:none;">
         Book a strategy call &rarr;
       </a>
+    </p>
+  </td></tr>
+
+  <!-- Quick Disclaimer -->
+  <tr><td style="padding-top:24px;border-top:1px solid #e5e7eb;">
+    <p style="margin:0;font-size:11px;color:#9ca3af;text-align:center;line-height:1.6;">
+      This snapshot is based on your self-reported testing and automated analysis.
+      AI citation patterns shift with platform updates.
+      <a href="${REPORT_URL}" style="color:#6B5DD3;text-decoration:underline;">
+        Get your full AEO Visibility Report
+      </a>
+      for detailed audit.
     </p>
   </td></tr>
 

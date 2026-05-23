@@ -2,6 +2,7 @@ import Image from 'next/image';
 import { notFound } from 'next/navigation';
 import { getLeadById } from '@/lib/supabase';
 import CopyLinkButton from './CopyLinkButton';
+import DiscrepancyButton from './DiscrepancyButton';
 import DownloadPdfButton from './DownloadPdfButton';
 import ShareByEmailButton from './ShareByEmailButton';
 import {
@@ -382,7 +383,12 @@ export default async function ResultsPage({ params }: Props) {
   const contactEmail = process.env.MAXIFI_CONTACT_EMAIL ?? 'letsgetstarted@maxifidigital.com';
 
   const competitors  = getAllCompetitors(lead.competitors);
-  const score        = getVisibilityScore(lead.awareness, competitors);
+  const score        = getVisibilityScore(
+    lead.awareness,
+    lead.competitive_standing ?? '',
+    lead.query_coverage ?? '',
+    lead.platform_consistency ?? '',
+  );
   const benchAvg     = getIndustryBenchmark(lead.industry);
   const platforms    = getPlatformStatuses(lead.awareness, lead.platform, lead.platform_other);
 
@@ -622,83 +628,121 @@ export default async function ResultsPage({ params }: Props) {
             <p className="text-sm text-gray-700 leading-relaxed">{opportunity.body}</p>
           </div>
 
-          {/* Evidence / citation status by platform */}
+          {/* Verify our analysis — integrated citation status + live verification */}
           <div className="p-6 border-b border-gray-100">
-            <p className="text-xs font-semibold text-gray-400 uppercase tracking-wide mb-2">Citation status by platform</p>
-            <p className="text-base font-bold text-gray-900 leading-snug mb-3">{citationHeadline}</p>
+            <p className="text-xs font-semibold text-gray-400 uppercase tracking-wide mb-2">
+              Verify our analysis
+            </p>
+            <p className="text-base font-bold text-gray-900 leading-snug mb-3">
+              {citationHeadline}
+            </p>
+            <p className="text-sm text-gray-600 leading-relaxed mb-5">
+              {lead.awareness === "No, I haven't tried this yet"
+                ? `Run a live test right now — open ${verifyPlatformName} and search the query below. Note which brands appear. Those are your citation competitors.`
+                : `We predicted your citation status based on your responses. Run the same search now — if what you see matches our prediction, our methodology is working. If it doesn’t, tell us.`
+              }
+            </p>
+
             {lead.awareness === "No, I haven't tried this yet" ? (
-              <p className="text-sm text-gray-600 leading-relaxed">
-                Run a quick test: open ChatGPT and search for what you do. Note which brands appear. Those are your citation competitors.
-              </p>
-            ) : checkedPlatforms.length > 0 ? (
-              <>
-                <p className="text-sm text-gray-600 mb-3">
-                  Your reported test on {snapshotDate} · Query: &ldquo;{buyerQuery}&rdquo;
-                </p>
-                <div className="rounded-lg bg-gray-50 divide-y divide-gray-100 overflow-hidden border border-gray-100">
-                  {checkedPlatforms.map((platform) => {
-                    const status = platforms[platform];
-                    const s = PLATFORM_STATUS_STYLES[status];
-                    let displayLabel = s.label;
-                    let badgeCls = s.cls;
-                    if (status === 'displaced') {
-                      if (competitors.length > 0) {
-                        const label = competitors.length === 1
-                          ? competitors[0]
-                          : `${competitors[0]} +${competitors.length - 1}`;
-                        displayLabel = label.length > 22 ? label.slice(0, 22) + '…' : label;
-                      } else {
-                        displayLabel = 'Competitor not named';
-                        badgeCls = 'bg-gray-100 text-gray-500 border-gray-200';
-                      }
-                    }
-                    const searchUrl = getPlatformSearchUrl(platform, buyerQuery);
-                    return (
-                      <div key={platform} className="flex items-center justify-between px-3 py-2.5">
-                        <span className="text-sm text-gray-700">{platform}</span>
-                        <span className="flex items-center gap-2">
-                          <a
-                            href={searchUrl}
-                            target="_blank"
-                            rel="noopener noreferrer"
-                            className="text-[11px] font-medium text-[#6B5DD3] hover:underline whitespace-nowrap no-print-url print:hidden"
-                          >
-                            Search now →
-                          </a>
-                          <span className={`text-[11px] font-medium px-2 py-0.5 rounded border ${badgeCls}`}>
-                            {displayLabel}
-                          </span>
-                        </span>
-                      </div>
-                    );
-                  })}
+              <div className="rounded-xl border border-gray-200 bg-gray-50 overflow-hidden">
+                <div className="px-5 py-4 bg-white border-b border-gray-100">
+                  <span className="font-semibold text-gray-900 text-sm">{verifyPlatformName}</span>
                 </div>
-                {competitors.length === 0 && lead.awareness === 'Yes — competitors were cited instead of me' && (
-                  <p className="text-xs text-gray-500 mt-3 leading-relaxed">
-                    You indicated competitors are appearing instead of you but didn&rsquo;t name them.
-                    Your full AI Visibility Report identifies exactly which brands are displacing you on each platform.{' '}
-                    <a href={reportUrl} target="_blank" rel="noopener noreferrer" className="text-[#C87A2F] font-medium hover:underline">Get the full report →</a>
-                  </p>
-                )}
-                {competitors.length === 0 && lead.awareness !== 'Yes — competitors were cited instead of me' && lead.awareness !== "No, I haven't tried this yet" && (
-                  <p className="text-xs text-gray-500 mt-3 leading-relaxed">
-                    {lead.awareness === "Yes — but I wasn't mentioned at all"
-                      ? 'No brands were returned for you on the platforms you tested. Enter your closest competitors to see how their visibility compares to yours.'
-                      : lead.awareness === 'Yes — but details about me were wrong'
-                      ? 'You were cited on these platforms, but the information presented was incorrect. Your full report identifies which sources AI is pulling from and what needs to change.'
-                      : lead.awareness === 'Yes — but old/outdated info appeared'
-                      ? 'You were cited on these platforms, but with outdated information. Your full report identifies which content AI is drawing on and how to update it.'
-                      : 'Enter your closest competitors to see how their AI visibility compares to yours across these platforms.'
+                <div className="px-5 py-4">
+                  <p className="text-xs text-gray-500 mb-1.5 font-medium">Search this query:</p>
+                  <div className="font-mono text-xs text-emerald-700 bg-white rounded px-3 py-2 border border-gray-100 mb-4 break-all select-all">
+                    &ldquo;{buyerQuery}&rdquo;
+                  </div>
+                  <a
+                    href={platformSearchUrl}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="inline-flex items-center gap-1.5 bg-[#534AB7] hover:bg-[#4640a0] text-white text-sm font-semibold px-4 py-2.5 rounded-lg transition-colors no-print-url"
+                  >
+                    Open {verifyPlatformName} →
+                  </a>
+                </div>
+              </div>
+            ) : checkedPlatforms.length > 0 ? (
+              <div className="space-y-3">
+                {checkedPlatforms.map((platform) => {
+                  const status = platforms[platform];
+                  const s = PLATFORM_STATUS_STYLES[status];
+                  let badgeLabel = s.label;
+                  let badgeCls = s.cls;
+                  if (status === 'displaced') {
+                    if (competitors.length > 0) {
+                      const lbl = competitors.length === 1
+                        ? competitors[0]
+                        : `${competitors[0]} +${competitors.length - 1}`;
+                      badgeLabel = lbl.length > 22 ? lbl.slice(0, 22) + '…' : lbl;
+                    } else {
+                      badgeLabel = 'Competitor not named';
+                      badgeCls = 'bg-gray-100 text-gray-500 border-gray-200';
                     }
-                  </p>
-                )}
-              </>
+                  }
+                  const searchUrl = getPlatformSearchUrl(platform, buyerQuery);
+                  const expectedText =
+                    status === 'cited'      ? `${entityName} should appear accurately in the response.` :
+                    status === 'missing'    ? `${entityName} should not appear in the response.` :
+                    status === 'displaced'  ? `${competitors.length > 0 ? formatCompetitors(competitors) : 'A competitor'} should appear instead of ${entityName}.` :
+                    status === 'inaccurate' ? `${entityName} should appear but with incorrect details.` :
+                    status === 'stale'      ? `${entityName} should appear but with outdated information.` :
+                                             'Result will depend on current AI training data.';
+                  return (
+                    <div key={platform} className="rounded-xl border border-gray-200 overflow-hidden">
+                      {/* Platform header row */}
+                      <div className="flex items-center justify-between px-4 py-3 bg-white border-b border-gray-100">
+                        <span className="font-semibold text-gray-900 text-sm">{platform}</span>
+                        <div className="flex items-center gap-2">
+                          <span className="text-xs text-gray-400">Your report:</span>
+                          <span className={`text-[11px] font-semibold px-2 py-0.5 rounded border ${badgeCls}`}>
+                            {badgeLabel}
+                          </span>
+                        </div>
+                      </div>
+                      {/* Query + expected result + CTA */}
+                      <div className="px-4 py-4 bg-gray-50">
+                        <p className="text-xs text-gray-500 mb-1.5 font-medium">Search this exact query:</p>
+                        <div className="font-mono text-xs text-emerald-700 bg-white rounded px-3 py-2 border border-gray-100 mb-3 break-all select-all">
+                          &ldquo;{buyerQuery}&rdquo;
+                        </div>
+                        <p className="text-xs text-gray-600 mb-3 leading-relaxed">
+                          <span className="font-semibold">Expected:</span> {expectedText}
+                        </p>
+                        <a
+                          href={searchUrl}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="inline-flex items-center gap-1.5 bg-[#534AB7] hover:bg-[#4640a0] text-white text-xs font-semibold px-3 py-2 rounded-lg transition-colors no-print-url print:hidden"
+                        >
+                          Open {platform} →
+                        </a>
+                        <DiscrepancyButton
+                          leadId={lead.id}
+                          platform={platform}
+                          expectedResult={expectedText}
+                        />
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
             ) : (
               <p className="text-sm text-gray-500">
-                No platforms have been tested yet.
-                Search for {entityName} in ChatGPT or Perplexity to gather evidence.
+                No platforms tested yet. Search for {entityName} in {verifyPlatformName} to establish your baseline.
               </p>
             )}
+
+            {/* Credibility statement + methodology link */}
+            <div className="mt-5 rounded-xl bg-blue-50 border border-blue-100 p-4">
+              <p className="text-sm text-blue-900 leading-relaxed">
+                <strong>Why we show you this:</strong> Most AI visibility tools make claims without showing you how to verify them. We use a transparent 4-signal methodology you can test against live results — and refine when you spot a mismatch.{' '}
+                <a href="/methodology" className="text-blue-700 font-semibold hover:underline no-print-url">
+                  Read how we calculate your score →
+                </a>
+              </p>
+            </div>
           </div>
 
           {/* Root cause */}
@@ -751,33 +795,6 @@ export default async function ResultsPage({ params }: Props) {
             </p>
           </div>
 
-        </div>
-
-        {/* 4. High-contrast verify callout */}
-        <div className="rounded-xl bg-gray-900 p-6 mb-4">
-          <p className="text-xs font-semibold text-gray-500 uppercase tracking-wide mb-3">
-            Verify this yourself
-          </p>
-          <p className="text-white font-bold text-lg mb-4 leading-snug">
-            Open {verifyPlatformName} right now and search this exact query:
-          </p>
-          <div className="bg-gray-800 rounded-lg px-4 py-3 mb-5 font-mono text-sm text-emerald-400 break-all select-all">
-            &ldquo;{buyerQuery}&rdquo;
-          </div>
-          {isGenericQuery && (
-            <p className="text-xs text-gray-500 mb-4">
-              No target queries or positioning were provided, so this uses a general industry search. For a more accurate result, search for exactly what you do — e.g. your specific service or niche.
-            </p>
-          )}
-
-          <a
-            href={platformSearchUrl}
-            target="_blank"
-            rel="noopener noreferrer"
-            className="inline-flex items-center gap-2 bg-white text-gray-900 font-semibold text-sm px-5 py-3 rounded-lg hover:bg-gray-100 transition-colors no-print-url"
-          >
-            See the live result on {verifyPlatformName} →
-          </a>
         </div>
 
         {/* 5. What this means for your business — three gaps */}

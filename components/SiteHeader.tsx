@@ -15,13 +15,13 @@ export default function SiteHeader() {
           alt="Maxifi Digital"
           height={22}
           width={110}
-          className="h-[22px] w-auto"
+          style={{ height: '22px', width: 'auto' }}
           priority
         />
       </a>
       <a
         href="https://maxifidigital.com"
-        className="text-sm font-medium tracking-tight transition-colors hover:text-white"
+        className="text-[17px] font-bold tracking-tight transition-colors hover:text-white"
         style={{ color: 'rgba(255,255,255,0.75)' }}
       >
         ← maxifidigital.com
