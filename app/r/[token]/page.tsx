@@ -1,6 +1,8 @@
 import type { Metadata } from 'next';
 import ReportPage from '@/components/report/ReportPage';
 import { mockReportFree, mockReportPaid } from '@/data/fixtures/report_mock';
+import { getLeadByToken } from '@/lib/supabase';
+import { buildReportFromLead } from '@/lib/buildTeaserReport';
 import type { ReportData } from '@/lib/reportTypes';
 
 interface Props {
@@ -8,26 +10,58 @@ interface Props {
   searchParams: Promise<{ paid?: string }>;
 }
 
-// TODO Stage 6: replace with Supabase lookup by token
-async function getReport(token: string, paid: boolean): Promise<ReportData | null> {
-  // Mock routing: preview-free → free, preview-paid → paid, ?paid=1 → paid version of either
-  if (token === 'preview-paid' || paid) return mockReportPaid;
-  return mockReportFree;
+function getEnv() {
+  const baseUrl     = process.env.NEXT_PUBLIC_BASE_URL ?? 'https://visibilityview.netlify.app';
+  const unlockBase  = `${baseUrl}/report/unlock`;
+  const calendlyUrl = process.env.CALENDLY_URL ?? 'https://lunacal.ai/maxifidigital/';
+  const reportPrice = process.env.REPORT_PRICE ?? 'SGD $2,500';
+  return { unlockBase, calendlyUrl, reportPrice };
+}
+
+async function getReport(token: string): Promise<ReportData | null> {
+  // Dev preview tokens — bypass Supabase entirely
+  if (token === 'preview-free') return mockReportFree;
+  if (token === 'preview-paid') return mockReportPaid;
+
+  let lead;
+  try {
+    lead = await getLeadByToken(token);
+  } catch (err) {
+    console.error('[r/token] Supabase lookup failed:', err);
+    return null;
+  }
+
+  if (!lead) return null;
+
+  const { unlockBase, calendlyUrl, reportPrice } = getEnv();
+  const unlockUrl = `${unlockBase}?token=${token}`;
+
+  if (lead.paid && lead.report_data) {
+    // Paid: serve the analyst-populated report_data (contains real S5–S8).
+    // Override paid flag from DB — it's the authoritative source.
+    const reportData = lead.report_data as ReportData;
+    reportData.meta.paid = true;
+    return reportData;
+  }
+
+  // Free: always rebuild live from stored lead fields so any code fixes
+  // take effect immediately for all existing tokens.
+  return buildReportFromLead(lead, reportPrice, unlockUrl, calendlyUrl);
 }
 
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
-  const { token } = await params;
+  await params; // satisfy Next.js async params contract
   return {
-    title: `AI Visibility Report — ${token} · Maxifi Digital`,
+    title: `AI Visibility Report · Maxifi Digital`,
     robots: { index: false, follow: false },
   };
 }
 
 export default async function ReportRoute({ params, searchParams }: Props) {
   const { token } = await params;
-  const { paid } = await searchParams;
+  await searchParams; // retained for future use
 
-  const data = await getReport(token, paid === '1' || paid === 'true');
+  const data = await getReport(token);
 
   if (!data) {
     return (
