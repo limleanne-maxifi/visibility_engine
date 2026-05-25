@@ -302,70 +302,128 @@ function getOpportunityContent(
 
 // ─── Section headline helpers ─────────────────────────────────────────────────
 
-function getPageHeadline(awareness: string, entityName: string, score: number, benchAvg: number): string {
-  switch (awareness) {
-    case 'Yes — and the results were accurate':
-      return `${entityName} is already in the AI conversation — and ahead of most. Here's how to hold that position as competitors catch up.`;
-    case "Yes — but I wasn't mentioned at all":
-      return `Your buyers are asking AI for recommendations. Right now, ${entityName} isn't in the answer — here's why, and what changes that.`;
-    case 'Yes — but details about me were wrong':
-      return `Good news: AI can find ${entityName}. The problem is what it's telling your buyers.`;
-    case 'Yes — competitors were cited instead of me':
-      return `When buyers ask AI who to call, your competitors get the referral. Here's exactly why — and what closes that gap.`;
-    case 'Yes — but old/outdated info appeared':
-      return `AI is recommending ${entityName} — but the version from years ago. Here's how to update the story it tells buyers.`;
+function getPageHeadline(visibilityGap: string, entityName: string, score: number, benchAvg: number, awareness?: string): string {
+  switch (visibilityGap) {
+    case 'not-cited':
+      return `${entityName} isn't showing up in AI recommendations yet — here's why, and what to fix first.`;
+    case 'competitors-cited':
+      return `You're showing up — but your competitors are winning instead. Here's exactly why, and how to change that.`;
+    case 'inaccurate-info':
+      return `You're showing up — but the wrong story is being told about you.`;
+    case 'own-queries':
+      return `${entityName} could own specific queries in AI results. Here's how to capture them.`;
+    case 'unknown-baseline':
+      return `Your AI visibility is undiagnosed. This snapshot reveals where you likely stand — and what to do first.`;
     default:
-      return `${entityName}'s AI visibility is undiagnosed. This snapshot shows you where you likely stand — and what to do first.`;
+      return `${entityName}'s AI visibility snapshot — actionable insights to improve your presence.`;
   }
 }
 
-function getScoreHeadline(score: number, benchAvg: number, industry: string): string {
-  if (score === 0) return `Your AI visibility baseline is not yet established — here's what the signals suggest.`;
-  const gap = benchAvg - score;
-  if (gap > 0) return `Your score of ${score}% puts you ${gap} points below the ${industry} benchmark — a gap with a clear fix path.`;
-  return `Your score of ${score}% is at or above the ${industry} benchmark — a strong starting position.`;
+function getScoreHeadline(visibilityGap: string, score: number, benchAvg: number, industry: string): string {
+  if (score === 0) return `Your AI visibility baseline is unestablished — here's what the available signals suggest.`;
+  const scoreBenchmarkGap = benchAvg - score;
+
+  if (visibilityGap === 'not-cited') {
+    return `You're at ${score}% — significantly below the ${industry} median of ${benchAvg}%. Building from zero requires a different playbook.`;
+  }
+  if (visibilityGap === 'competitors-cited') {
+    return `You're at ${score}%, but competitors have locked in at ${benchAvg}%+. The structural differences are fixable — and significant.`;
+  }
+  if (visibilityGap === 'inaccurate-info') {
+    return `Your visibility score is ${score}% — you have presence, but it's being misinterpreted by AI engines.`;
+  }
+  if (visibilityGap === 'own-queries') {
+    return `Your current score is ${score}%. Ownership of your target queries would raise this — and reshape your buyer discovery.`;
+  }
+  if (visibilityGap === 'unknown-baseline') {
+    return `Your baseline is ${score}% — below the ${industry} median of ${benchAvg}%, but the path forward depends on what's causing it.`;
+  }
+
+  // Fallback
+  if (scoreBenchmarkGap > 0) return `Your score of ${score}% is ${scoreBenchmarkGap} points below the ${industry} benchmark.`;
+  return `Your score of ${score}% is at or above the ${industry} benchmark.`;
 }
 
-function getCompetitiveHeadline(score: number, benchAvg: number, industry: string, competitors: string[]): string {
-  const gap = benchAvg - score;
+function getCompetitiveHeadline(visibilityGap: string, score: number, benchAvg: number, industry: string, competitors: string[]): string {
+  const scoreBenchmarkGap = benchAvg - score;
+
+  if (visibilityGap === 'competitors-cited') {
+    if (competitors.length > 0) {
+      return `${formatCompetitors(competitors)} are winning the AI citation game. They're not necessarily better — they're just more visible where it counts.`;
+    }
+    return `Your competitors are appearing in AI results where you should be. Understanding why requires knowing who they are.`;
+  }
+
+  if (visibilityGap === 'not-cited') {
+    if (competitors.length > 0) {
+      return `While you're invisible, ${formatCompetitors(competitors)} ${competitors.length > 1 ? 'are' : 'is'} capturing AI-assisted buyers. They're setting the pattern you need to match.`;
+    }
+    return `Without your competitors named, the full competitive picture is unclear — but your invisibility is the immediate problem.`;
+  }
+
+  if (visibilityGap === 'inaccurate-info') {
+    if (competitors.length > 0) {
+      return `${formatCompetitors(competitors)} likely have cleaner, more consistent data in AI systems. That clarity is what buyers see and trust.`;
+    }
+    return `Your visibility problem isn't lack of presence — it's inconsistency in what AI engines say about you.`;
+  }
+
+  if (visibilityGap === 'own-queries') {
+    if (competitors.length > 0) {
+      return `For the queries you want to own, ${formatCompetitors(competitors)} are currently dominating. Reclaiming them requires targeted presence.`;
+    }
+    return `Owning your target queries means appearing consistently where buyers search for what you do.`;
+  }
+
+  // Fallback for unknown-baseline and others
   if (competitors.length > 0) {
-    return gap > 0
-      ? `${formatCompetitors(competitors)} ${competitors.length > 1 ? 'are' : 'is'} ahead — and the ${industry} median sits ${gap} points above your current score.`
+    return scoreBenchmarkGap > 0
+      ? `${formatCompetitors(competitors)} ${competitors.length > 1 ? 'are' : 'is'} ahead — and the ${industry} median sits ${scoreBenchmarkGap} points above your current score.`
       : `You are at or above the ${industry} median. The question is whether your named competitors are pulling further ahead.`;
   }
-  return gap > 0
-    ? `You are ${gap} points behind the ${industry} median — without competitor data, this is the clearest benchmark available.`
+  return scoreBenchmarkGap > 0
+    ? `You are ${scoreBenchmarkGap} points behind the ${industry} median — without competitor data, this is the clearest benchmark available.`
     : `You are at or above the ${industry} median — a competitive position worth protecting.`;
 }
 
-function getCitationHeadline(awareness: string, checkedCount: number, entityName: string): string {
+function getCitationHeadline(visibilityGap: string, checkedCount: number, entityName: string): string {
   const n = checkedCount;
-  const positiveRef = n === 1 ? 'the platform you tested' : n === 2 ? 'both platforms you tested' : `all ${n} platforms you tested`;
-  const negativeRef  = n === 1 ? 'the platform you tested' : n === 2 ? 'either platform you tested' : `any of the ${n} platforms you tested`;
-  switch (awareness) {
-    case 'Yes — and the results were accurate':
-      return `You appeared accurately on ${positiveRef} — a signal AI engines are reading your brand correctly.`;
-    case "Yes — but I wasn't mentioned at all":
-      return `${entityName} did not appear on ${negativeRef} — buyers searching here are not seeing you.`;
-    case 'Yes — but details about me were wrong':
-      return `You appeared on ${positiveRef} — but with incorrect information that could be misleading buyers.`;
-    case 'Yes — competitors were cited instead of me':
-      return `A competitor was returned on ${positiveRef} instead of you — buyers searching here are being directed elsewhere.`;
-    case 'Yes — but old/outdated info appeared':
-      return `You appeared on ${positiveRef} — but the information shown is outdated and no longer reflects your current offering.`;
-    default:
-      return `No platforms have been tested yet — run a search to establish your citation baseline.`;
+  const positiveRef = n === 1 ? 'the platform' : n === 2 ? 'both platforms' : `${n} platforms`;
+  const negativeRef  = n === 1 ? 'the platform' : n === 2 ? 'either platform' : `any of the ${n} platforms`;
+
+  if (visibilityGap === 'not-cited') {
+    return `${entityName} is not appearing on ${negativeRef} where your buyers are searching for recommendations.`;
   }
+  if (visibilityGap === 'competitors-cited') {
+    return `Competitors are appearing on ${positiveRef} where ${entityName} should be — the presence gap is real and measurable.`;
+  }
+  if (visibilityGap === 'inaccurate-info') {
+    return `You're appearing on ${positiveRef} — but the information being shown is inconsistent with what you're actually offering.`;
+  }
+  if (visibilityGap === 'own-queries') {
+    return `Testing your specific queries on ${positiveRef} will show whether you're visible where your target buyers search.`;
+  }
+  if (visibilityGap === 'unknown-baseline') {
+    return `${checkedCount > 0 ? `Your spot check on ${positiveRef} provides a starting baseline.` : `Testing on major platforms will establish your visibility baseline.`}`;
+  }
+
+  return `No platforms have been tested yet — run a search to establish your citation baseline.`;
 }
 
-function getRootCauseHeadline(awareness: string): string {
-  switch (awareness) {
-    case 'Yes — and the results were accurate':       return `Three things keeping your AI citation position strong — and what could erode it.`;
-    case "Yes — but I wasn't mentioned at all":       return `Three reasons AI isn't surfacing you yet — and which to fix first.`;
-    case 'Yes — but details about me were wrong':     return `Three reasons AI is describing you inaccurately — and the one that matters most.`;
-    case 'Yes — competitors were cited instead of me': return `Three structural reasons a competitor appears in your place — and how they got there.`;
-    case 'Yes — but old/outdated info appeared':      return `Three reasons AI is citing an outdated version of your brand.`;
-    default:                                           return `Three things your current AI visibility position reveals.`;
+function getRootCauseHeadline(visibilityGap: string): string {
+  switch (visibilityGap) {
+    case 'not-cited':
+      return `Three structural reasons you're not appearing in AI results — and which to fix first.`;
+    case 'competitors-cited':
+      return `Three competitive reasons your buyers are seeing competitors instead of you — and how to flip it.`;
+    case 'inaccurate-info':
+      return `Three reasons AI is telling the wrong story about you — and which is costing you the most.`;
+    case 'own-queries':
+      return `Three barriers to owning your target queries in AI results — and the highest-impact fix.`;
+    case 'unknown-baseline':
+      return `Three dimensions your AI visibility snapshot reveals — and where to focus first.`;
+    default:
+      return `Three things your current AI visibility position reveals.`;
   }
 }
 
@@ -405,11 +463,11 @@ export default async function ResultsPage({ params }: Props) {
   const gap2Text = getGap2Specific(entityName, lead.industry, competitors, score, benchAvg);
   const gap3Text = getGap3Specific(entityName, lead.industry, lead.awareness);
 
-  const pageHeadline        = getPageHeadline(lead.awareness, entityName, score, benchAvg);
-  const scoreHeadline       = getScoreHeadline(score, benchAvg, lead.industry);
-  const competitiveHeadline = getCompetitiveHeadline(score, benchAvg, lead.industry, competitors);
-  const citationHeadline    = getCitationHeadline(lead.awareness, checkedPlatforms.length, entityName);
-  const rootCauseHeadline   = getRootCauseHeadline(lead.awareness);
+  const pageHeadline        = getPageHeadline(lead.outcome, entityName, score, benchAvg, lead.awareness);
+  const scoreHeadline       = getScoreHeadline(lead.outcome, score, benchAvg, lead.industry);
+  const competitiveHeadline = getCompetitiveHeadline(lead.outcome, score, benchAvg, lead.industry, competitors);
+  const citationHeadline    = getCitationHeadline(lead.outcome, checkedPlatforms.length, entityName);
+  const rootCauseHeadline   = getRootCauseHeadline(lead.outcome);
 
   console.log('[results] id:', lead.id, '| awareness:', lead.awareness, '| competitors:', lead.competitors, '| company_name:', lead.company_name, '| target_queries:', lead.target_queries, '| positioning:', lead.positioning, '| platform:', lead.platform);
 
