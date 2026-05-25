@@ -1,4 +1,4 @@
-# AEO Visibility Check
+# AI Visibility Check
 
 ## 1. Project Overview
 
