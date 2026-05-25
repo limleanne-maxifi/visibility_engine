@@ -4,6 +4,7 @@ import { getLeadById } from '@/lib/supabase';
 import CopyLinkButton from './CopyLinkButton';
 import DownloadPdfButton from './DownloadPdfButton';
 import ShareByEmailButton from './ShareByEmailButton';
+import EventFollowupForm from '@/components/EventFollowupForm';
 import {
   getAllCompetitors,
   formatCompetitors,
@@ -919,17 +920,30 @@ export default async function ResultsPage({ params }: Props) {
           </p>
         </div>
 
-        {/* 7. Three-option path forward */}
+        {/* 7. Two-option path forward */}
         <div className="mb-8">
           <h2 className="text-xl font-bold text-gray-900 mb-1">What would you like to do next?</h2>
-          <p className="text-sm text-gray-500 mb-5">Three ways to move forward. No sales call required.</p>
+          <p className="text-sm text-gray-500 mb-5">Two ways to move forward.</p>
 
-          <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
 
-            {/* Option A — primary/recommended */}
+            {/* Option A — lead capture for post-event follow-up */}
             <div className="bg-white rounded-xl border-2 border-[#C87A2F] p-5 flex flex-col relative">
-              <span className="absolute -top-3 left-4 text-[10px] font-bold text-white bg-[#C87A2F] px-2 py-0.5 rounded-full tracking-wide uppercase">Most requested</span>
+              <span className="absolute -top-3 left-4 text-[10px] font-bold text-white bg-[#C87A2F] px-2 py-0.5 rounded-full tracking-wide uppercase">Interested</span>
               <span className="inline-block self-start text-xs font-bold text-[#C87A2F] bg-[#FDF1E6] px-2 py-0.5 rounded mb-3 mt-1">A</span>
+              <h3 className="text-sm font-bold text-gray-900 mb-2">Get post-event follow-up</h3>
+              <p className="text-xs text-gray-500 leading-relaxed flex-1 mb-4">
+                Leave your name, email, and the specific query you want to own.
+                We'll follow up after the event with a customized action plan.
+              </p>
+              <div className="flex-1">
+                <EventFollowupForm leadId={lead.id} entityName={entityName} />
+              </div>
+            </div>
+
+            {/* Option B — full report */}
+            <div className="bg-white rounded-xl border border-gray-200 p-5 flex flex-col">
+              <span className="inline-block self-start text-xs font-bold text-[#C87A2F] bg-[#FDF1E6] px-2 py-0.5 rounded mb-3">B</span>
               <h3 className="text-sm font-bold text-gray-900 mb-2">Get the full picture</h3>
               <p className="text-xs text-gray-500 leading-relaxed flex-1 mb-4">
                 AI Visibility Report — one report, no subscription.
@@ -942,43 +956,6 @@ export default async function ResultsPage({ params }: Props) {
                 className="block text-center text-sm font-semibold text-white bg-[#C87A2F] hover:bg-[#A8651E] rounded-lg px-4 py-2.5 transition-colors"
               >
                 Get the report →
-              </a>
-            </div>
-
-            {/* Option B */}
-            <div className="bg-white rounded-xl border border-gray-200 p-5 flex flex-col">
-              <span className="inline-block self-start text-xs font-bold text-[#C87A2F] bg-[#FDF1E6] px-2 py-0.5 rounded mb-3">B</span>
-              <h3 className="text-sm font-bold text-gray-900 mb-2">Track your position every month</h3>
-              <p className="text-xs text-gray-500 leading-relaxed flex-1 mb-4">
-                AI Visibility Engine — monthly tracking across all AI platforms.
-                Alerts when competitors move. Quarterly strategy review included.
-              </p>
-              <a
-                href={monitorUrl}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="text-sm font-semibold text-[#C87A2F] hover:underline"
-              >
-                Start tracking →
-              </a>
-            </div>
-
-            {/* Option C */}
-            <div className="bg-white rounded-xl border border-gray-200 p-5 flex flex-col">
-              <span className="inline-block self-start text-xs font-bold text-[#C87A2F] bg-[#FDF1E6] px-2 py-0.5 rounded mb-3">C</span>
-              <h3 className="text-sm font-bold text-gray-900 mb-2">Have us fix it for you</h3>
-              <p className="text-xs text-gray-500 leading-relaxed flex-1 mb-4">
-                Done for you — Maxifi implements every fix.
-                We handle the content formatting, brand presence, and citation work.
-                Monthly reporting included.
-              </p>
-              <a
-                href={calendlyUrl}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="text-sm font-semibold text-[#C87A2F] hover:underline"
-              >
-                Book a strategy call →
               </a>
             </div>
 
