@@ -102,7 +102,7 @@ export default function EventFollowupForm({ leadId, entityName, onSubmitSuccess 
         disabled={isSubmitting}
         className="w-full text-center text-sm font-semibold text-white bg-[#C87A2F] hover:bg-[#A8651E] disabled:opacity-50 disabled:cursor-not-allowed rounded-lg px-4 py-2.5 transition-colors"
       >
-        {isSubmitting ? 'Submitting…' : 'I'm interested →'}
+        {isSubmitting ? 'Submitting…' : "I'm interested →"}
       </button>
     </form>
   );
