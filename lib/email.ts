@@ -127,7 +127,7 @@ export async function sendUserPlanEmail(lead: AeoLeadRow, reportUrl?: string): P
   const html = `<!DOCTYPE html>
 <html lang="en">
 <head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1"></head>
-<body style="margin:0;padding:0;background:#f9fafb;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;">
+<body style="margin:0;padding:0;background:#f9fafb;font-family:'Inter',-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;">
 <div style="text-align:center;padding:24px 0 16px;">
   <img src="https://visibilityview.netlify.app/maxifi-logo-black.png" alt="Maxifi Digital" style="display:block;margin:0 auto 24px;width:140px;height:auto;" />
 </div>
@@ -137,7 +137,7 @@ export async function sendUserPlanEmail(lead: AeoLeadRow, reportUrl?: string): P
 
   <!-- Brand header -->
   <tr><td style="padding-bottom:24px;">
-    <p style="margin:0;font-size:12px;font-weight:600;color:#6B5DD3;letter-spacing:0.08em;text-transform:uppercase;">
+    <p style="margin:0;font-size:12px;font-weight:600;color:#A8651E;letter-spacing:0.08em;text-transform:uppercase;">
       Maxifi Digital · AI Visibility Snapshot
     </p>
   </td></tr>
@@ -183,22 +183,22 @@ export async function sendUserPlanEmail(lead: AeoLeadRow, reportUrl?: string): P
 
   <!-- Upsell card -->
   <tr><td style="padding-bottom:28px;">
-    <div style="background:#6B5DD3;border-radius:12px;padding:28px;">
-      <h2 style="margin:0 0 10px;font-size:20px;font-weight:700;color:#ffffff;line-height:1.4;">
+    <div style="background:#C87A2F;border-radius:12px;padding:28px;">
+      <h2 style="margin:0 0 10px;font-size:20px;font-weight:700;color:#091521;line-height:1.4;">
         ${upsellHeadline}
       </h2>
-      ${diagImpact ? `<p style="margin:0 0 12px;font-size:14px;color:#ede9fe;line-height:1.7;">${diagImpact}</p>` : ''}
-      <p style="margin:0 0 20px;font-size:14px;color:#ddd6fe;line-height:1.7;">
+      ${diagImpact ? `<p style="margin:0 0 12px;font-size:14px;color:#091521;line-height:1.7;">${diagImpact}</p>` : ''}
+      <p style="margin:0 0 20px;font-size:14px;color:#091521;line-height:1.7;">
         Your free report shows exactly what&rsquo;s driving this &mdash;
         and gives you a prioritised fix queue to close it.
         One report. No subscription, no sales call.
       </p>
       <a href="${primaryReportUrl}"
-         style="display:inline-block;background:#ffffff;color:#6B5DD3;font-size:14px;font-weight:700;
+         style="display:inline-block;background:#ffffff;color:#A8651E;font-size:14px;font-weight:700;
                 text-decoration:none;padding:13px 24px;border-radius:8px;margin-bottom:16px;">
         View your free AI Visibility Report &rarr;
       </a>
-      <p style="margin:0;font-size:12px;color:#c4b5fd;line-height:1.6;">
+      <p style="margin:0;font-size:12px;color:#091521;line-height:1.6;">
         AI citation positions shift as AI platforms update their data sources — sometimes significantly within a single quarter.
         AI Visibility Engine tracks your position monthly so changes don&rsquo;t catch you off guard. Cancel anytime.
       </p>
@@ -209,7 +209,7 @@ export async function sendUserPlanEmail(lead: AeoLeadRow, reportUrl?: string): P
   <tr><td style="padding-bottom:36px;">
     <p style="margin:0;font-size:14px;color:#6b7280;line-height:1.7;">
       ${strategyCta}
-      <a href="${CALENDLY}" style="color:#6B5DD3;font-weight:600;text-decoration:none;">
+      <a href="${CALENDLY}" style="color:#A8651E;font-weight:600;text-decoration:none;">
         Book a strategy call &rarr;
       </a>
     </p>
