@@ -140,28 +140,6 @@ export type AiPresence =
   | 'Yes — but old/outdated info appeared'
   | '';
 
-export type CompetitiveStanding =
-  | "I appear prominently — competitors don't displace me"
-  | 'I appear alongside competitors roughly equally'
-  | 'Competitors occasionally appear ahead of me'
-  | 'Competitors consistently appear, I rarely do'
-  | "I haven't checked this"
-  | '';
-
-export type QueryCoverage =
-  | "I appear for most category and topic queries I've tested"
-  | 'I appear for some queries but miss many category searches'
-  | 'I only appear when my exact brand/company name is searched'
-  | "I haven't tested multiple query types"
-  | '';
-
-export type PlatformConsistency =
-  | 'Yes — I appear consistently across all major AI platforms'
-  | 'Yes — but results vary significantly by platform'
-  | "I've only checked one platform"
-  | "No — I haven't tested across platforms"
-  | '';
-
 export type AeoOutcome =
   | "I'm not being cited at all"
   | 'My competitors are cited instead of me'
@@ -193,9 +171,6 @@ export interface FormData {
   // Step 3 — AEO Awareness
   aiPresence: AiPresence;
   platforms: Platform[];
-  competitiveStanding: CompetitiveStanding;
-  queryCoverage: QueryCoverage;
-  platformConsistency: PlatformConsistency;
 
   // Step 4 — Visibility Gap & Goals
   visibilityGap?: VisibilityGap;
@@ -247,9 +222,6 @@ export const initialFormData: FormData = {
   company: '',
   aiPresence: '',
   platforms: [],
-  competitiveStanding: '',
-  queryCoverage: '',
-  platformConsistency: '',
   challenges: [],
   competitors: '',
   positioning: '',

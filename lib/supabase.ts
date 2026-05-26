@@ -42,9 +42,6 @@ export interface AeoLeadRow {
   competitors: string | null;
   positioning: string | null;
   target_queries: string | null;
-  competitive_standing: string | null;
-  query_coverage: string | null;
-  platform_consistency: string | null;
 }
 
 // ─── Insert a new lead + plan ─────────────────────────────────────────────────
@@ -79,9 +76,6 @@ export async function insertLead(
       competitors: formData.competitors || null,
       positioning: formData.positioning || null,
       target_queries: formData.targetQueries || null,
-      competitive_standing: formData.competitiveStanding || null,
-      query_coverage: formData.queryCoverage || null,
-      platform_consistency: formData.platformConsistency || null,
     })
     .select()
     .single();
