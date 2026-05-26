@@ -748,6 +748,10 @@ function ReportFooter({ data }: { data: ReportData }) {
           <a href="mailto:hello@maxifidigital.com" className="underline hover:text-white/40">
             hello@maxifidigital.com
           </a>
+          {' · '}
+          <a href="/methodology" className="underline hover:text-white/40">
+            Methodology →
+          </a>
         </p>
       </div>
       <p className="mt-4 text-[10px] text-white/20 leading-relaxed">

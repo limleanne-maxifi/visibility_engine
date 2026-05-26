@@ -30,6 +30,10 @@ export interface AeoLeadRow {
   industry: string;
   company_name: string | null;
   awareness: string;
+  // 4-signal model — signals 2/3/4 (nullable for rows that predate the schema migration)
+  competitive_standing: string | null;
+  query_coverage: string | null;
+  platform_consistency: string | null;
   platform: string;
   platform_other: string | null;
   challenge: string;
@@ -77,6 +81,9 @@ export async function insertLead(
       industry: formData.industry,
       company_name: formData.company || null,
       awareness: formData.aiPresence,
+      competitive_standing: formData.competitiveStanding || null,
+      query_coverage: formData.queryCoverage || null,
+      platform_consistency: formData.platformConsistency || null,
       platform: primaryPlatform,
       platform_other: secondaryPlatform,
       challenge: formData.challenges.join('; ') || '',

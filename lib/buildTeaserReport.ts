@@ -3,7 +3,7 @@
 // Language discipline: free sections use "our analysis suggests", "likely",
 // "based on what you reported" — never measurement language.
 
-import type { FormData, AiPresence, VisibilityGap } from '@/lib/types';
+import type { FormData, AiPresence, VisibilityGap, CompetitiveStanding, QueryCoverage, PlatformConsistency } from '@/lib/types';
 import type { AeoLeadRow } from '@/lib/supabase';
 import type {
   ReportData,
@@ -481,10 +481,17 @@ function buildS4(formData: FormData, entity: string): PositioningAssessmentSecti
 // ─── Score ────────────────────────────────────────────────────────────────────
 
 function buildScore(formData: FormData): ScoreData {
-  const competitors = getAllCompetitors(formData.competitors);
-  const score       = getVisibilityScore(formData.aiPresence, competitors);
-  const benchAvg    = getIndustryBenchmark(formData.industry);
-  const band        = scoreToBand(score);
+  // 4-signal scoring: each signal is a separate form answer (see lib/scoring.ts).
+  // Competitors list is no longer an input to the score itself — it's used
+  // elsewhere in the report (S2 root causes, etc.).
+  const score    = getVisibilityScore(
+    formData.aiPresence,
+    formData.competitiveStanding,
+    formData.queryCoverage,
+    formData.platformConsistency,
+  );
+  const benchAvg = getIndustryBenchmark(formData.industry);
+  const band     = scoreToBand(score);
 
   return {
     score,
@@ -514,7 +521,10 @@ function leadToFormData(lead: AeoLeadRow): FormData {
     occupation:    lead.occupation as FormData['occupation'],
     industry:      lead.industry,
     company:       lead.company_name ?? '',
-    aiPresence:    lead.awareness as AiPresence,
+    aiPresence:          lead.awareness as AiPresence,
+    competitiveStanding: (lead.competitive_standing ?? '') as CompetitiveStanding,
+    queryCoverage:       (lead.query_coverage ?? '') as QueryCoverage,
+    platformConsistency: (lead.platform_consistency ?? '') as PlatformConsistency,
     platforms,
     visibilityGap: (lead.outcome ?? '') as VisibilityGap,
     challenges:    lead.challenge ? lead.challenge.split('; ').filter(Boolean) : [],
@@ -544,7 +554,22 @@ export function buildReportFromLead(
 ): ReportData {
   const formData = leadToFormData(lead);
   const token    = lead.report_token ?? lead.id;
-  return buildTeaserReport(formData, token, reportPrice, unlockUrl, calendlyUrl);
+
+  // Pre-migration safeguard: leads inserted before the 4-signal model migration
+  // have NULL competitive_standing/query_coverage/platform_consistency. Running
+  // them through the live 4-signal score would collapse to ~Signal-1 alone
+  // (max 27/100). For those rows, prefer the score stored in report_data
+  // (computed at insert time under the model active then). New rows with all
+  // three signals populated use live computation as normal.
+  const hasNewSignals = !!(
+    lead.competitive_standing &&
+    lead.query_coverage &&
+    lead.platform_consistency
+  );
+  const stored = lead.report_data as ReportData | null;
+  const scoreOverride = !hasNewSignals && stored?.score ? stored.score : undefined;
+
+  return buildTeaserReport(formData, token, reportPrice, unlockUrl, calendlyUrl, scoreOverride);
 }
 
 // ─── Main export ──────────────────────────────────────────────────────────────
@@ -555,6 +580,7 @@ export function buildTeaserReport(
   reportPrice: string,
   unlockUrl: string,
   calendlyUrl: string,
+  scoreOverride?: ScoreData,
 ): ReportData {
   const entity   = formData.company?.trim() || formData.firstName;
   const meta: ReportMeta = {
@@ -569,7 +595,7 @@ export function buildTeaserReport(
 
   return {
     meta,
-    score:        buildScore(formData),
+    score:        scoreOverride ?? buildScore(formData),
     s1Visibility: buildS1(formData, entity),
     s2Diagnosis:  buildS2(formData, entity),
     s3Platforms:  buildS3(formData),

@@ -1,6 +1,6 @@
 'use client';
 
-import { FormData, AiPresence } from '@/lib/types';
+import { FormData, AiPresence, CompetitiveStanding } from '@/lib/types';
 import ChoiceCard from '@/components/ChoiceCard';
 
 interface Props {
@@ -20,14 +20,12 @@ const AI_PRESENCE_OPTIONS: AiPresence[] = [
   'Yes — but old/outdated info appeared',
 ];
 
-const PLATFORM_OPTIONS = [
-  'ChatGPT',
-  'Google AI Overviews',
-  'Perplexity',
-  'Microsoft Copilot',
-  'Claude',
-  'Gemini',
-  'Other',
+const COMPETITIVE_STANDING_OPTIONS: CompetitiveStanding[] = [
+  "I appear prominently — competitors don't displace me",
+  'I appear alongside competitors roughly equally',
+  'Competitors occasionally appear ahead of me',
+  'Competitors consistently appear, I rarely do',
+  "I haven't checked this",
 ];
 
 export default function Step3Awareness({ data, onChange, onNext, onBack, errors }: Props) {
@@ -36,32 +34,11 @@ export default function Step3Awareness({ data, onChange, onNext, onBack, errors 
     onNext();
   };
 
-  const togglePlatform = (value: string) => {
-    const current = [...data.platforms];
-    const idx = current.findIndex((p) => p.value === value);
-
-    if (idx === -1) {
-      // Unselected → primary (if no primary exists), else secondary
-      const hasPrimary = current.some((p) => p.priority === 'primary');
-      onChange({
-        platforms: [...current, { value, priority: hasPrimary ? 'secondary' : 'primary' }],
-      });
-    } else if (current[idx].priority === 'primary') {
-      // Primary → secondary
-      const updated = [...current];
-      updated[idx] = { value, priority: 'secondary' };
-      onChange({ platforms: updated });
-    } else {
-      // Secondary → deselect
-      onChange({ platforms: current.filter((p) => p.value !== value) });
-    }
-  };
-
   return (
     <form onSubmit={handleSubmit} noValidate>
       <h1 className="text-2xl text-gray-900 mb-6">Your AI presence today</h1>
 
-      {/* Group A */}
+      {/* Signal 1 — Platform presence */}
       <fieldset className="mb-6">
         <legend className="text-[17px] text-gray-700 mb-3">
           Have you ever searched for yourself or your business in an AI tool like ChatGPT or Perplexity?{' '}
@@ -82,65 +59,24 @@ export default function Step3Awareness({ data, onChange, onNext, onBack, errors 
         )}
       </fieldset>
 
-      {/* Group B */}
-      <fieldset>
-        <legend className="text-[17px] text-gray-700 mb-1">
-          Which AI platforms matter to you?{' '}
+      {/* Signal 2 — Competitive displacement */}
+      <fieldset className="mb-6">
+        <legend className="text-[17px] text-gray-700 mb-3">
+          When AI answers questions about your category, how do you compare to competitors?{' '}
           <span className="text-red-500">*</span>
         </legend>
-        <p className="text-xs text-gray-400 mb-3">
-          Click once for PRIMARY, again for 2nd, again to deselect.
-        </p>
         <div className="space-y-2">
-          {PLATFORM_OPTIONS.map((platform) => {
-            const entry = data.platforms.find((p) => p.value === platform);
-            const rank = entry ? data.platforms.indexOf(entry) + 1 : null;
-            const isSelected = !!entry;
-            const isDisabled = !isSelected && data.platforms.length >= 2;
-
-            return (
-              <button
-                key={platform}
-                type="button"
-                onClick={() => togglePlatform(platform)}
-                disabled={isDisabled}
-                className={`w-full text-left px-4 py-3 rounded-lg border text-sm transition-all duration-150 ${
-                  isSelected
-                    ? 'border-[#C87A2F] bg-[#FDF1E6] text-[#7a4a10] font-medium'
-                    : isDisabled
-                    ? 'border-gray-100 bg-gray-50 text-gray-300 cursor-not-allowed'
-                    : 'border-gray-200 bg-white text-gray-700 hover:border-gray-300 hover:bg-gray-50'
-                }`}
-              >
-                <span className="flex items-center justify-between gap-2">
-                  <span className="flex items-center gap-2">
-                    <span
-                      className={`flex-shrink-0 w-[15px] h-[15px] rounded-full border-2 flex items-center justify-center ${
-                        isSelected
-                          ? 'border-[#C87A2F] bg-[#C87A2F]'
-                          : 'border-gray-300'
-                      }`}
-                    >
-                      {isSelected && (
-                        <svg width="8" height="7" viewBox="0 0 10 8" fill="none" aria-hidden="true">
-                          <path d="M1 4l2.5 2.5L9 1" stroke="white" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" />
-                        </svg>
-                      )}
-                    </span>
-                    {platform}
-                  </span>
-                  {isSelected && (
-                    <span className="text-[11px] font-bold text-[#C87A2F]">
-                      #{rank}
-                    </span>
-                  )}
-                </span>
-              </button>
-            );
-          })}
+          {COMPETITIVE_STANDING_OPTIONS.map((option) => (
+            <ChoiceCard
+              key={option}
+              label={option}
+              selected={data.competitiveStanding === option}
+              onSelect={() => onChange({ competitiveStanding: option })}
+            />
+          ))}
         </div>
-        {errors.platforms && (
-          <p className="mt-1 text-xs text-red-500">{errors.platforms}</p>
+        {errors.competitiveStanding && (
+          <p className="mt-1 text-xs text-red-500">{errors.competitiveStanding}</p>
         )}
       </fieldset>
 
@@ -154,7 +90,7 @@ export default function Step3Awareness({ data, onChange, onNext, onBack, errors 
         </button>
         <button
           type="submit"
-          className="flex-1 py-[13px] px-6 bg-[#C87A2F] hover:bg-[#A8651E] text-white text-sm font-bold rounded-lg transition-colors"
+          className="flex-1 py-3 px-6 bg-[#C87A2F] hover:bg-[#A8651E] text-white text-sm font-semibold rounded-lg transition-colors"
         >
           Continue →
         </button>
