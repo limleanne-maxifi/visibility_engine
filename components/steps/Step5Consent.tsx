@@ -48,7 +48,7 @@ export default function Step5Consent({ data, onChange, onSubmit, onBack, errors,
 
   return (
     <form onSubmit={handleSubmit} noValidate>
-      <h1 className="text-[17px] font-bold text-gray-900 mb-1 leading-tight">
+      <h1 className="text-2xl text-gray-900 mb-1">
         Almost there, {data.firstName ? toTitleCase(data.firstName) : 'there'} — you&apos;re 10 seconds away
       </h1>
       <p className="text-sm text-gray-500 mb-6">
@@ -83,7 +83,7 @@ export default function Step5Consent({ data, onChange, onSubmit, onBack, errors,
       >
 
         {/* Free section */}
-        <p className="text-[10px] font-bold text-emerald-600 uppercase tracking-[0.1em] mb-2.5 inline-flex items-center gap-1">
+        <p className="text-[10px] font-bold text-emerald-600 uppercase mb-2.5 inline-flex items-center gap-1" style={{ letterSpacing: '0.14em' }}>
           <svg width="10" height="9" viewBox="0 0 10 8" fill="none" aria-hidden="true">
             <path d="M1 4l2.5 2.5L9 1" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" />
           </svg>
@@ -105,7 +105,7 @@ export default function Step5Consent({ data, onChange, onSubmit, onBack, errors,
         <hr className="my-3.5" style={{ border: 'none', borderTop: '1px solid rgba(200,122,47,0.15)' }} />
 
         {/* Locked section */}
-        <p className="text-[10px] font-bold text-[#C87A2F] uppercase tracking-[0.1em] mb-2.5 inline-flex items-center gap-1.5">
+        <p className="text-[10px] font-bold text-[#C87A2F] uppercase mb-2.5 inline-flex items-center gap-1.5" style={{ letterSpacing: '0.14em' }}>
           <svg className="w-2.5 h-3" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
             <path fillRule="evenodd" d="M10 1a4.5 4.5 0 00-4.5 4.5V9H5a2 2 0 00-2 2v6a2 2 0 002 2h10a2 2 0 002-2v-6a2 2 0 00-2-2h-.5V5.5A4.5 4.5 0 0010 1zm3 8V5.5a3 3 0 10-6 0V9h6z" clipRule="evenodd" />
           </svg>
@@ -123,7 +123,7 @@ export default function Step5Consent({ data, onChange, onSubmit, onBack, errors,
             </li>
           ))}
         </ul>
-        <p className="text-[11px] text-gray-400 mt-2.5">
+        <p className="text-xs text-gray-400 mt-2.5">
           Unlock the full report after your free snapshot is delivered.
         </p>
 
@@ -160,21 +160,21 @@ export default function Step5Consent({ data, onChange, onSubmit, onBack, errors,
         <button
           type="button"
           onClick={onBack}
-          className="flex-1 py-[13px] px-6 border border-gray-200 text-gray-600 text-sm font-medium rounded-lg hover:bg-gray-50 transition-colors"
+          className="flex-1 py-3 px-6 border border-gray-200 text-gray-600 text-sm font-medium rounded-lg hover:bg-gray-50 transition-colors"
         >
           ← Back
         </button>
         <button
           type="submit"
           disabled={!data.consent}
-          className="flex-1 py-[13px] px-6 bg-[#C87A2F] hover:bg-[#A8651E] disabled:bg-gray-200 disabled:text-gray-400 disabled:cursor-not-allowed text-white text-sm font-bold rounded-lg transition-colors"
+          className="flex-1 py-3 px-6 bg-[#C87A2F] hover:bg-[#A8651E] disabled:bg-gray-200 disabled:text-gray-400 disabled:cursor-not-allowed text-white text-sm font-semibold rounded-lg transition-colors"
         >
           Generate my free AI Visibility Snapshot →
         </button>
       </div>
 
       {data.email && (
-        <p className="mt-3 text-center text-[11px] text-gray-400">
+        <p className="mt-3 text-center text-xs text-gray-400">
           Your plan will also be emailed to {data.email}
         </p>
       )}
