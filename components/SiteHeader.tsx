@@ -1,6 +1,15 @@
+'use client';
+
 import Image from 'next/image';
+import { usePathname } from 'next/navigation';
 
 export default function SiteHeader() {
+  const pathname = usePathname();
+  // Report-flow pages render their own header — hide the global one to avoid stacking.
+  if (pathname?.startsWith('/r/') || pathname?.startsWith('/report/')) {
+    return null;
+  }
+
   return (
     <header
       className="flex items-center justify-between px-8 h-14 border-b"

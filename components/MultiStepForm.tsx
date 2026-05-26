@@ -25,7 +25,11 @@ function validateStep(step: number, data: FormData): Errors {
     } else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(data.email)) {
       errors.email = 'Please enter a valid email address.';
     }
-    if (!data.websiteUrl.trim()) errors.websiteUrl = 'Website URL is required.';
+    if (!data.websiteUrl.trim()) {
+      errors.websiteUrl = 'Website URL is required.';
+    } else if (!/^(https?:\/\/)?([a-zA-Z0-9-]+\.)+[a-zA-Z]{2,}/.test(data.websiteUrl.trim())) {
+      errors.websiteUrl = 'Please enter a valid website URL (e.g. yoursite.com).';
+    }
   }
 
   if (step === 2) {
@@ -124,7 +128,11 @@ export default function MultiStepForm() {
         throw new Error(data.error ?? 'Something went wrong. Please try again.');
       }
 
-      router.push(`/results/${data.id}`);
+      if (data.reportToken) {
+        router.push(`/r/${data.reportToken}`);
+      } else {
+        router.push(`/results/${data.id}`);
+      }
     } catch (err) {
       setIsLoading(false);
       setSubmitError(
