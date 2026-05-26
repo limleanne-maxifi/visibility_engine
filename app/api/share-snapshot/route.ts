@@ -20,6 +20,7 @@ export async function POST(req: NextRequest) {
   }
 
   const fromEmail = process.env.FROM_EMAIL ?? 'hello@maxifidigital.com';
+  const appUrl = process.env.NEXT_PUBLIC_APP_URL ?? 'https://checkyourvisibility.maxifidigital.com';
 
   const html = `<!DOCTYPE html>
 <html lang="en">
@@ -31,7 +32,7 @@ export async function POST(req: NextRequest) {
 
   <!-- Logo -->
   <tr><td style="padding-bottom:28px;">
-    <img src="https://visibilityview.netlify.app/maxifi-logo-black.png" alt="Maxifi Digital" style="display:block;width:120px;height:auto;" />
+    <img src="${appUrl}/maxifi-logo-black.png" alt="Maxifi Digital" style="display:block;width:120px;height:auto;" />
   </td></tr>
 
   <!-- Label -->
