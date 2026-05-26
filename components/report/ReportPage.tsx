@@ -364,6 +364,7 @@ function S4Positioning({ data }: { data: ReportData['s4Positioning'] }) {
 // ─── Paywall block ────────────────────────────────────────────────────────────
 
 function PaywallBlock({ data }: { data: ReportData }) {
+  const unlockHref = `/report/unlock?token=${data.meta.token}`;
   return (
     <div className="my-8">
       {/* Gold divider */}
@@ -420,19 +421,30 @@ function PaywallBlock({ data }: { data: ReportData }) {
           ))}
         </ul>
 
-        <div className="flex flex-col sm:flex-row gap-3 items-start sm:items-center">
+        <div>
           <a
-            href={data.unlockUrl}
+            href={unlockHref}
             className="inline-flex items-center gap-2 text-sm font-bold text-white px-6 py-3 rounded-lg transition-colors bg-brand-gold hover:bg-brand-gold-hover"
           >
-            Get full report — {data.reportPrice}
+            Full measured report (all 8 sections) — emailed as PDF — {data.reportPrice}
           </a>
-          <a
-            href={data.calendlyUrl}
-            className="text-sm font-medium text-white/55 hover:text-white/80 transition-colors"
-          >
-            Book a walkthrough instead →
-          </a>
+          <p className="mt-2 text-xs text-white/40">
+            Measured across live AI platforms. Delivered to your email within 1 business day.
+          </p>
+          <div className="mt-4 flex flex-col sm:flex-row gap-x-6 gap-y-2">
+            <a
+              href={data.calendlyUrl}
+              className="text-xs text-white/45 hover:text-white/65 transition-colors"
+            >
+              Strategic baseline + consult — SGD $2,500 →
+            </a>
+            <a
+              href={data.calendlyUrl}
+              className="text-xs text-white/45 hover:text-white/65 transition-colors"
+            >
+              Visibility Engine monthly tracking — SGD $4,500/mo →
+            </a>
+          </div>
         </div>
       </div>
     </div>
@@ -728,7 +740,7 @@ function ReportFooter({ data }: { data: ReportData }) {
           </p>
           <p className="text-[11px] text-white/25 mt-0.5">
             Generated {new Date(data.meta.generatedAt).toLocaleDateString('en-GB', { day: 'numeric', month: 'long', year: 'numeric' })}
-            {data.meta.website ? ` · ${data.meta.website}` : ''}
+            {data.meta.website && data.meta.website.trim().length > 1 ? ` · ${data.meta.website}` : ''}
           </p>
         </div>
         <p className="text-[11px] text-white/25">
@@ -752,6 +764,7 @@ function ReportFooter({ data }: { data: ReportData }) {
 export default function ReportPage({ data }: { data: ReportData }) {
   const { meta, score } = data;
   const paid = meta.paid;
+  const unlockHref = `/report/unlock?token=${meta.token}`;
 
   return (
     <div style={{ background: 'var(--navy-sub)', minHeight: '100vh' }}>
@@ -785,7 +798,7 @@ export default function ReportPage({ data }: { data: ReportData }) {
         </span>
         {!paid && (
           <a
-            href={data.unlockUrl}
+            href={unlockHref}
             className="text-[11px] font-bold text-white px-3 py-1.5 rounded-lg transition-colors hidden sm:inline-block bg-brand-gold hover:bg-brand-gold-hover"
           >
             Get full report →
@@ -813,8 +826,8 @@ export default function ReportPage({ data }: { data: ReportData }) {
                 {meta.entityName} — AI Visibility Assessment
               </h1>
               <p className="text-sm sm:text-base text-white/60 mb-4 leading-relaxed">
-                {meta.occupation} &nbsp;·&nbsp; {meta.industry}
-                {meta.website ? ` · ${meta.website}` : ''}
+                {meta.occupation}{meta.industry ? <>&nbsp;·&nbsp;{meta.industry}</> : null}
+                {meta.website && meta.website.trim().length > 1 ? ` · ${meta.website}` : ''}
               </p>
               <p className="text-sm text-white/55 leading-relaxed max-w-lg">
                 This report analyses {meta.entityName}&rsquo;s current AI citation position and
@@ -863,7 +876,7 @@ export default function ReportPage({ data }: { data: ReportData }) {
           <LockedSection
             sectionNumber={5}
             title="Competitor Displacement Analysis"
-            unlockUrl={data.unlockUrl}
+            unlockUrl={unlockHref}
             reportPrice={data.reportPrice}
             previewRows={
               <PlaceholderRows rows={[
@@ -883,7 +896,7 @@ export default function ReportPage({ data }: { data: ReportData }) {
           <LockedSection
             sectionNumber={6}
             title="Positioning Gap Report"
-            unlockUrl={data.unlockUrl}
+            unlockUrl={unlockHref}
             reportPrice={data.reportPrice}
             previewRows={
               <PlaceholderRows rows={[
@@ -903,7 +916,7 @@ export default function ReportPage({ data }: { data: ReportData }) {
           <LockedSection
             sectionNumber={7}
             title="Target Query Coverage"
-            unlockUrl={data.unlockUrl}
+            unlockUrl={unlockHref}
             reportPrice={data.reportPrice}
             previewRows={
               <PlaceholderRows rows={[
@@ -924,7 +937,7 @@ export default function ReportPage({ data }: { data: ReportData }) {
           <LockedSection
             sectionNumber={8}
             title="60-Day Action Queue"
-            unlockUrl={data.unlockUrl}
+            unlockUrl={unlockHref}
             reportPrice={data.reportPrice}
             previewRows={
               <PlaceholderRows rows={[

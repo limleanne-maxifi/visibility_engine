@@ -8,6 +8,7 @@ import { sendUserPlanEmail, sendInternalNotification } from '@/lib/email';
 import { buildTeaserReport } from '@/lib/buildTeaserReport';
 import type { FormData } from '@/lib/types';
 import type { GenerateResponse, GenerateErrorResponse } from '@/lib/planTypes';
+import { getReportPrice } from '@/lib/pricing';
 
 function getAnthropicClient() {
   return new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY });
@@ -100,7 +101,7 @@ export async function POST(
   const reportUrl   = `${baseUrl}/r/${reportToken}`;
   const unlockUrl   = process.env.REPORT_CHECKOUT_URL ?? process.env.CALENDLY_URL ?? `${baseUrl}/report/unlock`;
   const calendlyUrl = process.env.CALENDLY_URL ?? 'https://lunacal.ai/maxifidigital/';
-  const reportPrice = process.env.REPORT_PRICE ?? '$249';
+  const reportPrice = process.env.REPORT_PRICE || getReportPrice();
 
   const teaserReport = buildTeaserReport(
     formData,

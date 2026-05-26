@@ -4,6 +4,7 @@ import { mockReportFree, mockReportPaid } from '@/data/fixtures/report_mock';
 import { getLeadByToken } from '@/lib/supabase';
 import { buildReportFromLead } from '@/lib/buildTeaserReport';
 import type { ReportData } from '@/lib/reportTypes';
+import { getReportPrice } from '@/lib/pricing';
 
 interface Props {
   params: Promise<{ token: string }>;
@@ -14,7 +15,7 @@ function getEnv() {
   const baseUrl     = process.env.NEXT_PUBLIC_BASE_URL ?? 'https://visibilityview.netlify.app';
   const unlockBase  = `${baseUrl}/report/unlock`;
   const calendlyUrl = process.env.CALENDLY_URL ?? 'https://lunacal.ai/maxifidigital/';
-  const reportPrice = process.env.REPORT_PRICE ?? 'SGD $2,500';
+  const reportPrice = process.env.REPORT_PRICE || getReportPrice();
   return { unlockBase, calendlyUrl, reportPrice };
 }
 
@@ -41,6 +42,8 @@ async function getReport(token: string): Promise<ReportData | null> {
     // Override paid flag from DB — it's the authoritative source.
     const reportData = lead.report_data as ReportData;
     reportData.meta.paid = true;
+    // Apply current env price in case stored value is empty (stale or missing).
+    reportData.reportPrice = reportData.reportPrice || reportPrice;
     return reportData;
   }
 
