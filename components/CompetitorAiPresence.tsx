@@ -52,7 +52,7 @@ export default function CompetitorAiPresence({ value, onChange }: Props) {
             onClick={() => onChange(opt.value)}
             className={`w-full text-left px-4 py-3 rounded-lg border text-sm transition-all duration-150 ${
               value === opt.value
-                ? 'border-[#534AB7] bg-[#EEEDFE] text-[#3C3489] font-medium'
+                ? 'border-brand-gold bg-brand-gold-pale text-brand-gold-text font-medium'
                 : 'border-gray-200 bg-white text-gray-700 hover:border-gray-300 hover:bg-gray-50'
             }`}
           >
@@ -60,7 +60,7 @@ export default function CompetitorAiPresence({ value, onChange }: Props) {
               <span
                 className={`flex-shrink-0 w-4 h-4 rounded-full border-2 mt-0.5 flex items-center justify-center ${
                   value === opt.value
-                    ? 'border-[#534AB7] bg-[#534AB7]'
+                    ? 'border-brand-gold bg-brand-gold'
                     : 'border-gray-300'
                 }`}
               >
@@ -68,7 +68,7 @@ export default function CompetitorAiPresence({ value, onChange }: Props) {
               </span>
               <div className="flex-1">
                 <div className="font-medium">{opt.label}</div>
-                <div className={`text-xs ${value === opt.value ? 'text-[#3C3489]' : 'text-gray-500'}`}>
+                <div className={`text-xs ${value === opt.value ? 'text-brand-gold-text' : 'text-gray-500'}`}>
                   {opt.description}
                 </div>
               </div>

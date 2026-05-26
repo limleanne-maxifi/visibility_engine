@@ -206,7 +206,7 @@ export default function Step4Goals({ data, onChange, onNext, onBack, errors, ind
           onChange={(e) => onChange({ competitors: e.target.value })}
           placeholder="Your closest competitors by name"
           autoComplete="new-password"
-          className="w-full px-4 py-3 rounded-lg border border-gray-200 text-sm outline-none focus:border-[#534AB7] transition-colors"
+          className="w-full px-4 py-3 rounded-lg border border-gray-200 text-sm outline-none focus:border-brand-gold transition-colors"
         />
         <p className="mt-1 text-xs text-gray-400">
           Optional — add competitors to unlock side-by-side displacement analysis in your plan.
@@ -256,7 +256,7 @@ export default function Step4Goals({ data, onChange, onNext, onBack, errors, ind
             onChange={(e) => onChange({ targetQueries: e.target.value })}
             placeholder="Your target queries…"
             autoComplete="new-password"
-            className="w-full px-4 py-3 rounded-lg border border-gray-200 text-sm outline-none focus:border-[#534AB7] transition-colors resize-none"
+            className="w-full px-4 py-3 rounded-lg border border-gray-200 text-sm outline-none focus:border-brand-gold transition-colors resize-none"
           />
           <p
             className={`mt-1 text-xs text-gray-400 italic transition-opacity duration-200 ${
@@ -278,7 +278,7 @@ export default function Step4Goals({ data, onChange, onNext, onBack, errors, ind
         </button>
         <button
           type="submit"
-          className="flex-1 py-3 px-6 bg-[#534AB7] hover:bg-[#4640a0] text-white text-sm font-semibold rounded-lg transition-colors"
+          className="flex-1 py-3 px-6 bg-brand-gold hover:bg-brand-gold-hover text-white text-sm font-semibold rounded-lg transition-colors"
         >
           Continue →
         </button>
