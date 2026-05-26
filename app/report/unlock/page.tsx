@@ -1,4 +1,5 @@
 import type { Metadata } from 'next';
+import Image from 'next/image';
 import { getLeadByToken } from '@/lib/supabase';
 import {
   getReportPrice,
@@ -50,7 +51,16 @@ export default async function UnlockPage({ searchParams }: Props) {
       <div className="topbar">
         <div className="wrap">
           <div className="row">
-            <div className="brand">Maxifi <span>Digital</span></div>
+            <div className="brand">
+              <Image
+                src="/maxifi-logo-white.png"
+                alt="Maxifi Digital"
+                height={24}
+                width={120}
+                priority
+                style={{ height: 24, width: 'auto' }}
+              />
+            </div>
             <div className="topline">AI Visibility Report</div>
           </div>
         </div>
@@ -296,7 +306,15 @@ export default async function UnlockPage({ searchParams }: Props) {
 
       <footer>
         <div className="wrap">
-          <div className="brand">Maxifi <span style={{ color: 'var(--unlock-gold)' }}>Digital</span></div>
+          <div className="brand">
+            <Image
+              src="/maxifi-logo-white.png"
+              alt="Maxifi Digital"
+              height={20}
+              width={100}
+              style={{ height: 20, width: 'auto' }}
+            />
+          </div>
           <div>AI Visibility Reports · Singapore · Tested. Measured. Honest.</div>
         </div>
       </footer>
