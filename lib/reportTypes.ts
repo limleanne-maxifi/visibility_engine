@@ -65,6 +65,9 @@ export type FailureModeKey =
   | 'competitor-displaced'
   | 'cited-inaccurately'
   | 'cited-stale'
+  | 'low-query-coverage'     // Signal 1 accurate, Signal 3 confirms brand-only/category gaps
+  | 'platform-inconsistent'  // Signal 1 accurate, Signal 4 confirms platform variance
+  | 'well-positioned'        // Signal 1 accurate, no S2/S3/S4 confirmed weakness
   | 'untested'
 
 export interface DiagnosisSection {
