@@ -27,6 +27,9 @@ const FAILURE_MODE_STYLES: Record<FailureModeKey, { bg: string; text: string }> 
   'competitor-displaced':  { bg: '#FFF7ED', text: '#9A3412' },
   'cited-inaccurately':    { bg: '#FFFBEB', text: '#92400E' },
   'cited-stale':           { bg: '#FFFBEB', text: '#92400E' },
+  'low-query-coverage':    { bg: '#FFFBEB', text: '#92400E' },
+  'platform-inconsistent': { bg: '#FFF7ED', text: '#9A3412' },
+  'well-positioned':       { bg: '#ECFDF5', text: '#065F46' },
   'untested':              { bg: '#F9FAFB', text: '#6B7280' },
 };
 
@@ -747,6 +750,10 @@ function ReportFooter({ data }: { data: ReportData }) {
           Maxifi Digital · Singapore ·{' '}
           <a href="mailto:hello@maxifidigital.com" className="underline hover:text-white/40">
             hello@maxifidigital.com
+          </a>
+          {' · '}
+          <a href="/methodology" className="underline hover:text-white/40">
+            Methodology →
           </a>
         </p>
       </div>

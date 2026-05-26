@@ -8,10 +8,11 @@ import ProgressBar from '@/components/ProgressBar';
 import Step1Identity from '@/components/steps/Step1Identity';
 import Step2Context from '@/components/steps/Step2Context';
 import Step3Awareness from '@/components/steps/Step3Awareness';
-import Step4Goals from '@/components/steps/Step4Goals';
-import Step5Consent from '@/components/steps/Step5Consent';
+import Step4Coverage from '@/components/steps/Step4Coverage';
+import Step5Goals from '@/components/steps/Step5Goals';
+import Step6Consent from '@/components/steps/Step6Consent';
 
-const TOTAL_STEPS = 5;
+const TOTAL_STEPS = 6;
 
 type Errors = Partial<Record<keyof FormData, string>>;
 
@@ -40,14 +41,20 @@ function validateStep(step: number, data: FormData): Errors {
 
   if (step === 3) {
     if (!data.aiPresence) errors.aiPresence = 'Please select an option.';
-    if (data.platforms.length === 0) errors.platforms = 'Please select at least one platform.';
+    if (!data.competitiveStanding) errors.competitiveStanding = 'Please select an option.';
   }
 
   if (step === 4) {
-    if (!data.visibilityGap) errors.visibilityGap = 'Please select your visibility gap.';
+    if (!data.queryCoverage) errors.queryCoverage = 'Please select an option.';
+    if (!data.platformConsistency) errors.platformConsistency = 'Please select an option.';
+    if (data.platforms.length === 0) errors.platforms = 'Please select at least one platform.';
   }
 
   if (step === 5) {
+    if (!data.visibilityGap) errors.visibilityGap = 'Please select your visibility gap.';
+  }
+
+  if (step === 6) {
     if (!data.consent) errors.consent = 'Please tick the box to continue.';
   }
 
@@ -101,7 +108,7 @@ export default function MultiStepForm() {
   };
 
   const handleSubmit = async () => {
-    const stepErrors = validateStep(5, formData);
+    const stepErrors = validateStep(6, formData);
     if (Object.keys(stepErrors).length > 0) {
       setErrors(stepErrors);
       return;
@@ -195,7 +202,16 @@ export default function MultiStepForm() {
             />
           )}
           {step === 4 && (
-            <Step4Goals
+            <Step4Coverage
+              data={formData}
+              onChange={handleChange}
+              onNext={goNext}
+              onBack={goBack}
+              errors={errors}
+            />
+          )}
+          {step === 5 && (
+            <Step5Goals
               data={formData}
               onChange={handleChange}
               onNext={goNext}
@@ -204,8 +220,8 @@ export default function MultiStepForm() {
               industry={formData.industry}
             />
           )}
-          {step === 5 && (
-            <Step5Consent
+          {step === 6 && (
+            <Step6Consent
               data={formData}
               onChange={handleChange}
               onSubmit={handleSubmit}

@@ -3,7 +3,7 @@
 // Language discipline: free sections use "our analysis suggests", "likely",
 // "based on what you reported" — never measurement language.
 
-import type { FormData, AiPresence, VisibilityGap } from '@/lib/types';
+import type { FormData, AiPresence, VisibilityGap, CompetitiveStanding, QueryCoverage, PlatformConsistency } from '@/lib/types';
 import type { AeoLeadRow } from '@/lib/supabase';
 import type {
   ReportData,
@@ -232,19 +232,102 @@ const FAILURE_MODES: Record<string, FailureModeDef> = {
     likelyImpact: (e, ind) =>
       `Without a tested baseline, any buyer using AI to research ${ind} vendors could be landing on competitors rather than ${e} — and you would have no way to know.`,
   },
+  'low-query-coverage': {
+    key: 'low-query-coverage',
+    label: 'Limited query coverage',
+    severity: 'medium',
+    headline: (e) => `Likely failure mode: ${e} cited only on a narrow set of queries`,
+    explanation: (e, ind) =>
+      `Based on what you reported, our analysis suggests ${e} is being cited accurately when AI tools surface it — but only on a narrow band of queries (often branded searches), not the broader category and topic questions buyers in ${ind} ask first. Branded visibility alone does not capture the discovery moments where new buyer pipeline begins.`,
+    rootCauses: (e, pos, _comp) => [
+      `${e}'s website likely covers your offering well for buyers who already know you, but lacks content directly answering the category-level questions buyers ask AI tools first${pos ? ` — for example queries adjacent to "${pos}"` : ''}.`,
+      `Third-party sources that AI engines weight (review platforms, analyst write-ups, industry directories) may describe ${e} in terms of your brand name rather than the category it serves — meaning category searches surface competitors instead.`,
+      `Structured data on your website (Organisation schema, category and FAQ schema) may be brand-anchored rather than category-anchored, narrowing the queries AI engines associate ${e} with.`,
+    ],
+    likelyImpact: (e, ind) =>
+      `Buyers in ${ind} who already know ${e} can find you via AI — but new buyers asking category questions are seeing competitors. This caps AI's pipeline contribution to existing brand awareness rather than expanding it.`,
+  },
+  'platform-inconsistent': {
+    key: 'platform-inconsistent',
+    label: 'Platform-inconsistent visibility',
+    severity: 'medium',
+    headline: (e) => `Likely failure mode: ${e}'s visibility varies significantly across AI platforms`,
+    explanation: (e, ind) =>
+      `Based on what you reported, our analysis suggests ${e} appears reliably on some AI platforms but not others. Inconsistent presence means a significant share of buyers in ${ind} may never encounter your brand during AI-assisted research, depending on which tool they default to.`,
+    rootCauses: (e, pos, _comp) => [
+      `Different AI platforms weight different source types. If your strongest citation signals are concentrated in one source category (e.g. mostly review platforms, or mostly your own website), platforms that weight other sources less heavily will surface ${e} less reliably.`,
+      `Google AI Overviews and Microsoft Copilot lean heavily on search-index signals; ChatGPT and Claude draw more on training-data corpora. ${e}'s presence likely tilts toward one source class${pos ? ` around your positioning "${pos}"` : ''}.`,
+      `Cross-platform consistency typically improves as the number and diversity of citation sources increases — third-party reviews, analyst pieces, structured directory listings, and on-site schema all working together.`,
+    ],
+    likelyImpact: (e, ind) =>
+      `Buyers in ${ind} who happen to use the AI platform where ${e} is visible will find you; those who default to a different platform will see only competitors. This makes AI-driven pipeline noisy and platform-dependent rather than reliable.`,
+  },
+  'well-positioned': {
+    key: 'well-positioned',
+    label: 'Well-positioned across self-reported signals',
+    severity: 'low',
+    headline: (e) => `${e} is well-positioned across the four self-reported visibility signals`,
+    explanation: (e, ind) =>
+      `Based on what you reported, our analysis suggests ${e} is being cited accurately, appears competitively in category responses, covers a reasonable breadth of queries, and shows consistency across AI platforms. This is a strong self-reported baseline for ${ind}. The remaining opportunity is in the engine-measured detail — which exact queries you win, which you don't, and which competitors take the queries you miss.`,
+    rootCauses: (e, _pos, _comp) => [
+      `Self-reported signals suggest no obvious structural gap to fix first — the typical levers (content structure, third-party citation density, schema) are already working in your favour.`,
+      `The most useful next step is to move from self-report to direct measurement: identify exactly which queries ${e} wins, which it misses, and which competitors take the queries you don't.`,
+      `Maintaining a strong baseline is mostly about cadence — refreshing third-party citations, keeping category and FAQ schema current, and monitoring shifts as AI platforms update their training data and retrieval signals.`,
+    ],
+    likelyImpact: (e, ind) =>
+      `${e} is likely capturing meaningful AI-driven pipeline today in ${ind}. The risk is drift — AI engines update citation patterns regularly, and strong positions can erode without active monitoring.`,
+  },
 };
 
-function getFailureMode(aiPresence: string, visibilityGap: string): FailureModeDef {
+// Derive the failure mode from the 4 collected signals. Section 2's diagnosis
+// must stay coherent with Section 1's cited/not-cited assessment, so the
+// decision is driven by the same signals, in priority order:
+// S1 explicit verdicts first (e.g. "wasn't mentioned" → not-cited), then
+// S2 → S3 → S4 by signal weight. "Haven't checked/tested" answers never
+// trigger a failure mode by themselves — they reflect unknown data.
+function getFailureMode(
+  aiPresence: string,
+  competitiveStanding: string,
+  queryCoverage: string,
+  platformConsistency: string,
+): FailureModeDef {
+  // 1. Untested baseline
   if (aiPresence === "No, I haven't tried this yet") return FAILURE_MODES['untested'];
-  if (aiPresence === 'Yes — competitors were cited instead of me') return FAILURE_MODES['competitor-displaced'];
-  if (aiPresence === 'Yes — but details about me were wrong') return FAILURE_MODES['cited-inaccurately'];
-  if (aiPresence === 'Yes — but old/outdated info appeared') return FAILURE_MODES['cited-stale'];
-  if (aiPresence === "Yes — but I wasn't mentioned at all") return FAILURE_MODES['not-cited'];
 
-  // Fallback: infer from visibility gap
-  if (visibilityGap === 'competitors-cited') return FAILURE_MODES['competitor-displaced'];
-  if (visibilityGap === 'inaccurate-info')   return FAILURE_MODES['cited-inaccurately'];
-  return FAILURE_MODES['not-cited'];
+  // 2. Signal 1 explicit verdicts — each maps to a definitive mode
+  if (aiPresence === "Yes — but I wasn't mentioned at all")         return FAILURE_MODES['not-cited'];
+  if (aiPresence === 'Yes — but details about me were wrong')       return FAILURE_MODES['cited-inaccurately'];
+  if (aiPresence === 'Yes — but old/outdated info appeared')        return FAILURE_MODES['cited-stale'];
+  if (aiPresence === 'Yes — competitors were cited instead of me')  return FAILURE_MODES['competitor-displaced'];
+
+  // 3. Defensive: anything other than the "accurate" answer at this point is malformed
+  //    (post-validation should never happen) — treat as untested rather than risk a wrong diagnosis.
+  if (aiPresence !== 'Yes — and the results were accurate') return FAILURE_MODES['untested'];
+
+  // 4. Signal 1 = "accurate" → consult S2/S3/S4 for the WORST CONFIRMED problem.
+  //    Priority: S2 (weight 30) > S3 (25) > S4 (15). "Haven't checked/tested" answers
+  //    do not trigger a mode — they reflect lack of data, not a discovered problem.
+
+  if (
+    competitiveStanding === 'Competitors consistently appear, I rarely do' ||
+    competitiveStanding === 'Competitors occasionally appear ahead of me'
+  ) {
+    return FAILURE_MODES['competitor-displaced'];
+  }
+
+  if (
+    queryCoverage === 'I only appear when my exact brand/company name is searched' ||
+    queryCoverage === 'I appear for some queries but miss many category searches'
+  ) {
+    return FAILURE_MODES['low-query-coverage'];
+  }
+
+  if (platformConsistency === 'Yes — but results vary significantly by platform') {
+    return FAILURE_MODES['platform-inconsistent'];
+  }
+
+  // 5. No confirmed weakness → well-positioned
+  return FAILURE_MODES['well-positioned'];
 }
 
 function buildS2(formData: FormData, entity: string): DiagnosisSection {
@@ -252,7 +335,12 @@ function buildS2(formData: FormData, entity: string): DiagnosisSection {
   // Cap each competitor name and positioning text to keep sentences readable
   const competitors    = rawCompetitors.map((c) => c.slice(0, 60));
   const positioning    = (formData.positioning ?? '').slice(0, 200);
-  const mode = getFailureMode(formData.aiPresence, formData.visibilityGap ?? '');
+  const mode = getFailureMode(
+    formData.aiPresence,
+    formData.competitiveStanding,
+    formData.queryCoverage,
+    formData.platformConsistency,
+  );
 
   return {
     failureMode:  mode.key,
@@ -481,10 +569,17 @@ function buildS4(formData: FormData, entity: string): PositioningAssessmentSecti
 // ─── Score ────────────────────────────────────────────────────────────────────
 
 function buildScore(formData: FormData): ScoreData {
-  const competitors = getAllCompetitors(formData.competitors);
-  const score       = getVisibilityScore(formData.aiPresence, competitors);
-  const benchAvg    = getIndustryBenchmark(formData.industry);
-  const band        = scoreToBand(score);
+  // 4-signal scoring: each signal is a separate form answer (see lib/scoring.ts).
+  // Competitors list is no longer an input to the score itself — it's used
+  // elsewhere in the report (S2 root causes, etc.).
+  const score    = getVisibilityScore(
+    formData.aiPresence,
+    formData.competitiveStanding,
+    formData.queryCoverage,
+    formData.platformConsistency,
+  );
+  const benchAvg = getIndustryBenchmark(formData.industry);
+  const band     = scoreToBand(score);
 
   return {
     score,
@@ -514,7 +609,10 @@ function leadToFormData(lead: AeoLeadRow): FormData {
     occupation:    lead.occupation as FormData['occupation'],
     industry:      lead.industry,
     company:       lead.company_name ?? '',
-    aiPresence:    lead.awareness as AiPresence,
+    aiPresence:          lead.awareness as AiPresence,
+    competitiveStanding: (lead.competitive_standing ?? '') as CompetitiveStanding,
+    queryCoverage:       (lead.query_coverage ?? '') as QueryCoverage,
+    platformConsistency: (lead.platform_consistency ?? '') as PlatformConsistency,
     platforms,
     visibilityGap: (lead.outcome ?? '') as VisibilityGap,
     challenges:    lead.challenge ? lead.challenge.split('; ').filter(Boolean) : [],
@@ -544,7 +642,22 @@ export function buildReportFromLead(
 ): ReportData {
   const formData = leadToFormData(lead);
   const token    = lead.report_token ?? lead.id;
-  return buildTeaserReport(formData, token, reportPrice, unlockUrl, calendlyUrl);
+
+  // Pre-migration safeguard: leads inserted before the 4-signal model migration
+  // have NULL competitive_standing/query_coverage/platform_consistency. Running
+  // them through the live 4-signal score would collapse to ~Signal-1 alone
+  // (max 27/100). For those rows, prefer the score stored in report_data
+  // (computed at insert time under the model active then). New rows with all
+  // three signals populated use live computation as normal.
+  const hasNewSignals = !!(
+    lead.competitive_standing &&
+    lead.query_coverage &&
+    lead.platform_consistency
+  );
+  const stored = lead.report_data as ReportData | null;
+  const scoreOverride = !hasNewSignals && stored?.score ? stored.score : undefined;
+
+  return buildTeaserReport(formData, token, reportPrice, unlockUrl, calendlyUrl, scoreOverride);
 }
 
 // ─── Main export ──────────────────────────────────────────────────────────────
@@ -555,6 +668,7 @@ export function buildTeaserReport(
   reportPrice: string,
   unlockUrl: string,
   calendlyUrl: string,
+  scoreOverride?: ScoreData,
 ): ReportData {
   const entity   = formData.company?.trim() || formData.firstName;
   const meta: ReportMeta = {
@@ -569,7 +683,7 @@ export function buildTeaserReport(
 
   return {
     meta,
-    score:        buildScore(formData),
+    score:        scoreOverride ?? buildScore(formData),
     s1Visibility: buildS1(formData, entity),
     s2Diagnosis:  buildS2(formData, entity),
     s3Platforms:  buildS3(formData),

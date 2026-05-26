@@ -45,7 +45,12 @@ export async function sendUserPlanEmail(lead: AeoLeadRow, reportUrl?: string): P
   // with the online /r/[token] report. Fall back to live computation for rows
   // that predate Stage 3.
   const reportData   = lead.report_data as ReportData | null;
-  const score        = reportData?.score.score        ?? getVisibilityScore(lead.awareness, competitors);
+  const score        = reportData?.score.score        ?? getVisibilityScore(
+    lead.awareness,
+    lead.competitive_standing ?? '',
+    lead.query_coverage ?? '',
+    lead.platform_consistency ?? '',
+  );
   const band         = reportData?.score.band         ?? null;
   const benchAvg     = reportData?.score.benchmarkAvg ?? getIndustryBenchmark(lead.industry);
   const diagHeadline = reportData?.s2Diagnosis.headline   ?? null;

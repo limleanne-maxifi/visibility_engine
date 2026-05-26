@@ -29,7 +29,7 @@ const LOCKED_SECTIONS = [
   '60-day prioritised action queue',
 ];
 
-export default function Step5Consent({ data, onChange, onSubmit, onBack, errors, isLoading }: Props) {
+export default function Step6Consent({ data, onChange, onSubmit, onBack, errors, isLoading }: Props) {
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     onSubmit();

@@ -382,7 +382,12 @@ export default async function ResultsPage({ params }: Props) {
   const contactEmail = process.env.MAXIFI_CONTACT_EMAIL ?? 'letsgetstarted@maxifidigital.com';
 
   const competitors  = getAllCompetitors(lead.competitors);
-  const score        = getVisibilityScore(lead.awareness, competitors);
+  const score        = getVisibilityScore(
+    lead.awareness,
+    lead.competitive_standing ?? '',
+    lead.query_coverage ?? '',
+    lead.platform_consistency ?? '',
+  );
   const benchAvg     = getIndustryBenchmark(lead.industry);
   const platforms    = getPlatformStatuses(lead.awareness, lead.platform, lead.platform_other);
 

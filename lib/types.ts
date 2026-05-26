@@ -140,6 +140,31 @@ export type AiPresence =
   | 'Yes — but old/outdated info appeared'
   | '';
 
+// 4-signal model: Signal 2 — Competitive displacement (30%)
+export type CompetitiveStanding =
+  | "I appear prominently — competitors don't displace me"
+  | 'I appear alongside competitors roughly equally'
+  | 'Competitors occasionally appear ahead of me'
+  | 'Competitors consistently appear, I rarely do'
+  | "I haven't checked this"
+  | '';
+
+// 4-signal model: Signal 3 — Query coverage (25%)
+export type QueryCoverage =
+  | "I appear for most category and topic queries I've tested"
+  | 'I appear for some queries but miss many category searches'
+  | 'I only appear when my exact brand/company name is searched'
+  | "I haven't tested multiple query types"
+  | '';
+
+// 4-signal model: Signal 4 — Cross-platform consistency (15%)
+export type PlatformConsistency =
+  | 'Yes — I appear consistently across all major AI platforms'
+  | 'Yes — but results vary significantly by platform'
+  | "I've only checked one platform"
+  | "No — I haven't tested across platforms"
+  | '';
+
 export type AeoOutcome =
   | "I'm not being cited at all"
   | 'My competitors are cited instead of me'
@@ -168,8 +193,11 @@ export interface FormData {
   industry: string;
   company: string;
 
-  // Step 3 — AEO Awareness
-  aiPresence: AiPresence;
+  // Step 3 — AEO Awareness (4-signal model)
+  aiPresence: AiPresence;                    // Signal 1 — Platform presence (30%)
+  competitiveStanding: CompetitiveStanding;  // Signal 2 — Competitive displacement (30%)
+  queryCoverage: QueryCoverage;              // Signal 3 — Query coverage (25%)
+  platformConsistency: PlatformConsistency;  // Signal 4 — Cross-platform consistency (15%)
   platforms: Platform[];
 
   // Step 4 — Visibility Gap & Goals
@@ -221,6 +249,9 @@ export const initialFormData: FormData = {
   industry: '',
   company: '',
   aiPresence: '',
+  competitiveStanding: '',
+  queryCoverage: '',
+  platformConsistency: '',
   platforms: [],
   challenges: [],
   competitors: '',

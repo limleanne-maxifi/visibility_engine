@@ -112,7 +112,7 @@ const TARGET_QUERIES_EXAMPLES: Record<IndustryFamily, [string, string, string]> 
 
 // ─── Component ────────────────────────────────────────────────────────────────
 
-export default function Step4Goals({ data, onChange, onNext, onBack, errors, industry }: Props) {
+export default function Step5Goals({ data, onChange, onNext, onBack, errors, industry }: Props) {
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     onNext();
