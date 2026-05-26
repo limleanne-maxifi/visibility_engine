@@ -83,7 +83,7 @@ export default function LockedSection({
               href={unlockUrl}
               className="inline-flex items-center gap-2 text-sm font-bold text-white px-5 py-2.5 rounded-lg transition-colors bg-brand-gold hover:bg-brand-gold-hover"
             >
-              Unlock full report — {reportPrice}
+              Full measured report (all 8 sections) — emailed as PDF — {reportPrice}
             </a>
           </div>
         </div>
