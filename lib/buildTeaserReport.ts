@@ -309,20 +309,20 @@ function getFailureMode(
   //    do not trigger a mode — they reflect lack of data, not a discovered problem.
 
   if (
-    competitiveStanding === 'Competitors consistently appear, I rarely do' ||
-    competitiveStanding === 'Competitors occasionally appear ahead of me'
+    competitiveStanding === 'Competitors show up, I rarely do' ||
+    competitiveStanding === 'Competitors often show up ahead of me'
   ) {
     return FAILURE_MODES['competitor-displaced'];
   }
 
   if (
-    queryCoverage === 'I only appear when my exact brand/company name is searched' ||
-    queryCoverage === 'I appear for some queries but miss many category searches'
+    queryCoverage === 'Only when someone searches my exact name' ||
+    queryCoverage === 'Sometimes — for a few topics, but not most'
   ) {
     return FAILURE_MODES['low-query-coverage'];
   }
 
-  if (platformConsistency === 'Yes — but results vary significantly by platform') {
+  if (platformConsistency === 'It varies a lot depending on the tool') {
     return FAILURE_MODES['platform-inconsistent'];
   }
 

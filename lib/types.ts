@@ -142,27 +142,27 @@ export type AiPresence =
 
 // 4-signal model: Signal 2 — Competitive displacement (30%)
 export type CompetitiveStanding =
-  | "I appear prominently — competitors don't displace me"
-  | 'I appear alongside competitors roughly equally'
-  | 'Competitors occasionally appear ahead of me'
-  | 'Competitors consistently appear, I rarely do'
-  | "I haven't checked this"
+  | 'I usually show up — and ahead of competitors'
+  | 'I show up about as often as competitors'
+  | 'Competitors often show up ahead of me'
+  | 'Competitors show up, I rarely do'
+  | "Not sure — I haven't looked into this"
   | '';
 
 // 4-signal model: Signal 3 — Query coverage (25%)
 export type QueryCoverage =
-  | "I appear for most category and topic queries I've tested"
-  | 'I appear for some queries but miss many category searches'
-  | 'I only appear when my exact brand/company name is searched'
-  | "I haven't tested multiple query types"
+  | 'Yes — for most things people ask about in my space'
+  | 'Sometimes — for a few topics, but not most'
+  | 'Only when someone searches my exact name'
+  | "Not sure — I haven't looked into this"
   | '';
 
 // 4-signal model: Signal 4 — Cross-platform consistency (15%)
 export type PlatformConsistency =
-  | 'Yes — I appear consistently across all major AI platforms'
-  | 'Yes — but results vary significantly by platform'
-  | "I've only checked one platform"
-  | "No — I haven't tested across platforms"
+  | "Yes — pretty consistently across the ones I've tried"
+  | 'It varies a lot depending on the tool'
+  | "I've only really looked at one"
+  | "Not sure — I haven't looked into this"
   | '';
 
 export type AeoOutcome =

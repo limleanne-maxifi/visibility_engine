@@ -12,17 +12,17 @@ interface Props {
 }
 
 const QUERY_COVERAGE_OPTIONS: QueryCoverage[] = [
-  "I appear for most category and topic queries I've tested",
-  'I appear for some queries but miss many category searches',
-  'I only appear when my exact brand/company name is searched',
-  "I haven't tested multiple query types",
+  'Yes — for most things people ask about in my space',
+  'Sometimes — for a few topics, but not most',
+  'Only when someone searches my exact name',
+  "Not sure — I haven't looked into this",
 ];
 
 const PLATFORM_CONSISTENCY_OPTIONS: PlatformConsistency[] = [
-  'Yes — I appear consistently across all major AI platforms',
-  'Yes — but results vary significantly by platform',
-  "I've only checked one platform",
-  "No — I haven't tested across platforms",
+  "Yes — pretty consistently across the ones I've tried",
+  'It varies a lot depending on the tool',
+  "I've only really looked at one",
+  "Not sure — I haven't looked into this",
 ];
 
 const PLATFORM_OPTIONS = [
@@ -68,10 +68,11 @@ export default function Step4Coverage({ data, onChange, onNext, onBack, errors }
 
       {/* Signal 3 — Query coverage */}
       <fieldset className="mb-6">
-        <legend className="text-[17px] text-gray-700 mb-3">
-          Beyond your brand name, how broadly do you appear for category or topic queries?{' '}
+        <legend className="text-[17px] text-gray-700 mb-1">
+          Beyond your own name, do you come up when people ask about your category?{' '}
           <span className="text-red-500">*</span>
         </legend>
+        <p className="text-xs text-gray-400 mb-3">Best estimate is fine — your full report measures this precisely.</p>
         <div className="space-y-2">
           {QUERY_COVERAGE_OPTIONS.map((option) => (
             <ChoiceCard
@@ -89,10 +90,11 @@ export default function Step4Coverage({ data, onChange, onNext, onBack, errors }
 
       {/* Signal 4 — Cross-platform consistency */}
       <fieldset className="mb-6">
-        <legend className="text-[17px] text-gray-700 mb-3">
-          Have you checked your visibility across multiple AI platforms?{' '}
+        <legend className="text-[17px] text-gray-700 mb-1">
+          Do you show up consistently across different AI tools?{' '}
           <span className="text-red-500">*</span>
         </legend>
+        <p className="text-xs text-gray-400 mb-3">Best estimate is fine — your full report measures this precisely.</p>
         <div className="space-y-2">
           {PLATFORM_CONSISTENCY_OPTIONS.map((option) => (
             <ChoiceCard

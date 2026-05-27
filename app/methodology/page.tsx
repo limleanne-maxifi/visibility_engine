@@ -141,11 +141,11 @@ export default function MethodologyPage() {
                     </thead>
                     <tbody className="divide-y divide-gray-50">
                       {[
-                        ["I appear prominently — competitors don't displace me", '90 × 0.30 = 27 pts'],
-                        ['I appear alongside competitors roughly equally', '60 × 0.30 = 18 pts'],
-                        ['Competitors occasionally appear ahead of me', '30 × 0.30 = 9 pts'],
-                        ['Competitors consistently appear, I rarely do', '5 × 0.30 = 1.5 pts'],
-                        ["I haven't checked this", '0 × 0.30 = 0 pts'],
+                        ['I usually show up — and ahead of competitors', '90 × 0.30 = 27 pts'],
+                        ['I show up about as often as competitors', '60 × 0.30 = 18 pts'],
+                        ['Competitors often show up ahead of me', '30 × 0.30 = 9 pts'],
+                        ['Competitors show up, I rarely do', '5 × 0.30 = 1.5 pts'],
+                        ["Not sure — I haven't looked into this", '0 × 0.30 = 0 pts'],
                       ].map(([ans, pts]) => (
                         <tr key={ans}>
                           <td className="py-2 pr-4 text-gray-700">{ans}</td>
@@ -184,10 +184,10 @@ export default function MethodologyPage() {
                     </thead>
                     <tbody className="divide-y divide-gray-50">
                       {[
-                        ["I appear for most category and topic queries I've tested", '90 × 0.25 = 22.5 pts'],
-                        ['I appear for some queries but miss many category searches', '55 × 0.25 = 13.75 pts'],
-                        ['I only appear when my exact brand/company name is searched', '20 × 0.25 = 5 pts'],
-                        ["I haven't tested multiple query types", '0 × 0.25 = 0 pts'],
+                        ['Yes — for most things people ask about in my space', '90 × 0.25 = 22.5 pts'],
+                        ['Sometimes — for a few topics, but not most', '55 × 0.25 = 13.75 pts'],
+                        ['Only when someone searches my exact name', '20 × 0.25 = 5 pts'],
+                        ["Not sure — I haven't looked into this", '0 × 0.25 = 0 pts'],
                       ].map(([ans, pts]) => (
                         <tr key={ans}>
                           <td className="py-2 pr-4 text-gray-700">{ans}</td>
@@ -226,10 +226,10 @@ export default function MethodologyPage() {
                     </thead>
                     <tbody className="divide-y divide-gray-50">
                       {[
-                        ['I appear consistently across all major AI platforms', '100 × 0.15 = 15 pts'],
-                        ['Results vary significantly by platform', '50 × 0.15 = 7.5 pts'],
-                        ["I've only checked one platform", '25 × 0.15 = 3.75 pts'],
-                        ["I haven't tested across platforms", '0 × 0.15 = 0 pts'],
+                        ["Yes — pretty consistently across the ones I've tried", '100 × 0.15 = 15 pts'],
+                        ['It varies a lot depending on the tool', '50 × 0.15 = 7.5 pts'],
+                        ["I've only really looked at one", '25 × 0.15 = 3.75 pts'],
+                        ["Not sure — I haven't looked into this", '0 × 0.15 = 0 pts'],
                       ].map(([ans, pts]) => (
                         <tr key={ans}>
                           <td className="py-2 pr-4 text-gray-700">{ans}</td>
