@@ -32,27 +32,27 @@ export function getVisibilityScore(
   // Signal 2 — Competitive displacement (30%)
   // Measures: does the brand appear ahead of or instead of competitors?
   const s2 =
-    competitiveStanding === "I appear prominently — competitors don't displace me" ? 90 :
-    competitiveStanding === 'I appear alongside competitors roughly equally'        ? 60 :
-    competitiveStanding === 'Competitors occasionally appear ahead of me'           ? 30 :
-    competitiveStanding === 'Competitors consistently appear, I rarely do'         ? 5  :
-    competitiveStanding === "I haven't checked this"                               ? 0  : 0;
+    competitiveStanding === 'I usually show up — and ahead of competitors' ? 90 :
+    competitiveStanding === 'I show up about as often as competitors'      ? 60 :
+    competitiveStanding === 'Competitors often show up ahead of me'        ? 30 :
+    competitiveStanding === 'Competitors show up, I rarely do'             ? 5  :
+    competitiveStanding === "Not sure — I haven't looked into this"        ? 0  : 0;
 
   // Signal 3 — Query coverage (25%)
   // Measures: does the brand appear across a breadth of topic/category queries?
   const s3 =
-    queryCoverage === "I appear for most category and topic queries I've tested"  ? 90 :
-    queryCoverage === 'I appear for some queries but miss many category searches'  ? 55 :
-    queryCoverage === 'I only appear when my exact brand/company name is searched' ? 20 :
-    queryCoverage === "I haven't tested multiple query types"                      ? 0  : 0;
+    queryCoverage === 'Yes — for most things people ask about in my space' ? 90 :
+    queryCoverage === 'Sometimes — for a few topics, but not most'         ? 55 :
+    queryCoverage === 'Only when someone searches my exact name'           ? 20 :
+    queryCoverage === "Not sure — I haven't looked into this"              ? 0  : 0;
 
   // Signal 4 — Cross-platform consistency (15%)
   // Measures: does the brand appear consistently across multiple AI platforms?
   const s4 =
-    platformConsistency === 'Yes — I appear consistently across all major AI platforms' ? 100 :
-    platformConsistency === 'Yes — but results vary significantly by platform'          ? 50  :
-    platformConsistency === "I've only checked one platform"                            ? 25  :
-    platformConsistency === "No — I haven't tested across platforms"                   ? 0   : 0;
+    platformConsistency === "Yes — pretty consistently across the ones I've tried" ? 100 :
+    platformConsistency === 'It varies a lot depending on the tool'                ? 50  :
+    platformConsistency === "I've only really looked at one"                       ? 25  :
+    platformConsistency === "Not sure — I haven't looked into this"                ? 0   : 0;
 
   return Math.round(s1 * 0.30 + s2 * 0.30 + s3 * 0.25 + s4 * 0.15);
 }

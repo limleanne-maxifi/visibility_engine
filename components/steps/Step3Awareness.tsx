@@ -21,11 +21,11 @@ const AI_PRESENCE_OPTIONS: AiPresence[] = [
 ];
 
 const COMPETITIVE_STANDING_OPTIONS: CompetitiveStanding[] = [
-  "I appear prominently — competitors don't displace me",
-  'I appear alongside competitors roughly equally',
-  'Competitors occasionally appear ahead of me',
-  'Competitors consistently appear, I rarely do',
-  "I haven't checked this",
+  'I usually show up — and ahead of competitors',
+  'I show up about as often as competitors',
+  'Competitors often show up ahead of me',
+  'Competitors show up, I rarely do',
+  "Not sure — I haven't looked into this",
 ];
 
 export default function Step3Awareness({ data, onChange, onNext, onBack, errors }: Props) {
@@ -61,10 +61,11 @@ export default function Step3Awareness({ data, onChange, onNext, onBack, errors 
 
       {/* Signal 2 — Competitive displacement */}
       <fieldset className="mb-6">
-        <legend className="text-[17px] text-gray-700 mb-3">
-          When AI answers questions about your category, how do you compare to competitors?{' '}
+        <legend className="text-[17px] text-gray-700 mb-1">
+          When AI tools recommend options in your category, how often do you think you come up?{' '}
           <span className="text-red-500">*</span>
         </legend>
+        <p className="text-xs text-gray-400 mb-3">Best estimate is fine — your full report measures this precisely.</p>
         <div className="space-y-2">
           {COMPETITIVE_STANDING_OPTIONS.map((option) => (
             <ChoiceCard
