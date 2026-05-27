@@ -22,6 +22,20 @@ export interface ReportMeta {
 
 export type ScoreBand = 'Critical' | 'Low' | 'Developing' | 'Established' | 'Strong'
 
+/** Per-signal score breakdown — shown to the user in the "How this score is calculated" panel. */
+export interface SignalBreakdown {
+  /** Human-readable signal name, e.g. "Platform presence" */
+  signal: string
+  /** Signal weight in the score, e.g. 0.30 */
+  weight: number
+  /** The user's own answer text (verbatim) for this signal */
+  userAnswer: string
+  /** Raw per-signal score before weighting, e.g. 90 */
+  points: number
+  /** Weighted contribution to the final score, one decimal e.g. 22.5 */
+  contribution: number
+}
+
 export interface ScoreData {
   /** 0–100 estimated visibility score */
   score: number
@@ -31,6 +45,9 @@ export interface ScoreData {
   benchmarkLabel: string    // e.g. "B2B SaaS / Enterprise Software average"
   /** One-sentence caveat displayed alongside the score */
   scoringNote: string
+  /** Optional per-signal breakdown. Absent on the pre-migration safeguard path
+   *  (when we serve a stored score from report_data instead of recomputing). */
+  breakdown?: SignalBreakdown[]
 }
 
 // ─── Section 1 — Visibility Assessment (FREE) ────────────────────────────────
