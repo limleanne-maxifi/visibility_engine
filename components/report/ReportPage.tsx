@@ -739,26 +739,26 @@ function ReportFooter({ data }: { data: ReportData }) {
     >
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
         <div>
-          <p className="text-xs text-white/40">
+          <p className="text-xs text-white/65">
             AI Visibility Report · {data.meta.entityName}
           </p>
-          <p className="text-[11px] text-white/25 mt-0.5">
+          <p className="text-[11px] text-white/45 mt-0.5">
             Generated {new Date(data.meta.generatedAt).toLocaleDateString('en-GB', { day: 'numeric', month: 'long', year: 'numeric' })}
             {data.meta.website && data.meta.website.trim().length > 1 ? ` · ${data.meta.website}` : ''}
           </p>
         </div>
-        <p className="text-[11px] text-white/25">
+        <p className="text-[11px] text-white/50">
           Maxifi Digital · Singapore ·{' '}
-          <a href="mailto:hello@maxifidigital.com" className="underline hover:text-white/40">
+          <a href="mailto:hello@maxifidigital.com" className="underline text-white/60 hover:text-white/80">
             hello@maxifidigital.com
           </a>
           {' · '}
-          <a href="/methodology" className="underline hover:text-white/40">
+          <a href="/methodology" className="underline text-white/60 hover:text-white/80">
             Methodology →
           </a>
         </p>
       </div>
-      <p className="mt-4 text-[10px] text-white/20 leading-relaxed">
+      <p className="mt-4 text-[11px] text-white/45 leading-relaxed">
         This report is an analytical assessment based on self-reported data and engine-verified citation testing.
         Free sections are assessments; paid sections reflect live engine measurements at time of generation.
         Citation patterns shift as AI platforms update their models — results may differ on re-test.
@@ -889,7 +889,7 @@ export default function ReportPage({ data }: { data: ReportData }) {
       >
         <div className="max-w-3xl mx-auto">
           <p
-            className="text-[10px] font-bold uppercase tracking-widest mb-4"
+            className="text-xs font-bold uppercase tracking-widest mb-4"
             style={{ color: '#C87A2F' }}
           >
             AI Visibility Report &nbsp;·&nbsp; {meta.industry}
@@ -916,17 +916,17 @@ export default function ReportPage({ data }: { data: ReportData }) {
             <div className="sm:flex-shrink-0">
               <ScoreCircle score={score.score} band={score.band} showScore={paid} />
               <div className="mt-3 text-center">
-                <p className="text-[10px] text-white/40 mb-0.5">
+                <p className="text-[10px] text-white/60 mb-0.5">
                   {score.benchmarkLabel} median
                 </p>
-                <p className="text-sm font-bold text-white/70">{score.benchmarkAvg}%</p>
+                <p className="text-sm font-bold text-white/85">{score.benchmarkAvg}%</p>
               </div>
             </div>
           </div>
 
           {/* Scoring note — only shown in free tier; paid score is measured, not estimated */}
           {!paid && (
-            <p className="mt-6 text-[11px] text-white/30 leading-relaxed border-t border-white/5 pt-4">
+            <p className="mt-6 text-xs text-white/55 leading-relaxed border-t border-white/5 pt-4">
               {score.scoringNote}
             </p>
           )}
