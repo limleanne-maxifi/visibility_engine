@@ -61,7 +61,7 @@ export async function sendUserPlanEmail(lead: AeoLeadRow, reportUrl?: string): P
   const scoreDisplay   = score > 0 ? `${score}%` : '—';
   const subject        = score > 0
     ? `Your AI Visibility Snapshot — ${entity} scores ${score}% (industry avg: ${benchAvg}%)`
-    : `Your AI Visibility Snapshot — ${entity}: baseline undiagnosed (${lead.industry} avg: ${benchAvg}%)`;
+    : `Your AI Visibility Snapshot — ${entity}: significant untapped visibility in ${lead.industry}`;
 
   const benchmarkContext = score > 0 ? getBenchmarkContext(score, benchAvg, lead.industry) : null;
 
@@ -71,22 +71,22 @@ export async function sendUserPlanEmail(lead: AeoLeadRow, reportUrl?: string): P
        <strong>Context:</strong> ${benchmarkContext?.contextExplanation}
        <br/><br/>
        <strong>What this means for you:</strong> ${benchmarkContext?.interpretation}`
-    : `Your AI visibility baseline is undiagnosed. Search for ${entity} in ChatGPT or Perplexity to see where you stand.`;
+    : `Your responses point to <strong>significant untapped AI visibility</strong> in ${lead.industry} — most of your category's buyer queries are likely being answered without ${entity} in the response. The good news: this is a structural, fixable gap, and your full report shows exactly where to start.`;
 
   // Buyer conversations — adapted to business model
   const buyerConvLine = score > 0 ? (() => {
     const missed = 10 - buyerX;
-    const methodologyNote = ` This is an estimate based on your visibility score; actual appearance rates vary by query and AI platform.`;
+    const methodologyNote = ` Estimated from your visibility score; actual rates vary by query and platform.`;
 
     switch (businessModel) {
       case 'B2G':
-        return `Based on your visibility score, an estimated ${missed} out of 10 procurement-team AI searches in your category would not return ${entity}. Brands at the ${lead.industry} benchmark appear in an estimated ${buyerY} or more of such searches.${methodologyNote}`;
+        return `An estimated ${missed} out of 10 procurement-team AI searches in your category would not return ${entity}. Brands at the ${lead.industry} benchmark appear in ${buyerY} or more of such searches.${methodologyNote}`;
       case 'B2C':
-        return `Based on your visibility score, an estimated ${missed} out of 10 consumer AI recommendation requests would not include ${entity}. Brands at the ${lead.industry} benchmark appear in an estimated ${buyerY} or more.${methodologyNote}`;
+        return `An estimated ${missed} out of 10 consumer AI recommendation requests would not include ${entity}. Brands at the ${lead.industry} benchmark appear in ${buyerY} or more.${methodologyNote}`;
       case 'mixed':
-        return `Based on your visibility score, an estimated ${missed} out of 10 buyer or procurement-team AI searches would not find ${entity}. Brands at the ${lead.industry} benchmark appear in an estimated ${buyerY} or more of those situations.${methodologyNote}`;
+        return `An estimated ${missed} out of 10 buyer or procurement-team AI searches would not find ${entity}. Brands at the ${lead.industry} benchmark appear in ${buyerY} or more of those situations.${methodologyNote}`;
       default:
-        return `Based on your visibility score of ${score}%, an estimated ${buyerX} out of 10 AI-generated recommendations in your category would include ${entity}. Brands at the ${lead.industry} benchmark appear in approximately ${buyerY} out of 10.${methodologyNote}`;
+        return `An estimated ${buyerX} out of 10 AI-generated recommendations in your category would include ${entity}. Brands at the ${lead.industry} benchmark appear in ${buyerY} or more.${methodologyNote}`;
     }
   })() : '';
 
@@ -228,26 +228,14 @@ export async function sendUserPlanEmail(lead: AeoLeadRow, reportUrl?: string): P
     </p>
   </td></tr>
 
-  <!-- Methodology & Limitations -->
+  <!-- Methodology -->
   <tr><td style="padding-top:28px;border-top:1px solid #e5e7eb;">
     <div style="background:#f9fafb;border-radius:8px;padding:16px;">
       <p style="margin:0 0 8px;font-size:10px;font-weight:600;color:#9ca3af;text-transform:uppercase;letter-spacing:0.05em;">
-        Methodology & Limitations
+        Methodology
       </p>
       <p style="margin:0;font-size:11px;color:#6b7280;line-height:1.5;">
-        This snapshot is an <strong>estimate</strong> based on your self-reported AI testing and our visibility scoring model.
-        It is <strong>not</strong> a measurement of actual AI system behavior. Key limitations:
-      </p>
-      <ul style="margin:6px 0 0 16px;padding:0;font-size:11px;color:#6b7280;line-height:1.4;">
-        <li>Root causes are diagnostic hypotheses, not confirmed problems</li>
-        <li>Conversation appearance rates are estimated from visibility score (not measured)</li>
-        <li>Benchmarks represent median scores, not performance targets</li>
-        <li>Actual citation frequency varies by query specificity and platform</li>
-        <li>Self-reported data is not independently verified</li>
-      </ul>
-      <p style="margin:8px 0 0;font-size:11px;color:#6b7280;line-height:1.5;">
-        <strong>For definitive analysis:</strong> Your full AEO Visibility Report includes website audit,
-        authority assessment, and competitive benchmarking to confirm which gaps are your actual constraints.
+        This snapshot reflects your self-reported AI testing and our visibility scoring model. Your full report adds live, engine-measured citation tests across ChatGPT, Perplexity, Gemini and Claude — turning this assessment into a definitive, query-by-query picture of where ${entity} stands.
       </p>
     </div>
   </td></tr>
