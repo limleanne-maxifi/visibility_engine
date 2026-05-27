@@ -3,6 +3,7 @@ import ScoreCircle from './ScoreCircle';
 import LockedSection from './LockedSection';
 import type {
   ReportData,
+  ScoreData,
   PlatformStatus,
   FailureModeKey,
   PlatformPriority,
@@ -766,6 +767,74 @@ function ReportFooter({ data }: { data: ReportData }) {
   );
 }
 
+// ─── Score breakdown panel — collapsible "How this score is calculated" ─────
+// Only renders when score.breakdown is present (live-computed reports).
+// Absent on the pre-migration safeguard path where we serve a stored score
+// without rebuilding the breakdown — that produces null here and the panel
+// silently disappears.
+
+function ScoreBreakdownPanel({ score }: { score: ScoreData }) {
+  if (!score.breakdown || score.breakdown.length === 0) return null;
+
+  // Sum of displayed contributions (one decimal). May differ from score.score
+  // by ≤0.5 due to the final Math.round — that's why we show both lines.
+  const displayedTotal = score.breakdown.reduce((sum, row) => sum + row.contribution, 0);
+  const totalRounded   = Math.round(displayedTotal * 10) / 10;
+
+  return (
+    <details className="bg-white rounded-2xl px-6 py-4 mb-6 group">
+      <summary className="cursor-pointer list-none flex items-center justify-between gap-3">
+        <div className="flex-1 min-w-0">
+          <p className="text-[10px] font-bold uppercase tracking-widest mb-0.5" style={{ color: '#C87A2F' }}>
+            Score breakdown
+          </p>
+          <p className="text-sm font-semibold text-gray-800">How this score is calculated</p>
+        </div>
+        <span
+          className="text-gray-400 text-sm transition-transform group-open:rotate-90"
+          aria-hidden="true"
+        >
+          ▸
+        </span>
+      </summary>
+      <div className="mt-5 space-y-3">
+        {score.breakdown.map((row, i) => (
+          <div key={row.signal} className="flex gap-3 items-start text-sm">
+            <span
+              className="flex-shrink-0 w-5 h-5 rounded-full text-[10px] font-bold flex items-center justify-center mt-0.5"
+              style={{ background: 'rgba(200,122,47,0.18)', color: '#C87A2F' }}
+            >
+              {i + 1}
+            </span>
+            <div className="flex-1 min-w-0">
+              <p className="font-semibold text-gray-700">{row.signal}</p>
+              <p className="text-xs italic text-gray-500 mt-0.5 break-words">
+                &ldquo;{row.userAnswer || '—'}&rdquo;
+              </p>
+            </div>
+            <p className="flex-shrink-0 font-mono text-xs text-gray-500 whitespace-nowrap pt-0.5">
+              {row.points} × {Math.round(row.weight * 100)}% ={' '}
+              <span className="font-semibold text-gray-700">{row.contribution.toFixed(1)}</span>
+            </p>
+          </div>
+        ))}
+        <div className="flex justify-between items-baseline pt-3 mt-2 border-t border-gray-100 text-sm">
+          <span className="text-gray-500">Sum of contributions</span>
+          <span className="font-mono text-gray-700">{totalRounded.toFixed(1)}</span>
+        </div>
+        <div className="flex justify-between items-baseline text-sm">
+          <span className="font-semibold text-gray-800">Final score (rounded)</span>
+          <span className="font-mono font-bold text-gray-900 text-base">{score.score}</span>
+        </div>
+        <p className="text-[11px] text-gray-400 leading-relaxed pt-3 border-t border-gray-100">
+          Each row is scored against your self-reported answer; weights reflect each signal&rsquo;s role in AI discovery.{' '}
+          <a href="/methodology" className="underline" style={{ color: '#C87A2F' }}>Methodology →</a>
+        </p>
+      </div>
+    </details>
+  );
+}
+
 // ─── Main ReportPage ──────────────────────────────────────────────────────────
 
 export default function ReportPage({ data }: { data: ReportData }) {
@@ -866,6 +935,7 @@ export default function ReportPage({ data }: { data: ReportData }) {
 
       {/* Main content */}
       <main className="max-w-3xl mx-auto px-4 sm:px-6 py-8">
+        <ScoreBreakdownPanel score={score} />
         <TableOfContents paid={paid} />
 
         <S1Visibility data={data.s1Visibility} paid={paid} />

@@ -24,6 +24,7 @@ import type {
 } from '@/lib/reportTypes';
 import {
   getVisibilityScore,
+  getScoreBreakdown,
   getIndustryBenchmark,
   getAllCompetitors,
   inferBusinessModel,
@@ -572,14 +573,20 @@ function buildScore(formData: FormData): ScoreData {
   // 4-signal scoring: each signal is a separate form answer (see lib/scoring.ts).
   // Competitors list is no longer an input to the score itself — it's used
   // elsewhere in the report (S2 root causes, etc.).
-  const score    = getVisibilityScore(
+  const score     = getVisibilityScore(
     formData.aiPresence,
     formData.competitiveStanding,
     formData.queryCoverage,
     formData.platformConsistency,
   );
-  const benchAvg = getIndustryBenchmark(formData.industry);
-  const band     = scoreToBand(score);
+  const breakdown = getScoreBreakdown(
+    formData.aiPresence,
+    formData.competitiveStanding,
+    formData.queryCoverage,
+    formData.platformConsistency,
+  );
+  const benchAvg  = getIndustryBenchmark(formData.industry);
+  const band      = scoreToBand(score);
 
   return {
     score,
@@ -590,6 +597,7 @@ function buildScore(formData: FormData): ScoreData {
       formData.aiPresence === "No, I haven't tried this yet"
         ? 'Your baseline is not yet established. "Critical" indicates this is a priority to diagnose — not a confirmed visibility problem.'
         : 'Score estimated from your self-reported testing across the four visibility signals. A full measured assessment may differ.',
+    breakdown,
   };
 }
 

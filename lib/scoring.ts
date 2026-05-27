@@ -1,5 +1,60 @@
 // Shared scoring utilities — used by both the results page and email
 
+import type { SignalBreakdown } from '@/lib/reportTypes';
+
+// ─── 4-signal scoring — single source of truth ────────────────────────────────
+// Per-signal point ladders live ONCE in these helpers. Both
+// getVisibilityScore (number) and getScoreBreakdown (per-signal detail)
+// read the same lookups, so they can never drift.
+
+// Signal 1 — Platform presence
+function signal1Points(awareness: string): number {
+  if (awareness === 'Yes — and the results were accurate')        return 90;
+  if (awareness === 'Yes — but old/outdated info appeared')       return 40;
+  if (awareness === 'Yes — but details about me were wrong')      return 30;
+  if (awareness === 'Yes — competitors were cited instead of me') return 15;
+  if (awareness === "Yes — but I wasn't mentioned at all")        return 0;
+  return 0;
+}
+
+// Signal 2 — Competitive displacement
+function signal2Points(competitiveStanding: string): number {
+  if (competitiveStanding === 'I usually show up — and ahead of competitors') return 90;
+  if (competitiveStanding === 'I show up about as often as competitors')      return 60;
+  if (competitiveStanding === 'Competitors often show up ahead of me')        return 30;
+  if (competitiveStanding === 'Competitors show up, I rarely do')             return 5;
+  if (competitiveStanding === "Not sure — I haven't looked into this")        return 0;
+  return 0;
+}
+
+// Signal 3 — Query coverage
+function signal3Points(queryCoverage: string): number {
+  if (queryCoverage === 'Yes — for most things people ask about in my space') return 90;
+  if (queryCoverage === 'Sometimes — for a few topics, but not most')         return 55;
+  if (queryCoverage === 'Only when someone searches my exact name')           return 20;
+  if (queryCoverage === "Not sure — I haven't looked into this")              return 0;
+  return 0;
+}
+
+// Signal 4 — Cross-platform consistency
+function signal4Points(platformConsistency: string): number {
+  if (platformConsistency === "Yes — pretty consistently across the ones I've tried") return 100;
+  if (platformConsistency === 'It varies a lot depending on the tool')                return 50;
+  if (platformConsistency === "I've only really looked at one")                       return 25;
+  if (platformConsistency === "Not sure — I haven't looked into this")                return 0;
+  return 0;
+}
+
+// Weights — single source of truth, must equal 1.00 in total.
+export const SIGNAL_WEIGHTS = {
+  s1: 0.30, // Platform presence
+  s2: 0.30, // Competitive displacement
+  s3: 0.25, // Query coverage
+  s4: 0.15, // Cross-platform consistency
+} as const;
+
+// ─── Public API ───────────────────────────────────────────────────────────────
+
 export function getAllCompetitors(raw: string | null | undefined): string[] {
   if (!raw?.trim()) return [];
   return raw.split(/[,;/\n&]/).map(c => c.replace(/\band\b/gi, '').trim()).filter(Boolean);
@@ -13,48 +68,69 @@ export function formatCompetitors(list: string[]): string {
 }
 
 // True 4-signal model — each signal is independently measured from its own form
-// question. Signals are not derived from a single answer.
+// question. Returns the rounded 0–100 visibility score.
 export function getVisibilityScore(
   awareness: string,
   competitiveStanding: string,
   queryCoverage: string,
   platformConsistency: string,
 ): number {
-  // Signal 1 — Platform presence (30%)
-  // Measures: did the brand search return accurate results?
-  const s1 =
-    awareness === 'Yes — and the results were accurate'        ? 90 :
-    awareness === 'Yes — but old/outdated info appeared'       ? 40 :
-    awareness === 'Yes — but details about me were wrong'      ? 30 :
-    awareness === 'Yes — competitors were cited instead of me' ? 15 :
-    awareness === "Yes — but I wasn't mentioned at all"        ? 0  : 0;
+  const s1 = signal1Points(awareness);
+  const s2 = signal2Points(competitiveStanding);
+  const s3 = signal3Points(queryCoverage);
+  const s4 = signal4Points(platformConsistency);
+  return Math.round(
+    s1 * SIGNAL_WEIGHTS.s1 +
+    s2 * SIGNAL_WEIGHTS.s2 +
+    s3 * SIGNAL_WEIGHTS.s3 +
+    s4 * SIGNAL_WEIGHTS.s4
+  );
+}
 
-  // Signal 2 — Competitive displacement (30%)
-  // Measures: does the brand appear ahead of or instead of competitors?
-  const s2 =
-    competitiveStanding === 'I usually show up — and ahead of competitors' ? 90 :
-    competitiveStanding === 'I show up about as often as competitors'      ? 60 :
-    competitiveStanding === 'Competitors often show up ahead of me'        ? 30 :
-    competitiveStanding === 'Competitors show up, I rarely do'             ? 5  :
-    competitiveStanding === "Not sure — I haven't looked into this"        ? 0  : 0;
-
-  // Signal 3 — Query coverage (25%)
-  // Measures: does the brand appear across a breadth of topic/category queries?
-  const s3 =
-    queryCoverage === 'Yes — for most things people ask about in my space' ? 90 :
-    queryCoverage === 'Sometimes — for a few topics, but not most'         ? 55 :
-    queryCoverage === 'Only when someone searches my exact name'           ? 20 :
-    queryCoverage === "Not sure — I haven't looked into this"              ? 0  : 0;
-
-  // Signal 4 — Cross-platform consistency (15%)
-  // Measures: does the brand appear consistently across multiple AI platforms?
-  const s4 =
-    platformConsistency === "Yes — pretty consistently across the ones I've tried" ? 100 :
-    platformConsistency === 'It varies a lot depending on the tool'                ? 50  :
-    platformConsistency === "I've only really looked at one"                       ? 25  :
-    platformConsistency === "Not sure — I haven't looked into this"                ? 0   : 0;
-
-  return Math.round(s1 * 0.30 + s2 * 0.30 + s3 * 0.25 + s4 * 0.15);
+// Per-signal breakdown for the "How this score is calculated" panel.
+// Uses the EXACT same point lookups as getVisibilityScore — by design,
+// not by duplication.
+export function getScoreBreakdown(
+  awareness: string,
+  competitiveStanding: string,
+  queryCoverage: string,
+  platformConsistency: string,
+): SignalBreakdown[] {
+  const s1 = signal1Points(awareness);
+  const s2 = signal2Points(competitiveStanding);
+  const s3 = signal3Points(queryCoverage);
+  const s4 = signal4Points(platformConsistency);
+  const oneDecimal = (n: number) => Math.round(n * 10) / 10;
+  return [
+    {
+      signal:       'Platform presence',
+      weight:       SIGNAL_WEIGHTS.s1,
+      userAnswer:   awareness,
+      points:       s1,
+      contribution: oneDecimal(s1 * SIGNAL_WEIGHTS.s1),
+    },
+    {
+      signal:       'Competitive displacement',
+      weight:       SIGNAL_WEIGHTS.s2,
+      userAnswer:   competitiveStanding,
+      points:       s2,
+      contribution: oneDecimal(s2 * SIGNAL_WEIGHTS.s2),
+    },
+    {
+      signal:       'Query coverage',
+      weight:       SIGNAL_WEIGHTS.s3,
+      userAnswer:   queryCoverage,
+      points:       s3,
+      contribution: oneDecimal(s3 * SIGNAL_WEIGHTS.s3),
+    },
+    {
+      signal:       'Cross-platform consistency',
+      weight:       SIGNAL_WEIGHTS.s4,
+      userAnswer:   platformConsistency,
+      points:       s4,
+      contribution: oneDecimal(s4 * SIGNAL_WEIGHTS.s4),
+    },
+  ];
 }
 
 // Methodology metadata — surfaced on /methodology. Update on quarterly review.
