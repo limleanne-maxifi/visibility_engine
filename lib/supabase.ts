@@ -18,6 +18,32 @@ function getClient() {
   return _supabase;
 }
 
+// ─── Service-role client (server-only — bypasses RLS) ────────────────────────
+// Used ONLY by routes that need to UPDATE aeo_leads (currently the Stripe
+// webhook). The anon-key client (getClient above) is bound by RLS and only
+// has INSERT + SELECT policies (RESOLVED-7 in CLAUDE.md). The webhook needs
+// UPDATE to mark a lead paid; granting UPDATE to anon would let any browser
+// client mutate any row, so we use the server-only service-role key instead.
+//
+// SECURITY:
+// - SUPABASE_SERVICE_ROLE_KEY must be Netlify-side only (server context).
+// - Never import this function from a client component.
+// - Never log the key. Never embed it in any response.
+
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+let _supabaseServiceRole: SupabaseClient<any> | null = null;
+
+export function getServiceRoleClient() {
+  if (!_supabaseServiceRole) {
+    _supabaseServiceRole = createClient(
+      process.env.SUPABASE_URL!,
+      process.env.SUPABASE_SERVICE_ROLE_KEY!,
+      { auth: { persistSession: false, autoRefreshToken: false } },
+    );
+  }
+  return _supabaseServiceRole;
+}
+
 // ─── Row type (mirrors aeo_leads schema) ─────────────────────────────────────
 
 export interface AeoLeadRow {
@@ -54,6 +80,11 @@ export interface AeoLeadRow {
   stripe_session_id: string | null;
   status: string;
   founding: boolean;
+  // Stripe webhook columns — populated when checkout.session.completed fires
+  // for this lead. Schema migration adds these as nullable; old rows = null.
+  paid_amount: number | null;     // smallest currency unit (e.g. cents)
+  paid_currency: string | null;   // ISO 4217 (3-char, lowercased per Stripe)
+  paid_at: string | null;         // ISO 8601
 }
 
 // ─── Insert a new lead + plan ─────────────────────────────────────────────────
@@ -153,4 +184,53 @@ export async function getAllLeads(): Promise<AeoLeadRow[]> {
 
   if (error) throw error;
   return data as AeoLeadRow[];
+}
+
+// ─── Stripe webhook helpers (server-only — use service-role client) ───────────
+
+/**
+ * Look up the most recent lead by email address. Used by the Stripe webhook
+ * to match a completed checkout session to the form submission it came from.
+ * Returns null if no match. Uses the service-role client (bypasses RLS).
+ */
+export async function findLeadByEmail(email: string): Promise<AeoLeadRow | null> {
+  const { data, error } = await getServiceRoleClient()
+    .from('aeo_leads')
+    .select('*')
+    .eq('email', email)
+    .order('created_at', { ascending: false })
+    .limit(1)
+    .maybeSingle();
+
+  if (error) throw error;
+  return (data as AeoLeadRow | null) ?? null;
+}
+
+/**
+ * Mark a lead as paid and record the Stripe session details. Uses the
+ * service-role client (anon RLS has no UPDATE policy). Called by the
+ * Stripe webhook after signature verification + lead match.
+ */
+export async function recordPayment(
+  leadId: string,
+  payload: {
+    stripeSessionId: string;
+    amount: number | null;
+    currency: string | null;
+    paidAt: string;
+  },
+): Promise<void> {
+  const { error } = await getServiceRoleClient()
+    .from('aeo_leads')
+    .update({
+      paid: true,
+      status: 'paid',
+      stripe_session_id: payload.stripeSessionId,
+      paid_amount: payload.amount,
+      paid_currency: payload.currency,
+      paid_at: payload.paidAt,
+    })
+    .eq('id', leadId);
+
+  if (error) throw error;
 }

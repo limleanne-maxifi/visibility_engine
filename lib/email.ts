@@ -310,3 +310,96 @@ export async function sendInternalNotification(lead: AeoLeadRow): Promise<void> 
 
   if (error) throw new Error(`Resend internal email error: ${JSON.stringify(error)}`);
 }
+
+// ─── Email 3: Owner paid-order notification (Stripe webhook) ──────────────────
+// Fires from app/api/stripe-webhook/route.ts when checkout.session.completed
+// arrives. Reuses the Resend client init + FROM_EMAIL + MAXIFI_NOTIFY_EMAIL env
+// vars from sendInternalNotification but has its own subject/body shape — paid
+// orders need amount/currency/session-id, lead-submit notifications don't.
+//
+// Fulfillment is manual today: this email is the trigger for the human operator
+// to run the engine on the customer's domain and email them the PDF within 1
+// business day. The webhook itself does NOT generate any customer report.
+
+export interface PaidOrderNotification {
+  customerEmail: string;          // Stripe session.customer_details.email (or '(no email)')
+  amount: number | null;          // session.amount_total — smallest currency unit
+  currency: string | null;        // session.currency — ISO 3-char, lowercased per Stripe
+  stripeSessionId: string;        // session.id
+  paymentIntentId: string | null; // session.payment_intent (string or expanded)
+  matchedLead: AeoLeadRow | null; // null = paid-but-no-lead edge case
+}
+
+function formatPaymentAmount(amount: number | null, currency: string | null): string {
+  if (amount == null || currency == null) return 'amount unknown';
+  // Stripe uses smallest currency unit (cents/etc). Most currencies are 2-decimal;
+  // zero-decimal (JPY, KRW) would over-display by 100x — fine for an internal
+  // notification, edge-case not worth a lookup table here.
+  return `${currency.toUpperCase()} ${(amount / 100).toFixed(2)}`;
+}
+
+export async function sendPaidOrderNotification(payload: PaidOrderNotification): Promise<void> {
+  const fromEmail   = process.env.FROM_EMAIL ?? 'hello@maxifidigital.com';
+  const notifyEmail = process.env.MAXIFI_NOTIFY_EMAIL;
+
+  if (!notifyEmail) {
+    console.warn('[email] MAXIFI_NOTIFY_EMAIL not set — skipping paid-order notification');
+    return;
+  }
+
+  const orphan = !payload.matchedLead;
+  const amountDisplay = formatPaymentAmount(payload.amount, payload.currency);
+
+  const subject = orphan
+    ? `[PAID-BUT-NO-LEAD] ${payload.customerEmail} — ${amountDisplay}`
+    : `New paid order — ${payload.customerEmail} — ${amountDisplay}`;
+
+  const lead = payload.matchedLead;
+  const lines: string[] = [
+    orphan
+      ? `Stripe payment received but NO matching lead found by email. Manual reconciliation needed.`
+      : `New paid order received via Stripe. Fulfillment is manual — run the engine on the customer's domain and email the PDF within 1 business day.`,
+    ``,
+    `── Payment ───────────────────────────────────`,
+    `email:              ${payload.customerEmail}`,
+    `amount:             ${amountDisplay}`,
+    `stripe_session_id:  ${payload.stripeSessionId}`,
+    `payment_intent:     ${payload.paymentIntentId ?? '—'}`,
+    ``,
+  ];
+
+  if (lead) {
+    lines.push(
+      `── Matched lead ──────────────────────────────`,
+      `lead_id:        ${lead.id}`,
+      `first_name:     ${lead.first_name}`,
+      `email:          ${lead.email}`,
+      `website:        ${lead.website ?? '—'}`,
+      `company:        ${lead.company_name ?? '—'}`,
+      `industry:       ${lead.industry}`,
+      `occupation:     ${lead.occupation}`,
+      `report_token:   ${lead.report_token ?? '—'}`,
+      ``,
+      `── Fulfillment ───────────────────────────────`,
+      `Run the engine on ${lead.website ?? '<no website on lead row — ask customer>'}`,
+      `and email the PDF to ${payload.customerEmail} within 1 business day.`,
+    );
+  } else {
+    lines.push(
+      `── Action required ───────────────────────────`,
+      `No aeo_leads row matched email "${payload.customerEmail}".`,
+      `Manually reconcile: confirm the customer's website/domain, then run the`,
+      `engine and email the PDF. Update aeo_leads to link the payment.`,
+    );
+  }
+
+  const text = lines.join('\n');
+  const { error } = await getResend().emails.send({
+    from: fromEmail,
+    to: notifyEmail,
+    subject,
+    text,
+  });
+
+  if (error) throw new Error(`Resend paid-order email error: ${JSON.stringify(error)}`);
+}
