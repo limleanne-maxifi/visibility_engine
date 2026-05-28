@@ -492,7 +492,7 @@ function buildS3(formData: FormData): PlatformPrioritySection {
 
 function assessAlignmentLevel(positioning: string, industry: string): { level: AlignmentLevel; label: string } {
   if (!positioning || positioning.trim().length < 10) {
-    return { level: 'missing', label: 'No positioning statement provided — cannot assess alignment' };
+    return { level: 'missing', label: 'No positioning provided. Add it to sharpen positioning analysis and competitor framing in the Full Report.' };
   }
 
   const words = positioning.trim().split(/\s+/).length;
