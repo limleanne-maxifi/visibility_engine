@@ -295,9 +295,10 @@ export async function sendInternalNotification(lead: AeoLeadRow): Promise<void> 
     `session_id:    ${lead.session_id ?? '—'}`,
     `created_at:    ${lead.created_at}`,
     ``,
-    `── Plan summary ──────────────────────────────`,
-    `steps:         ${lead.plan_steps.length}`,
-    `quick_win:     ${lead.plan_quick_win}`,
+    `── Plan ──────────────────────────────────────`,
+    `generated:     ${lead.plan_steps && lead.plan_steps.length > 0
+      ? `yes — ${lead.plan_steps.length} steps`
+      : 'no (Claude action-plan call gated off — see DISABLE_CLAUDE_ACTION_PLAN in app/api/generate/route.ts)'}`,
   ].join('\n');
 
   const { error } = await getResend().emails.send({
