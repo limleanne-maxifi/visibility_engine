@@ -108,7 +108,7 @@ export type BuyerPresence = 'high' | 'medium' | 'low'
  * - 'measured'              → ChatGPT, Claude, Gemini, Perplexity (API-callable). Renders priority + buyer presence as normal.
  * - 'not-measured-deferred' → Google AI Overviews, Microsoft Copilot. Free + Full tiers DO NOT measure these.
  *                             Renderer must show a "Not measured in this report — included in the Visibility Engine
- *                             Retainer (SGD 4,500/mo)" label instead of any priority pill or per-platform metric.
+ *                             Retainer (USD 3,400/mo)" label instead of any priority pill or per-platform metric.
  *                             RESOLVED-4 in CLAUDE.md: vocabulary stays 6 platforms but only 4 produce data here.
  */
 export type PlatformMeasurementState = 'measured' | 'not-measured-deferred'

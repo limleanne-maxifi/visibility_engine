@@ -92,7 +92,7 @@ export default async function UnlockPage({ searchParams }: Props) {
             <p className="section-sub">
               Four engines measured: ChatGPT, Claude, Gemini, Perplexity. We run 50 buyer-intent
               queries across all four and report exactly what they return. Microsoft Copilot is
-              included in the SGD 4,500/mo Visibility Engine Retainer.
+              included in the USD 3,400/mo (SGD 4,500/mo) Visibility Engine Retainer.
             </p>
             <div className="gets">
               <div className="get">
@@ -136,7 +136,7 @@ export default async function UnlockPage({ searchParams }: Props) {
               <p style={{ margin: 0, fontSize: '13px', lineHeight: 1.6, color: '#92400E' }}>
                 <strong>Not in this report:</strong> a 60-day action plan, a recommended positioning sentence,
                 content briefs per query, competitor counter-moves, or owner/ETA assignments. Those are
-                consulting deliverables — included in our SGD 2,500 Strategic Baseline + Consult engagement.
+                consulting deliverables — included in our USD 1,900 (SGD 2,500) Strategic Baseline + Consult engagement.
                 The Full Report is the measurement; the consult is what you do about it.
               </p>
             </div>
@@ -264,7 +264,7 @@ export default async function UnlockPage({ searchParams }: Props) {
                   <p>Your measured baseline, an interactive report, and a strategy call to turn findings into a plan.</p>
                 </div>
                 <div className="pr">
-                  <div className="amt">SGD 2,500</div>
+                  <div className="amt">USD 1,900 (SGD 2,500)</div>
                   <div className="per">one-time</div>
                 </div>
               </a>
@@ -274,7 +274,7 @@ export default async function UnlockPage({ searchParams }: Props) {
                   <p>Ongoing monthly re-measurement to see how your AI visibility moves over time.</p>
                 </div>
                 <div className="pr">
-                  <div className="amt">SGD 4,500</div>
+                  <div className="amt">USD 3,400 (SGD 4,500)</div>
                   <div className="per">per month</div>
                 </div>
               </a>
@@ -299,7 +299,7 @@ export default async function UnlockPage({ searchParams }: Props) {
               </details>
               <details>
                 <summary>How is this different from the free snapshot?</summary>
-                <p>The free snapshot is an assessment based on your own inputs. The full report adds four measured sections — competitor mentions per query, verbatim descriptors, the full 50-query × 4-engine coverage matrix, and the engine-output limitations — from live AI tests across ChatGPT, Claude, Gemini and Perplexity. A 60-day action plan is not part of the Full Report; that&rsquo;s the SGD 2,500 Strategic Baseline + Consult.</p>
+                <p>The free snapshot is an assessment based on your own inputs. The full report adds four measured sections — competitor mentions per query, verbatim descriptors, the full 50-query × 4-engine coverage matrix, and the engine-output limitations — from live AI tests across ChatGPT, Claude, Gemini and Perplexity. A 60-day action plan is not part of the Full Report; that&rsquo;s the USD 1,900 (SGD 2,500) Strategic Baseline + Consult.</p>
               </details>
               <details>
                 <summary>What if it&rsquo;s not useful?</summary>

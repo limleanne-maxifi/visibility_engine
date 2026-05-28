@@ -275,7 +275,7 @@ function S3Platforms({ data }: { data: ReportData['s3Platforms'] }) {
                   </span>
                 </div>
                 <p className="text-xs text-gray-500 leading-relaxed">
-                  Not measured — included in the Visibility Engine Retainer (SGD 4,500/mo).
+                  Not measured — included in the Visibility Engine Retainer (USD 3,400/mo, SGD 4,500/mo).
                 </p>
               </div>
             );
@@ -411,7 +411,7 @@ function PaywallBlock({ data }: { data: ReportData }) {
         <p className="text-xs text-white/45 mb-6 leading-relaxed">
           <span className="font-semibold text-white/65">Not in this report:</span> a 60-day action plan,
           a recommended positioning sentence, content briefs per query, competitor counter-moves, or
-          owner/ETA assignments — those are consulting deliverables, included in the SGD 2,500 Strategic
+          owner/ETA assignments — those are consulting deliverables, included in the USD 1,900 (SGD 2,500) Strategic
           Baseline + Consult.
         </p>
 
@@ -452,13 +452,13 @@ function PaywallBlock({ data }: { data: ReportData }) {
               href={data.calendlyUrl}
               className="text-xs text-white/45 hover:text-white/65 transition-colors"
             >
-              Want the 60-day plan? Strategic Baseline + Consult — SGD $2,500 →
+              Want the 60-day plan? Strategic Baseline + Consult — USD $1,900 (SGD $2,500) →
             </a>
             <a
               href={data.calendlyUrl}
               className="text-xs text-white/45 hover:text-white/65 transition-colors"
             >
-              Visibility Engine Retainer (includes Copilot) — SGD $4,500/mo →
+              Visibility Engine Retainer (includes Copilot) — USD $3,400/mo (SGD $4,500/mo) →
             </a>
           </div>
         </div>
