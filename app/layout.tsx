@@ -11,7 +11,7 @@ const inter = Inter({
 
 export const metadata: Metadata = {
   title: "AI Visibility Snapshot — Maxifi Digital",
-  description: "Find out how visible your brand is in AI search — and get a free personalised action plan.",
+  description: "Find out how visible your brand is in AI search — your visibility score and a free snapshot, no sales call required.",
   other: {
     "format-detection": "telephone=no",
   },

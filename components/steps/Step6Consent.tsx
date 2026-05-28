@@ -52,7 +52,7 @@ export default function Step6Consent({ data, onChange, onSubmit, onBack, errors,
         Almost there, {data.firstName ? toTitleCase(data.firstName) : 'there'} — you&apos;re 10 seconds away
       </h1>
       <p className="text-sm text-gray-500 mb-6">
-        We&apos;ll email your personalised AI Visibility action plan to you straight away — free, no catch.
+        We&apos;ll email your AI Visibility score and free snapshot link straight away — no catch, no sales call.
       </p>
 
       {/* Summary row */}
@@ -139,7 +139,7 @@ export default function Step6Consent({ data, onChange, onSubmit, onBack, errors,
           style={{ accentColor: '#C87A2F' }}
         />
         <span className="text-sm text-gray-600 leading-snug">
-          I agree to receive my free AI Visibility action plan and occasional insights from Maxifi Digital.
+          I agree to receive my free AI Visibility snapshot and occasional insights from Maxifi Digital.
           Unsubscribe anytime.{' '}
           <a
             href="/privacy"
