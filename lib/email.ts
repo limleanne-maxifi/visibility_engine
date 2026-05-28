@@ -194,8 +194,8 @@ export async function sendUserPlanEmail(lead: AeoLeadRow, reportUrl?: string): P
       </h2>
       ${diagImpact ? `<p style="margin:0 0 12px;font-size:14px;color:#091521;line-height:1.7;">${diagImpact}</p>` : ''}
       <p style="margin:0 0 20px;font-size:14px;color:#091521;line-height:1.7;">
-        Your free report shows exactly what&rsquo;s driving this &mdash;
-        and gives you a prioritised fix queue to close it.
+        Your free report shows where you stand on the four self-reported AI visibility
+        signals &mdash; and where the largest gap sits.
         One report. No subscription, no sales call.
       </p>
       <a href="${primaryReportUrl}"

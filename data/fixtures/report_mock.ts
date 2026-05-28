@@ -79,6 +79,7 @@ const SHARED_SECTIONS: Omit<ReportData, 'meta' | 's5Competitors' | 's6Positionin
         rationale:
           'The dominant AI tool for B2B software evaluation. Finance and operations buyers use it heavily for vendor comparisons, feature lists, and category research.',
         buyerPresence: 'high',
+        measurementState: 'measured',
       },
       {
         platform: 'Perplexity',
@@ -86,6 +87,7 @@ const SHARED_SECTIONS: Omit<ReportData, 'meta' | 's5Competitors' | 's6Positionin
         rationale:
           'Widely used by technical buyers and product evaluators in B2B SaaS. Often used for structured comparisons and detailed vendor research.',
         buyerPresence: 'high',
+        measurementState: 'measured',
       },
       {
         platform: 'Google AI Overviews',
@@ -93,6 +95,7 @@ const SHARED_SECTIONS: Omit<ReportData, 'meta' | 's5Competitors' | 's6Positionin
         rationale:
           'Appears in search results for category queries. Important for buyers starting a vendor search via Google before going deeper.',
         buyerPresence: 'medium',
+        measurementState: 'not-measured-deferred',
       },
       {
         platform: 'Microsoft Copilot',
@@ -100,6 +103,7 @@ const SHARED_SECTIONS: Omit<ReportData, 'meta' | 's5Competitors' | 's6Positionin
         rationale:
           'Growing use in enterprise procurement workflows. Relevant for larger deals where buyers work within Microsoft 365.',
         buyerPresence: 'medium',
+        measurementState: 'not-measured-deferred',
       },
       {
         platform: 'Claude',
@@ -107,6 +111,7 @@ const SHARED_SECTIONS: Omit<ReportData, 'meta' | 's5Competitors' | 's6Positionin
         rationale:
           'Used by technical evaluators and engineering-led buyers. Worth monitoring as adoption in B2B evaluation grows.',
         buyerPresence: 'low',
+        measurementState: 'measured',
       },
       {
         platform: 'Gemini',
@@ -114,6 +119,7 @@ const SHARED_SECTIONS: Omit<ReportData, 'meta' | 's5Competitors' | 's6Positionin
         rationale:
           'Lower penetration in B2B SaaS buyer research today. Worth a baseline check but not a primary focus.',
         buyerPresence: 'low',
+        measurementState: 'measured',
       },
     ],
     priorityNote:

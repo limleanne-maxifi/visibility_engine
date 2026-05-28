@@ -16,17 +16,17 @@ function toTitleCase(str: string): string {
 }
 
 const FREE_SECTIONS = [
-  'Current citation snapshot',
+  'Where this report stands',
   'Failure mode diagnosis',
-  'Platform visibility overview',
-  'Industry benchmark comparison',
+  'Platform priority overview',
+  'Positioning vs. sector',
 ];
 
 const LOCKED_SECTIONS = [
-  'Competitor displacement analysis',
-  'Positioning gap analysis',
-  'Target query gap analysis',
-  '60-day prioritised action queue',
+  "Who AI mentions when you're not named",
+  'How AI describes you',
+  'Query coverage',
+  'Sentiment, rank & citation health',
 ];
 
 export default function Step6Consent({ data, onChange, onSubmit, onBack, errors, isLoading }: Props) {

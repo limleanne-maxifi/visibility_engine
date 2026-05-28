@@ -4,7 +4,6 @@ import LockedSection from './LockedSection';
 import type {
   ReportData,
   ScoreData,
-  PlatformStatus,
   FailureModeKey,
   PlatformPriority,
   AlignmentLevel,
@@ -14,14 +13,9 @@ import type {
 } from '@/lib/reportTypes';
 
 // ─── Style helpers ────────────────────────────────────────────────────────────
-
-const PLATFORM_STATUS_STYLES: Record<PlatformStatus, { label: string; bg: string; text: string; dot: string }> = {
-  'likely-present':   { label: 'Likely cited',     bg: '#ECFDF5', text: '#065F46', dot: '#10B981' },
-  'competitor-cited': { label: 'Competitor cited',  bg: '#FFF7ED', text: '#9A3412', dot: '#F97316' },
-  'cited-with-issues':{ label: 'Cited — issues',   bg: '#FFFBEB', text: '#92400E', dot: '#F59E0B' },
-  'likely-absent':    { label: 'Likely absent',     bg: '#FEF2F2', text: '#991B1B', dot: '#EF4444' },
-  'not-tested':       { label: 'Not yet tested',    bg: '#F9FAFB', text: '#6B7280', dot: '#D1D5DB' },
-};
+// (S1 platform-status styles removed alongside the S1 platform table — see
+// S1Visibility note. Option A will reintroduce a status presentation for the
+// single real-query proof; shape TBD.)
 
 const FAILURE_MODE_STYLES: Record<FailureModeKey, { bg: string; text: string }> = {
   'not-cited':             { bg: '#FEF2F2', text: '#991B1B' },
@@ -122,14 +116,14 @@ function StatusPill({ status, styles }: { status: string; styles: { label: strin
 // ─── TOC ─────────────────────────────────────────────────────────────────────
 
 const TOC_ITEMS = [
-  { n: 1, label: 'Visibility Assessment',            free: true },
-  { n: 2, label: 'Failure Mode Diagnosis',           free: true },
-  { n: 3, label: 'Platform Priority Overview',       free: true },
-  { n: 4, label: 'Positioning vs. Sector',           free: true },
-  { n: 5, label: 'Competitor Displacement',          free: false },
-  { n: 6, label: 'Positioning Gap Report',           free: false },
-  { n: 7, label: 'Target Query Coverage',            free: false },
-  { n: 8, label: '60-Day Action Queue',              free: false },
+  { n: 1, label: 'Visibility Assessment',                       free: true },
+  { n: 2, label: 'Failure Mode Diagnosis',                      free: true },
+  { n: 3, label: 'Platform Priority Overview',                  free: true },
+  { n: 4, label: 'Positioning vs. Sector',                      free: true },
+  { n: 5, label: "Who AI mentions when you're not named",       free: false },
+  { n: 6, label: 'How AI describes you',                        free: false },
+  { n: 7, label: 'Query coverage',                              free: false },
+  { n: 8, label: 'Sentiment, rank & citation health',           free: false },
 ];
 
 function TableOfContents({ paid }: { paid: boolean }) {
@@ -178,38 +172,25 @@ function TableOfContents({ paid }: { paid: boolean }) {
 }
 
 // ─── Section 1: Visibility Assessment ────────────────────────────────────────
+// S1 PLACEHOLDER — Option A (real single-query proof) replaces this next sprint.
+// See PROJECT_STATE §0b.2. Until Option A is wired, S1 renders an honest static
+// callout instead of the prior self-reported platform table — the table implied
+// per-platform measurement we don't have on the free path.
+// `data` prop retained on the type for forward compat with Option A.
 
-function S1Visibility({ data, paid }: { data: ReportData['s1Visibility']; paid: boolean }) {
+function S1Visibility({ paid }: { data: ReportData['s1Visibility']; paid: boolean }) {
   return (
     <SectionCard id="section-1">
       <SectionBadge n={1} free />
-      <h2 className="text-lg font-bold text-gray-900 mb-1">{data.headline}</h2>
-      <p className="text-sm text-gray-500 mb-5 leading-relaxed">{data.summary}</p>
-
-      <div className="divide-y divide-gray-100 border border-gray-100 rounded-xl overflow-hidden">
-        {data.platforms.map((row) => {
-          const styles = PLATFORM_STATUS_STYLES[row.status];
-          return (
-            <div key={row.platform} className="flex items-start gap-4 px-4 py-3 bg-white">
-              <div className="flex-shrink-0 flex items-center gap-2 w-44">
-                <span className="w-2 h-2 rounded-full flex-shrink-0" style={{ background: styles.dot }} />
-                <span className="text-sm font-medium text-gray-800">{row.platform}</span>
-              </div>
-              <div className="flex-shrink-0 hidden sm:block">
-                <StatusPill status={row.status} styles={styles} />
-              </div>
-              <p className="text-xs text-gray-500 leading-relaxed flex-1">{row.note}</p>
-            </div>
-          );
-        })}
-      </div>
-
-      <p className="mt-4 text-[11px] text-gray-400 leading-relaxed border-t border-gray-100 pt-3">
-        {data.assessmentCaveat}
+      <h2 className="text-lg font-bold text-gray-900 mb-3">Where this report stands</h2>
+      <p className="text-sm text-gray-700 leading-relaxed">
+        The sections below report what you told us and what that pattern usually means.
+        They are not measured. The Full Report runs 50 buyer-intent queries × 4 engines
+        and shows you the actual responses.
       </p>
 
       {paid && (
-        <p className="mt-3 text-[11px] text-gray-400 leading-relaxed italic">
+        <p className="mt-4 text-[11px] text-gray-400 leading-relaxed italic border-t border-gray-100 pt-3">
           Section 1 reflects our initial assessment; see Sections 5–7 for engine-measured results.
         </p>
       )}
@@ -275,6 +256,31 @@ function S3Platforms({ data }: { data: ReportData['s3Platforms'] }) {
 
       <div className="space-y-3">
         {data.platforms.map((row) => {
+          // Not-measured-deferred: AIO + Copilot. RESOLVED-4 in CLAUDE.md keeps the
+          // platform vocabulary at 6, but only the 4 API-callable engines render with
+          // priority + buyer presence. The deferred two render with a Retainer label.
+          if (row.measurementState === 'not-measured-deferred') {
+            return (
+              <div
+                key={row.platform}
+                className="border border-dashed border-gray-200 rounded-xl p-4 bg-gray-50"
+              >
+                <div className="flex items-start justify-between gap-3 mb-2">
+                  <span className="text-sm font-semibold text-gray-700">{row.platform}</span>
+                  <span
+                    className="inline-block text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 rounded"
+                    style={{ background: '#F3F4F6', color: '#6B7280' }}
+                  >
+                    Not measured
+                  </span>
+                </div>
+                <p className="text-xs text-gray-500 leading-relaxed">
+                  Not measured in this report — included in the Visibility Engine Retainer (SGD 4,500/mo).
+                </p>
+              </div>
+            );
+          }
+
           const pStyles = PRIORITY_STYLES[row.priority];
           const barWidth = BUYER_PRESENCE_BAR[row.buyerPresence] ?? 50;
           return (
@@ -395,20 +401,26 @@ function PaywallBlock({ data }: { data: ReportData }) {
           What&rsquo;s in your full report
         </p>
         <h2 className="text-xl sm:text-2xl font-bold text-white mb-3 leading-snug">
-          Four more sections of measured analysis.
+          The four sections below show the rest of what we measured.
         </h2>
-        <p className="text-sm text-white/60 mb-6 leading-relaxed">
-          The free sections above are based on your self-reported data. The sections below are
-          engine-verified — live AI citation tests, competitor displacement data, and a
-          prioritised 60-day fix queue built from your actual gaps.
+        <p className="text-sm text-white/60 mb-4 leading-relaxed">
+          Your free snapshot is the headline. The Full Report opens the per-query × per-engine matrix,
+          the entities AI names instead of you, how AI describes your brand when it does name you,
+          and the limitations of each measurement so you can read it honestly.
+        </p>
+        <p className="text-xs text-white/45 mb-6 leading-relaxed">
+          <span className="font-semibold text-white/65">Not in this report:</span> a 60-day action plan,
+          a recommended positioning sentence, content briefs per query, competitor counter-moves, or
+          owner/ETA assignments — those are consulting deliverables, included in the SGD 2,500 Strategic
+          Baseline + Consult.
         </p>
 
         <ul className="space-y-2.5 mb-6">
           {[
-            { n: 5, label: 'Competitor Displacement', desc: 'Which competitors are cited instead of you, on which platforms, and why' },
-            { n: 6, label: 'Positioning Gap Report', desc: 'How AI engines currently describe you vs. how they should' },
-            { n: 7, label: 'Target Query Coverage', desc: 'Query-by-query citation results across your primary platforms' },
-            { n: 8, label: '60-Day Action Queue', desc: 'Prioritised fix queue ranked by impact and effort' },
+            { n: 5, label: "Who AI mentions when you're not named", desc: 'For each competitor you seeded, how often AI mentioned them across the queries where your brand was not named — by engine and category.' },
+            { n: 6, label: 'How AI describes you', desc: 'Verbatim extracts of how each engine described your brand on the queries where it named you, compared to the positioning you submitted.' },
+            { n: 7, label: 'Query coverage', desc: 'The full 50 buyer-intent queries × 4 engines matrix. Per query: which engines named you, which didn’t, and whether a source was cited.' },
+            { n: 8, label: 'Sentiment, rank & citation health', desc: 'Sentiment distribution, rank when named, citation rate per engine and category, plus the limitations of each signal called out.' },
           ].map((item) => (
             <li key={item.n} className="flex items-start gap-3">
               <span
@@ -433,20 +445,20 @@ function PaywallBlock({ data }: { data: ReportData }) {
             Full measured report (all 8 sections) — emailed as PDF — {data.reportPrice}
           </a>
           <p className="mt-2 text-xs text-white/40">
-            Measured across live AI platforms. Delivered to your email within 1 business day.
+            Four engines: ChatGPT, Claude, Gemini, Perplexity. Delivered to your email within 1 business day.
           </p>
           <div className="mt-4 flex flex-col sm:flex-row gap-x-6 gap-y-2">
             <a
               href={data.calendlyUrl}
               className="text-xs text-white/45 hover:text-white/65 transition-colors"
             >
-              Strategic baseline + consult — SGD $2,500 →
+              Want the 60-day plan? Strategic Baseline + Consult — SGD $2,500 →
             </a>
             <a
               href={data.calendlyUrl}
               className="text-xs text-white/45 hover:text-white/65 transition-colors"
             >
-              Visibility Engine monthly tracking — SGD $4,500/mo →
+              Visibility Engine Retainer (includes Copilot) — SGD $4,500/mo →
             </a>
           </div>
         </div>
@@ -759,9 +771,19 @@ function ReportFooter({ data }: { data: ReportData }) {
         </p>
       </div>
       <p className="mt-4 text-[11px] text-white/45 leading-relaxed">
-        This report is an analytical assessment based on self-reported data and engine-verified citation testing.
-        Free sections are assessments; paid sections reflect live engine measurements at time of generation.
-        Citation patterns shift as AI platforms update their models — results may differ on re-test.
+        {data.meta.paid ? (
+          <>
+            This report combines self-reported assessment (Sections 1–4) with live engine measurement
+            (Sections 5–8) at time of generation. Citation patterns shift as AI platforms update their
+            models — results may differ on re-test.
+          </>
+        ) : (
+          <>
+            This is the free assessment: Sections 1–4 are derived from your self-reported answers and
+            our per-industry reference data — not live AI citation measurements. The Full Report adds
+            the measured 50-query × 4-engine run.
+          </>
+        )}
       </p>
     </footer>
   );
@@ -906,9 +928,10 @@ export default function ReportPage({ data }: { data: ReportData }) {
                 {meta.website && meta.website.trim().length > 1 ? ` · ${meta.website}` : ''}
               </p>
               <p className="text-sm text-white/55 leading-relaxed max-w-lg">
-                This report analyses {meta.entityName}&rsquo;s current AI citation position and
-                identifies the most likely gaps between where you stand now and where
-                the {score.benchmarkLabel ?? meta.industry} benchmark sits.
+                This report analyses {meta.entityName}&rsquo;s current AI citation position
+                against the sector reference median for {meta.industry} — a lookup from our
+                per-industry table, not a live cohort score. The Full Report replaces this
+                reference with a measured 50-query × 4-engine run.
               </p>
             </div>
 
@@ -952,15 +975,15 @@ export default function ReportPage({ data }: { data: ReportData }) {
         ) : (
           <LockedSection
             sectionNumber={5}
-            title="Competitor Displacement Analysis"
+            title="Who AI mentions when you're not named"
             unlockUrl={unlockHref}
             reportPrice={data.reportPrice}
             previewRows={
               <PlaceholderRows rows={[
-                'Competitor A — 3 platforms — structural advantage identified',
-                'Competitor B — 2 platforms — structural advantage identified',
-                'Competitor C — 2 platforms — structural advantage identified',
-                '3 competitors · 12 queries analysed across ChatGPT and Perplexity',
+                'Competitor you seeded — mentioned on X of N queries where your brand was not named',
+                'By engine — Perplexity X · ChatGPT Y · Claude Z · Gemini W',
+                'By category — most often on competitive, service, how-to queries',
+                'Co-mentioned with you — named alongside on N queries',
               ]} />
             }
           />
@@ -972,15 +995,15 @@ export default function ReportPage({ data }: { data: ReportData }) {
         ) : (
           <LockedSection
             sectionNumber={6}
-            title="Positioning Gap Report"
+            title="How AI describes you"
             unlockUrl={unlockHref}
             reportPrice={data.reportPrice}
             previewRows={
               <PlaceholderRows rows={[
-                'Gap 1 — High severity — fix approach identified',
-                'Gap 2 — High severity — fix approach identified',
-                'Gap 3 — Medium severity — fix approach identified',
-                'Gap score: measured against AI perception vs target',
+                'Your stated positioning — verbatim from your form',
+                'How ChatGPT described you — verbatim sentence containing your brand',
+                'How Claude described you — verbatim sentence containing your brand',
+                'Shared vs missing terms — overlap with your stated positioning',
               ]} />
             }
           />
@@ -992,16 +1015,16 @@ export default function ReportPage({ data }: { data: ReportData }) {
         ) : (
           <LockedSection
             sectionNumber={7}
-            title="Target Query Coverage"
+            title="Query coverage"
             unlockUrl={unlockHref}
             reportPrice={data.reportPrice}
             previewRows={
               <PlaceholderRows rows={[
-                'Query 1 — Competitor cited',
-                'Query 2 — Not appearing',
-                'Query 3 — Competitor cited',
-                'Query 4 — Not appearing',
-                '0 of 5 target queries won on primary platform',
+                'Query 1 — awareness — named on 0 of 4 engines · citations on 1 of 4',
+                'Query 2 — competitive — named on 0 of 4 · citations on 1 of 4',
+                'Query 3 — brand — named on 4 of 4 · citations on 1 of 4',
+                'Query 4 — segment — named on 0 of 4 · citations on 1 of 4',
+                'Full 50 × 4 matrix with citation flags',
               ]} />
             }
           />
@@ -1013,16 +1036,16 @@ export default function ReportPage({ data }: { data: ReportData }) {
         ) : (
           <LockedSection
             sectionNumber={8}
-            title="60-Day Action Queue"
+            title="Sentiment, rank & citation health"
             unlockUrl={unlockHref}
             reportPrice={data.reportPrice}
             previewRows={
               <PlaceholderRows rows={[
-                'Week 1 — Action 1 — High impact · Low effort',
-                'Week 1 — Action 2 — High impact · Medium effort',
-                'Week 2 — Action 3 — High impact · High effort',
-                'Week 3 — Action 4 — Medium impact · Medium effort',
-                '8 prioritised actions across content, authority, technical, and competitive categories',
+                'Sentiment — distribution across the responses where your brand was named',
+                'Rank position — where your brand sits when AI lists multiple entities',
+                'Citation rate by engine — flagged with engine-shape caveat',
+                'Citation rate by category — which query types drive citations',
+                'Brand vs non-brand named rate — your real visibility number',
               ]} />
             }
           />
