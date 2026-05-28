@@ -77,7 +77,7 @@ export default function Step2Context({ data, onChange, onNext, onBack, errors }:
     <form onSubmit={handleSubmit} noValidate>
       <h1 className="text-2xl text-gray-900 mb-1">About you</h1>
       <p className="text-sm text-gray-500 mb-6">
-        This helps us tailor your action plan to your specific situation.
+        We use this to anchor your score against the right sector benchmark — so what you see is calibrated to your industry, not a generic average.
       </p>
 
       <div className="space-y-4">

@@ -7,12 +7,22 @@ import { insertLead } from '@/lib/supabase';
 import { sendUserPlanEmail, sendInternalNotification } from '@/lib/email';
 import { buildTeaserReport } from '@/lib/buildTeaserReport';
 import type { FormData } from '@/lib/types';
-import type { GenerateResponse, GenerateErrorResponse } from '@/lib/planTypes';
+import type { GenerateResponse, GenerateErrorResponse, Plan } from '@/lib/planTypes';
 import { getReportPrice } from '@/lib/pricing';
 
 function getAnthropicClient() {
   return new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY });
 }
+
+// ─── Feature flag — gates the wasteful Claude action-plan call ───────────────
+// The Claude-generated plan was stored in `lead.plan_steps` / `lead.plan_quick_win`
+// but never rendered to the user (the free deliverable is a snapshot built
+// programmatically by `buildTeaserReport`, not an action plan). Per RESOLVED-6
+// in CLAUDE.md the free tier is a snapshot — not a plan. We keep the plumbing
+// intact behind this flag so the Option A sprint (real single-query engine
+// proof — PROJECT_STATE §0b.2) can revisit. Default is disabled so every form
+// submit saves ~1000 tokens of Anthropic spend and 2–5s of latency.
+const DISABLE_CLAUDE_ACTION_PLAN = true;
 
 export async function POST(
   req: NextRequest
@@ -48,56 +58,62 @@ export async function POST(
     targetQueries: formData.targetQueries || null,
   });
 
-  // Call Claude
-  let rawText: string;
-  try {
-    console.log('[generate] calling Anthropic API...');
-    const message = await getAnthropicClient().messages.create({
-      model: 'claude-sonnet-4-6',
-      max_tokens: 1000,
-      system: SYSTEM_PROMPT,
-      messages: [
-        { role: 'user', content: buildUserMessage(formData) },
-      ],
-    });
+  // Generate plan — gated by DISABLE_CLAUDE_ACTION_PLAN (see above).
+  let plan: Plan;
+  if (DISABLE_CLAUDE_ACTION_PLAN) {
+    plan = { steps: [], quickWin: '' };
+    console.log('[generate] Claude action-plan call gated off — emitting empty plan');
+  } else {
+    let rawText: string;
+    try {
+      console.log('[generate] calling Anthropic API...');
+      const message = await getAnthropicClient().messages.create({
+        model: 'claude-sonnet-4-6',
+        max_tokens: 1000,
+        system: SYSTEM_PROMPT,
+        messages: [
+          { role: 'user', content: buildUserMessage(formData) },
+        ],
+      });
 
-    const firstBlock = message.content[0];
-    if (firstBlock.type !== 'text') {
-      throw new Error('Unexpected content block type from Claude');
+      const firstBlock = message.content[0];
+      if (firstBlock.type !== 'text') {
+        throw new Error('Unexpected content block type from Claude');
+      }
+      rawText = firstBlock.text;
+      console.log('[generate] Anthropic response received, length:', rawText.length);
+    } catch (err) {
+      console.error('[generate] Claude API error:', err);
+      return NextResponse.json(
+        {
+          error: 'Failed to generate plan — the AI service returned an error.',
+          code: 'API_ERROR',
+        },
+        { status: 502 }
+      );
     }
-    rawText = firstBlock.text;
-    console.log('[generate] Anthropic response received, length:', rawText.length);
-  } catch (err) {
-    console.error('[generate] Claude API error:', err);
-    return NextResponse.json(
-      {
-        error: 'Failed to generate plan — the AI service returned an error.',
-        code: 'API_ERROR',
-      },
-      { status: 502 }
-    );
-  }
 
-  // Parse the structured response
-  let plan;
-  try {
-    plan = parsePlan(rawText);
-    console.log('[generate] plan parsed successfully:', { stepCount: plan.steps.length, hasQuickWin: !!plan.quickWin });
-  } catch (err) {
-    console.error('[generate] Parse error. Raw response:\n', rawText);
-    console.error('[generate] Parse error detail:', err);
-    return NextResponse.json(
-      {
-        error: 'Failed to parse the generated plan. Please try again.',
-        code: 'PARSE_ERROR',
-      },
-      { status: 500 }
-    );
+    try {
+      plan = parsePlan(rawText);
+      console.log('[generate] plan parsed successfully:', { stepCount: plan.steps.length, hasQuickWin: !!plan.quickWin });
+    } catch (err) {
+      console.error('[generate] Parse error. Raw response:\n', rawText);
+      console.error('[generate] Parse error detail:', err);
+      return NextResponse.json(
+        {
+          error: 'Failed to parse the generated plan. Please try again.',
+          code: 'PARSE_ERROR',
+        },
+        { status: 500 }
+      );
+    }
   }
 
   // Build free teaser report (programmatic, no second Claude call)
   const reportToken = crypto.randomUUID();
-  const baseUrl     = process.env.NEXT_PUBLIC_BASE_URL ?? 'https://visibilityview.netlify.app';
+  // Strip trailing slashes — env values often arrive with one, which produces
+  // double-slash URLs like `…maxifidigital.com//r/{token}` on concat.
+  const baseUrl     = (process.env.NEXT_PUBLIC_BASE_URL ?? 'https://visibilityview.netlify.app').replace(/\/+$/, '');
   const reportUrl   = `${baseUrl}/r/${reportToken}`;
   const unlockUrl   = process.env.REPORT_CHECKOUT_URL ?? process.env.CALENDLY_URL ?? `${baseUrl}/report/unlock`;
   const calendlyUrl = process.env.CALENDLY_URL ?? 'https://lunacal.ai/maxifidigital/';
@@ -111,9 +127,13 @@ export async function POST(
     calendlyUrl,
   );
 
-  // Persist to Supabase — graceful degradation on failure
+  // Persist to Supabase — graceful degradation on failure.
+  // The response always carries the real reportToken (matching reportUrl) so
+  // the client routes to /r/{token} consistently. On Supabase failure the
+  // /r/{token} page renders its "Report not found" branch (graceful), which
+  // is better UX than the prior pattern of wiping reportToken='' and
+  // falling through to /results/{id} with a sessionId not in the DB.
   let id: string;
-  let reportTokenOut = reportToken;
   try {
     console.log('[generate] competitors being saved:', formData.competitors || null);
     console.log('[generate] inserting lead to Supabase...');
@@ -133,11 +153,10 @@ export async function POST(
       });
     });
   } catch (err) {
-    console.error('[generate] Supabase insert failed — falling back to session ID:', err);
+    console.error('[generate] Supabase insert failed — token will route to /r/{token} "Report not found":', err);
     id = generateSessionId();
-    reportTokenOut = '';
   }
 
   console.log('[generate] returning id:', id);
-  return NextResponse.json({ id, plan, reportToken: reportTokenOut, reportUrl }, { status: 200 });
+  return NextResponse.json({ id, plan, reportToken, reportUrl }, { status: 200 });
 }

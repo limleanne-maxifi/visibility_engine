@@ -19,7 +19,7 @@ export default function Step1Identity({ data, onChange, onNext, errors }: Props)
     <form onSubmit={handleSubmit} noValidate>
       <h1 className="text-2xl text-gray-900 mb-1">Let&apos;s get started</h1>
       <p className="text-sm text-gray-500 mb-6">
-        Takes about 2 minutes. You&apos;ll get a free personalised action plan straight away — no sales call required.
+        Takes about 2 minutes. You&apos;ll see where you actually stand with AI engines — your visibility score and a free snapshot, straight away, no sales call required.
       </p>
 
       <div className="space-y-4">

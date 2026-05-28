@@ -168,7 +168,7 @@ export default function Step5Goals({ data, onChange, onNext, onBack, errors, ind
     <form onSubmit={handleSubmit} noValidate>
       <h1 className="text-2xl text-gray-900 mb-1">Your visibility gap</h1>
       <p className="text-sm text-gray-500 mb-6">
-        Understanding what concerns you most helps us personalise your action plan.
+        Tells us which gap to lead with in your snapshot — so the diagnosis fits the question you actually came in with.
       </p>
 
       {/* Visibility Gap */}

@@ -88,40 +88,57 @@ export default async function UnlockPage({ searchParams }: Props) {
 
           <div className="card">
             <span className="section-num">What the full report measures</span>
-            <h2 className="section-h2">Four measured sections. Real AI tests. Your actual gaps.</h2>
+            <h2 className="section-h2">Four measured sections. The data behind your visibility.</h2>
             <p className="section-sub">
-              We run live queries across the AI platforms your buyers use and record exactly what
-              they return — then turn it into a prioritised plan you can act on this week.
+              Four engines measured: ChatGPT, Claude, Gemini, Perplexity. We run 50 buyer-intent
+              queries across all four and report exactly what they return. Microsoft Copilot is
+              included in the SGD 4,500/mo Visibility Engine Retainer.
             </p>
             <div className="gets">
               <div className="get">
                 <div className="n">5</div>
                 <div>
-                  <h3>Competitor Displacement</h3>
-                  <p>The specific competitors cited instead of you, on each platform, and the structural advantage letting them win.</p>
+                  <h3>Who AI mentions when you&rsquo;re not named</h3>
+                  <p>For each competitor you seeded, how often AI mentioned them across the queries where your brand was not named — by engine and by query category.</p>
                 </div>
               </div>
               <div className="get">
                 <div className="n">6</div>
                 <div>
-                  <h3>Positioning Gap Report</h3>
-                  <p>How AI engines describe you today versus how they should — with the exact changes to close the gap.</p>
+                  <h3>How AI describes you</h3>
+                  <p>Verbatim extracts of how each engine described your brand on the queries where it named you, compared to the positioning you submitted. Reports text, not a recommended rewrite.</p>
                 </div>
               </div>
               <div className="get">
                 <div className="n">7</div>
                 <div>
-                  <h3>Target Query Coverage</h3>
-                  <p>Query-by-query results: which buyer questions you appear in, which you don&rsquo;t, and who&rsquo;s cited in your place.</p>
+                  <h3>Query coverage matrix (50 queries × 4 engines)</h3>
+                  <p>For each query: which engines named you, which didn&rsquo;t, and whether a source was cited. No prioritisation — that is consulting work, not measurement.</p>
                 </div>
               </div>
               <div className="get">
                 <div className="n">8</div>
                 <div>
-                  <h3>60-Day Action Queue</h3>
-                  <p>A week-by-week fix list ranked by impact and effort — the fastest path to getting cited.</p>
+                  <h3>Sentiment, rank &amp; citation health (with limitations called out)</h3>
+                  <p>Sentiment distribution, rank when named, citation rate per engine and category, plus the limitations of each signal so you can read this report honestly.</p>
                 </div>
               </div>
+            </div>
+            <div
+              style={{
+                marginTop: '20px',
+                padding: '14px 16px',
+                borderRadius: '8px',
+                background: '#FFFBEB',
+                borderLeft: '3px solid #F59E0B',
+              }}
+            >
+              <p style={{ margin: 0, fontSize: '13px', lineHeight: 1.6, color: '#92400E' }}>
+                <strong>Not in this report:</strong> a 60-day action plan, a recommended positioning sentence,
+                content briefs per query, competitor counter-moves, or owner/ETA assignments. Those are
+                consulting deliverables — included in our SGD 2,500 Strategic Baseline + Consult engagement.
+                The Full Report is the measurement; the consult is what you do about it.
+              </p>
             </div>
           </div>
 
@@ -129,43 +146,43 @@ export default async function UnlockPage({ searchParams }: Props) {
             <span className="section-num">A look inside</span>
             <h2 className="section-h2">This is the depth you&rsquo;ll get.</h2>
             <p className="section-sub">
-              Below is an <strong>example</strong> of the Competitor Displacement section. Your report
-              will show <em>your</em> actual competitors and platforms, measured from live tests.
+              Below is an <strong>example</strong> of the &ldquo;Who AI mentions when you&rsquo;re not named&rdquo;
+              section. Your report will show the competitors you seeded, on the four measured engines.
             </p>
             <div className="sample">
               <div className="sample-label">Example — yours will show your data</div>
               <div className="sample-inner">
                 <div className="st">Section 5 · Full report</div>
-                <h4>Competitor Displacement Analysis</h4>
+                <h4>Who AI mentions when you&rsquo;re not named</h4>
                 <div className="cmp">
                   <div>
-                    <div className="name">Competitor A</div>
+                    <div className="name">Competitor A (one you seeded)</div>
                     <div className="tags">
                       <span className="tag">ChatGPT</span>
                       <span className="tag">Perplexity</span>
-                      <span className="tag">Google AI</span>
+                      <span className="tag">Gemini</span>
                     </div>
                   </div>
-                  <div className="pill">Cited 9 / 12</div>
+                  <div className="pill">Mentioned 9 / 50</div>
                 </div>
                 <div className="cmp">
                   <div>
-                    <div className="name">Competitor B</div>
+                    <div className="name">Competitor B (one you seeded)</div>
                     <div className="tags">
                       <span className="tag">ChatGPT</span>
-                      <span className="tag">Copilot</span>
+                      <span className="tag">Claude</span>
                     </div>
                   </div>
-                  <div className="pill">Cited 7 / 12</div>
+                  <div className="pill">Mentioned 7 / 50</div>
                 </div>
                 <div className="cmp">
                   <div>
-                    <div className="name">Competitor C</div>
+                    <div className="name">Competitor C (one you seeded)</div>
                     <div className="tags">
                       <span className="tag">Perplexity</span>
                     </div>
                   </div>
-                  <div className="pill">Cited 5 / 12</div>
+                  <div className="pill">Mentioned 5 / 50</div>
                 </div>
                 <div className="cmp">
                   <div>
@@ -174,7 +191,7 @@ export default async function UnlockPage({ searchParams }: Props) {
                       <span className="tag">—</span>
                     </div>
                   </div>
-                  <div className="pill">Cited 0 / 12</div>
+                  <div className="pill">Named 0 / 50</div>
                 </div>
               </div>
               <div className="sample-fade"></div>
@@ -282,7 +299,7 @@ export default async function UnlockPage({ searchParams }: Props) {
               </details>
               <details>
                 <summary>How is this different from the free snapshot?</summary>
-                <p>The free snapshot is an assessment based on your own inputs. The full report adds four measured sections — real competitor citations, query-by-query coverage, and a prioritised 60-day fix plan — from live AI tests on your domain.</p>
+                <p>The free snapshot is an assessment based on your own inputs. The full report adds four measured sections — competitor mentions per query, verbatim descriptors, the full 50-query × 4-engine coverage matrix, and the engine-output limitations — from live AI tests across ChatGPT, Claude, Gemini and Perplexity. A 60-day action plan is not part of the Full Report; that&rsquo;s the SGD 2,500 Strategic Baseline + Consult.</p>
               </details>
               <details>
                 <summary>What if it&rsquo;s not useful?</summary>

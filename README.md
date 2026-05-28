@@ -2,16 +2,16 @@
 
 ## 1. Project Overview
 
-AEO Visibility Check is a lead generation tool built for Maxifi Digital that helps professionals and businesses understand their current presence in AI-powered search (ChatGPT, Perplexity, Google AI Overviews, etc.). Visitors complete a short 5-step assessment about their role, industry, and AEO awareness; the tool calls the Claude API to generate a personalised action plan, stores the lead in Supabase, sends the plan to the user via email, and notifies the Maxifi team — all in a single form submission. The results page is shareable by link and includes a booking CTA for Maxifi's AEO audit service.
+AEO Visibility Check is the lead-generation funnel for Maxifi Digital. Visitors complete a 6-step assessment about their role, industry, and AEO awareness; the tool computes a 4-signal AI Visibility score, builds a free **snapshot** programmatically from the form answers (no LLM call), stores the lead in Supabase, and emails the user a link to view the snapshot at `/r/{token}`. Maxifi staff receive an internal notification on each submission. The snapshot is the free deliverable; the paid SGD 250 **Full Report** (50-query × 4-engine measured run via the AI Visibility Engine) is offered via the unlock page. Per RESOLVED-6 in CLAUDE.md, "snapshot" and "report" are not interchangeable. The Claude API plumbing (`/api/generate` Claude call + `parsePlan`) is currently gated off via the `DISABLE_CLAUDE_ACTION_PLAN` constant — left intact for the Option A sprint (single real engine query) to revisit.
 
 ## 2. Tech Stack
 
 - **Next.js 14** — App Router, Server Components, API Routes
 - **TypeScript** — strict mode throughout, no `any` types
 - **Tailwind CSS** — utility-first styling, accent colour `#534AB7`
-- **Claude API** (`claude-sonnet-4-20250514`) — AI plan generation via `@anthropic-ai/sdk`
+- **Claude API** (`@anthropic-ai/sdk`) — wired but currently gated off (see `DISABLE_CLAUDE_ACTION_PLAN` in `app/api/generate/route.ts`); preserved for the Option A sprint
 - **Supabase** — PostgreSQL lead storage via `@supabase/supabase-js`
-- **Resend** — Transactional email (HTML plan email to user + plain text notification to Maxifi)
+- **Resend** — Transactional email (HTML snapshot-link email to user + plain text notification to Maxifi)
 
 ## 3. Environment Variables
 

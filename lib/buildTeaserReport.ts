@@ -18,6 +18,7 @@ import type {
   PlatformPrioritySection,
   PlatformPriorityRow,
   PlatformPriority,
+  PlatformMeasurementState,
   BuyerPresence,
   PositioningAssessmentSection,
   AlignmentLevel,
@@ -29,6 +30,15 @@ import {
   getAllCompetitors,
   inferBusinessModel,
 } from '@/lib/scoring';
+
+// Engines the AI Visibility Engine actually probes via API on Free + Full tiers.
+// AIO + Copilot are deferred to the Retainer; they render in 'not-measured-deferred'
+// state in S3. See PlatformMeasurementState in reportTypes.ts and RESOLVED-4 in CLAUDE.md.
+const MEASURED_PLATFORMS = new Set(['ChatGPT', 'Claude', 'Gemini', 'Perplexity']);
+
+function measurementStateFor(platform: string): PlatformMeasurementState {
+  return MEASURED_PLATFORMS.has(platform) ? 'measured' : 'not-measured-deferred';
+}
 
 // ─── Score band ───────────────────────────────────────────────────────────────
 
@@ -178,10 +188,10 @@ const FAILURE_MODES: Record<string, FailureModeDef> = {
     headline: (e) => `Likely failure mode: competitors cited ahead of ${e}`,
     explanation: (e, ind) =>
       `Based on your reported experience, our analysis suggests competitors are being cited in place of ${e} when buyers ask AI tools for recommendations in ${ind}. This typically signals a content structure or authority gap — not a product gap.`,
-    rootCauses: (e, pos, comp) => [
-      comp.length > 0
-        ? `${comp.slice(0, 2).join(' and ')} likely ${comp.length === 1 ? 'has' : 'have'} stronger cross-platform citation signals — appearing in more third-party reviews, analyst coverage, and structured directory listings than ${e}.`
-        : `Your competitors likely have stronger cross-platform citation signals — appearing in more third-party reviews, analyst coverage, and structured directory listings than ${e}.`,
+    rootCauses: (e, pos, _comp) => [
+      // Free-tier S2 never names specific competitors — the user-supplied list is a guess,
+      // not a measurement. Engine-seeded competitors (gap 3) belong to the paid path only.
+      `Your competitors likely have stronger cross-platform citation signals — appearing in more third-party reviews, analyst coverage, and structured directory listings than ${e}.`,
       `${e}'s website may not be directly answering the buyer questions AI engines are optimising for${pos ? `, particularly queries related to "${pos}"` : ''}.`,
       `AI engines tend to default to brands they have seen cited repeatedly across multiple independent sources. Increasing the volume and consistency of external citations for ${e} is likely the primary lever.`,
     ],
@@ -460,10 +470,11 @@ function buildS3(formData: FormData): PlatformPrioritySection {
   const platforms: PlatformPriorityRow[] = ALL_PLATFORMS.map((p) => {
     const def = defs[p] ?? { priority: 'monitor' as PlatformPriority, rationale: () => 'Worth a baseline check for your sector.', buyerPresence: 'low' as BuyerPresence };
     return {
-      platform:      p,
-      priority:      def.priority,
-      rationale:     def.rationale(formData.industry),
-      buyerPresence: def.buyerPresence,
+      platform:         p,
+      priority:         def.priority,
+      rationale:        def.rationale(formData.industry),
+      buyerPresence:    def.buyerPresence,
+      measurementState: measurementStateFor(p),
     };
   });
 
