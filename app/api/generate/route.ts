@@ -111,7 +111,9 @@ export async function POST(
 
   // Build free teaser report (programmatic, no second Claude call)
   const reportToken = crypto.randomUUID();
-  const baseUrl     = process.env.NEXT_PUBLIC_BASE_URL ?? 'https://visibilityview.netlify.app';
+  // Strip trailing slashes — env values often arrive with one, which produces
+  // double-slash URLs like `…maxifidigital.com//r/{token}` on concat.
+  const baseUrl     = (process.env.NEXT_PUBLIC_BASE_URL ?? 'https://visibilityview.netlify.app').replace(/\/+$/, '');
   const reportUrl   = `${baseUrl}/r/${reportToken}`;
   const unlockUrl   = process.env.REPORT_CHECKOUT_URL ?? process.env.CALENDLY_URL ?? `${baseUrl}/report/unlock`;
   const calendlyUrl = process.env.CALENDLY_URL ?? 'https://lunacal.ai/maxifidigital/';
@@ -125,9 +127,13 @@ export async function POST(
     calendlyUrl,
   );
 
-  // Persist to Supabase — graceful degradation on failure
+  // Persist to Supabase — graceful degradation on failure.
+  // The response always carries the real reportToken (matching reportUrl) so
+  // the client routes to /r/{token} consistently. On Supabase failure the
+  // /r/{token} page renders its "Report not found" branch (graceful), which
+  // is better UX than the prior pattern of wiping reportToken='' and
+  // falling through to /results/{id} with a sessionId not in the DB.
   let id: string;
-  let reportTokenOut = reportToken;
   try {
     console.log('[generate] competitors being saved:', formData.competitors || null);
     console.log('[generate] inserting lead to Supabase...');
@@ -147,11 +153,10 @@ export async function POST(
       });
     });
   } catch (err) {
-    console.error('[generate] Supabase insert failed — falling back to session ID:', err);
+    console.error('[generate] Supabase insert failed — token will route to /r/{token} "Report not found":', err);
     id = generateSessionId();
-    reportTokenOut = '';
   }
 
   console.log('[generate] returning id:', id);
-  return NextResponse.json({ id, plan, reportToken: reportTokenOut, reportUrl }, { status: 200 });
+  return NextResponse.json({ id, plan, reportToken, reportUrl }, { status: 200 });
 }

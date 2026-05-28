@@ -12,7 +12,9 @@ interface Props {
 }
 
 function getEnv() {
-  const baseUrl     = process.env.NEXT_PUBLIC_BASE_URL ?? 'https://visibilityview.netlify.app';
+  // Strip trailing slashes — env values often arrive with one, which produces
+  // double-slash URLs on concat.
+  const baseUrl     = (process.env.NEXT_PUBLIC_BASE_URL ?? 'https://visibilityview.netlify.app').replace(/\/+$/, '');
   const unlockBase  = `${baseUrl}/report/unlock`;
   const calendlyUrl = process.env.CALENDLY_URL ?? 'https://lunacal.ai/maxifidigital/';
   const reportPrice = process.env.REPORT_PRICE || getReportPrice();
