@@ -322,15 +322,22 @@ function S4Positioning({ data }: { data: ReportData['s4Positioning'] }) {
       <h2 className="text-lg font-bold text-gray-900 mb-1">{data.headline}</h2>
       <p className="text-sm text-gray-500 mb-5 leading-relaxed">{data.sectorContext}</p>
 
-      {/* Positioning statement */}
+      {/* Positioning statement — hide the "Your stated positioning" header + quoted
+          value when the user didn't supply one. The alignment-label pill carries
+          the message in the missing case (label: "No positioning provided. Add it
+          to sharpen…"). See assessAlignmentLevel() in lib/buildTeaserReport.ts. */}
       <div className="rounded-xl p-4 mb-4" style={{ background: '#F9FAFB' }}>
-        <p className="text-[10px] font-bold uppercase tracking-wider text-gray-400 mb-1">
-          Your stated positioning
-        </p>
-        <p className="text-sm font-semibold text-gray-800 italic">
-          &ldquo;{data.entityPositioning}&rdquo;
-        </p>
-        <div className="mt-2">
+        {data.alignmentLevel !== 'missing' && (
+          <>
+            <p className="text-[10px] font-bold uppercase tracking-wider text-gray-400 mb-1">
+              Your stated positioning
+            </p>
+            <p className="text-sm font-semibold text-gray-800 italic">
+              &ldquo;{data.entityPositioning}&rdquo;
+            </p>
+          </>
+        )}
+        <div className={data.alignmentLevel === 'missing' ? '' : 'mt-2'}>
           <StatusPill status={data.alignmentLevel} styles={aStyles} />
         </div>
       </div>
