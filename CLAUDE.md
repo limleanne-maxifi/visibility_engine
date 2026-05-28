@@ -60,3 +60,60 @@ Where to apply the distinction:
 - The S3 not-measured row label is shown on both renders too; the label drops the tier noun entirely ("Not measured — included in the Visibility Engine Retainer…") rather than threading `paid` into `S3Platforms`.
 
 Mechanism: this is a copy rule, not a type rule. The `ReportData` type stays named `ReportData` (it's the data shape, not the user-facing product). Internal identifiers (`buildTeaserReport`, `reportPrice`, `report_token`, etc.) can keep their names — terminology applies only to strings the user sees.
+
+### RESOLVED-7: Supabase RLS policies on `aeo_leads` (set 2026-05-28)
+
+The `aeo_leads` table has RLS **enabled**. Required policies (both bound to the `anon` role, since the app uses the anon key for reads AND writes via `lib/supabase.ts` `getClient`):
+
+- `anon insert leads` — INSERT, to `anon`, WITH CHECK `(true)`
+- `anon read leads by token` — SELECT, to `anon`, USING `(true)`
+
+**Do NOT disable RLS and do NOT leave a policy bound to no roles.** A policy with `applied_to = {}` (empty `polroles` array) applies to nobody and silently fails all operations against it — this exact misconfiguration took the production funnel down on 2026-05-28 (zero leads captured for an unknown window) until fixed. If inserts or `/r/{token}` reads ever fail silently again, **FIRST check `pg_policy.polroles` includes the `anon` role** (not `{}`).
+
+Diagnostic SQL:
+
+```sql
+select
+  polname  as policy_name,
+  case polcmd when 'r' then 'SELECT'
+              when 'a' then 'INSERT'
+              when 'w' then 'UPDATE'
+              when 'd' then 'DELETE'
+              when '*' then 'ALL'  end as command,
+  polroles as polroles_raw,
+  array(select rolname from pg_roles where oid = any(polroles)) as applied_to_named,
+  pg_get_expr(polqual,      polrelid) as using_expr,
+  pg_get_expr(polwithcheck, polrelid) as with_check_expr
+from pg_policy
+where polrelid = 'public.aeo_leads'::regclass;
+```
+
+(`polroles_raw = '{0}'` means PUBLIC; `'{}'` means nobody; an array containing the anon role's OID means anon.)
+
+**Future-better:** move server-side writes to the `SUPABASE_SERVICE_ROLE_KEY` (RLS bypass for trusted server routes only — never exposed to client). Then the anon INSERT policy can be removed and only the SELECT policy remains. Until that lands (PROJECT_STATE §7 backlog #1), keep both anon policies.
+
+### RESOLVED-8: Test through the real React form path, not hand-crafted curl
+
+Hand-crafted curl payloads to `/api/generate` crash the route **before the DB call** due to field-shape mismatches:
+
+- The route reads `formData.platforms.find(...)` and `formData.challenges.join(...)` — these require **arrays**. A curl that sends `goals` instead of `challenges`, or omits `platforms`, throws `Cannot read properties of undefined` inside `insertLead` before any Supabase call. The try/catch in `/api/generate` then logs a generic "Supabase insert failed" but the actual cause is JS-side.
+- The route reads `aiPresence` not `awareness`, `competitiveStanding` not `competitive`, `websiteUrl` not `website`, `company` not `companyName`. Field-name mismatches make the values silently undefined and propagate downstream.
+- The 200 API response (with a UUID-shaped `id`, real `reportToken`, empty `plan`) is consistent with **both** a successful write AND a pre-DB crash. The response alone does not prove a row was written.
+
+**To verify the funnel works:** submit the real React form in an incognito tab → check `aeo_leads` for the row → open the returned `/r/{token}`. The form components send correctly-shaped `FormData`.
+
+If curl is necessary (e.g. for deploy-status polling), match the live `FormData` shape exactly — required fields: `firstName`, `email`, `occupation`, `company`, `websiteUrl`, `industry`, `aiPresence`, `competitiveStanding`, `queryCoverage`, `platformConsistency`, `platforms` (array of `{value, priority}`), `challenges` (array), `visibilityGap`, `consent`.
+
+### RESOLVED-9: Deploy previews cannot write to Supabase
+
+Netlify deploy-preview context lacks correctly-scoped Supabase env vars (`SUPABASE_URL` / `SUPABASE_ANON_KEY` are set to Production scope only), so inserts silently fail on preview deploys even when production works. **Smoke-test honesty/render changes on PRODUCTION** (or via a known-good existing token), not on previews. Backlog item (PROJECT_STATE §7 backlog #3): scope `SUPABASE_URL` and `SUPABASE_ANON_KEY` to **Deploy Previews** in Netlify so previews become a faithful test environment.
+
+### RESOLVED-10: S1 is a static placeholder, awaiting Option A
+
+`S1Visibility` in `components/report/ReportPage.tsx` currently renders an honest static callout:
+
+> Where this snapshot stands — The sections below cover what you told us and what that pattern usually means. They are not measured. The Full Report runs 50 buyer-intent queries × 4 engines and shows you the actual responses.
+
+**Do NOT renumber sections** to fill the S1 slot. S1 is reserved for **Option A** (fire one real engine query on submit, render the verbatim AI response — see PROJECT_STATE §0b.2). The `buildS1` builder in `lib/buildTeaserReport.ts` is left intact for forward-compatibility; the renderer currently ignores its output (the section type still flows through `ReportData['s1Visibility']`).
+
+Option A requires deploying the engine (`server.py` in `ai-visibility-engine`) as a hosted service first — it is laptop-only today. The service-role write migration (RESOLVED-7 future-better + PROJECT_STATE §7 backlog #1) can ride along in the same sprint.
