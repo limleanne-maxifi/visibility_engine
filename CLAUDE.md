@@ -30,7 +30,7 @@ Any field referencing a platform must use exactly one of these strings. No alias
 
 The engine enforces this via a constant/enum. The renderer has no validation.
 
-**2026-05-28 reconciliation — measured vs not-measured per tier:** the vocabulary stays at 6 platforms, but only the 4 API-callable engines (`ChatGPT`, `Claude`, `Gemini`, `Perplexity`) actually produce data on the Free and Full Report tiers. `Google AI Overviews` and `Microsoft Copilot` render in an explicit `not-measured-deferred` state with the label *"Not measured in this report — included in the Visibility Engine Retainer (SGD 4,500/mo)"*. They MUST NOT show fabricated citation counts, percentages, or status pills on Free/Full. The Retainer tier is where all 6 produce data. The mechanism: `PlatformMeasurementState = 'measured' | 'not-measured-deferred'` on `PlatformPriorityRow` (`lib/reportTypes.ts`); `buildS3` in `lib/buildTeaserReport.ts` sets it; `S3Platforms` in `components/report/ReportPage.tsx` branches on it. Future sessions: do not re-add numbers for AIO/Copilot in the Free/Full renderer.
+**2026-05-28 reconciliation — measured vs not-measured per tier:** the vocabulary stays at 6 platforms, but only the 4 API-callable engines (`ChatGPT`, `Claude`, `Gemini`, `Perplexity`) actually produce data on the Free and Full Report tiers. `Google AI Overviews` and `Microsoft Copilot` render in an explicit `not-measured-deferred` state with the label *"Not measured — included in the Visibility Engine Retainer (SGD 4,500/mo)"* (tier-neutral phrasing — the row is shown on both the free snapshot and paid report, see RESOLVED-6). They MUST NOT show fabricated citation counts, percentages, or status pills on Free/Full. The Retainer tier is where all 6 produce data. The mechanism: `PlatformMeasurementState = 'measured' | 'not-measured-deferred'` on `PlatformPriorityRow` (`lib/reportTypes.ts`); `buildS3` in `lib/buildTeaserReport.ts` sets it; `S3Platforms` in `components/report/ReportPage.tsx` branches on it. Future sessions: do not re-add numbers for AIO/Copilot in the Free/Full renderer.
 
 **Catalog vs measured-data surfaces (binding rule for future sections).** Two surface types exist; they have different platform-display rules:
 
@@ -42,3 +42,21 @@ When introducing a new section, classify it explicitly into one of these two cat
 ### RESOLVED-5: Engine does not compute benchmarks in v1
 
 `score.benchmarkAvg` and `score.benchmarkLabel` are not emitted by the engine. The fulfillment script unconditionally preserves the teaser's static-table values. No silent overwrite. Engine-computed benchmarks require a real scored-company corpus and are a v2 feature.
+
+### RESOLVED-6: Terminology — "snapshot" (free) vs "report" / "Full Report" (paid)
+
+Naming rule, binding across all user-facing surfaces:
+
+- **Free tier** = **"snapshot"**. The self-assessment score + Sections 1–4 served at `/r/{token}`, derived from the user's form answers + per-industry reference benchmark. Email subject lines and body, form copy, `/r/{token}` page chrome, and the unlock page all refer to it as "snapshot" (or "free snapshot").
+- **Paid SGD 250 tier** = **"report"** / **"Full Report"**. The 50-query × 4-engine measured PDF deliverable from the AI Visibility Engine. Email upsells, paywall block, unlock page pitch, and the locked-section badges call it "Full Report" (or "your full report" once the user has paid, but in pre-purchase upsell copy use "the Full Report" without the possessive).
+
+**Never call the free deliverable a "report."** "Free report" is a contradiction — it promises the paid product's name for free. The two products must remain crisply distinguished in every user-facing string.
+
+Where to apply the distinction:
+- Free-tier surfaces (free `/r/{token}` render, snapshot-delivery email body, form steps, consent checkbox): use "snapshot".
+- Paid-tier surfaces (paywall block, unlock page, locked-section badges, upsell paragraphs in the email, paid `/r/{token}` render): use "report" / "Full Report".
+- `LockedSection` badges and the "Unlocked in full report" eyebrow correctly describe the paid product — leave as-is.
+- The hero eyebrow, footer label, TOC heading, FooterCta sentence, and `S1Visibility` placeholder text are shown on both renders and must condition the noun on `data.meta.paid` (snapshot when false, report when true).
+- The S3 not-measured row label is shown on both renders too; the label drops the tier noun entirely ("Not measured — included in the Visibility Engine Retainer…") rather than threading `paid` into `S3Platforms`.
+
+Mechanism: this is a copy rule, not a type rule. The `ReportData` type stays named `ReportData` (it's the data shape, not the user-facing product). Internal identifiers (`buildTeaserReport`, `reportPrice`, `report_token`, etc.) can keep their names — terminology applies only to strings the user sees.

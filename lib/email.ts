@@ -71,7 +71,7 @@ export async function sendUserPlanEmail(lead: AeoLeadRow, reportUrl?: string): P
        <strong>Context:</strong> ${benchmarkContext?.contextExplanation}
        <br/><br/>
        <strong>What this means for you:</strong> ${benchmarkContext?.interpretation}`
-    : `Your responses point to <strong>significant untapped AI visibility</strong> in ${lead.industry} — most of your category's buyer queries are likely being answered without ${entity} in the response. The good news: this is a structural, fixable gap, and your full report shows exactly where to start.`;
+    : `Your responses point to <strong>significant untapped AI visibility</strong> in ${lead.industry} — most of your category's buyer queries are likely being answered without ${entity} in the response. The good news: this is a structural, fixable gap, and the Full Report shows exactly where to start.`;
 
   // Buyer conversations — adapted to business model
   const buyerConvLine = score > 0 ? (() => {
@@ -106,7 +106,7 @@ export async function sendUserPlanEmail(lead: AeoLeadRow, reportUrl?: string): P
           ? `Based on what you reported, <strong>${competitors.join(', ')}</strong> ${competitors.length === 1 ? 'is' : 'are'} being cited instead of you when ${searcherTerm}.`
           : `A competitor is being cited instead of you when ${searcherTerm}.`
         }
-        Your full report shows the structural reason they&rsquo;re appearing ahead of you — and what to change.
+        The Full Report shows the structural reason they&rsquo;re appearing ahead of you — and what to change.
       </p>
     </td></tr>` : '';
 
@@ -194,14 +194,14 @@ export async function sendUserPlanEmail(lead: AeoLeadRow, reportUrl?: string): P
       </h2>
       ${diagImpact ? `<p style="margin:0 0 12px;font-size:14px;color:#091521;line-height:1.7;">${diagImpact}</p>` : ''}
       <p style="margin:0 0 20px;font-size:14px;color:#091521;line-height:1.7;">
-        Your free report shows where you stand on the four self-reported AI visibility
+        Your free snapshot shows where you stand on the four self-reported AI visibility
         signals &mdash; and where the largest gap sits.
         One report. No subscription, no sales call.
       </p>
       <a href="${primaryReportUrl}"
          style="display:inline-block;background:#ffffff;color:#A8651E;font-size:14px;font-weight:700;
                 text-decoration:none;padding:13px 24px;border-radius:8px;margin-bottom:16px;">
-        View your free AI Visibility Report &rarr;
+        View your free AI Visibility Snapshot &rarr;
       </a>
       <p style="margin:0;font-size:12px;color:#091521;line-height:1.6;">
         AI citation positions shift as AI platforms update their data sources — sometimes significantly within a single quarter.

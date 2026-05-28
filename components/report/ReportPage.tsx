@@ -130,7 +130,7 @@ function TableOfContents({ paid }: { paid: boolean }) {
   return (
     <SectionCard id="toc">
       <h2 className="text-xs font-bold uppercase tracking-widest text-gray-400 mb-4">
-        Report contents
+        {paid ? 'Report contents' : 'Snapshot contents'}
       </h2>
       <ol className="space-y-2.5">
         {TOC_ITEMS.map((item) => {
@@ -182,9 +182,9 @@ function S1Visibility({ paid }: { data: ReportData['s1Visibility']; paid: boolea
   return (
     <SectionCard id="section-1">
       <SectionBadge n={1} free />
-      <h2 className="text-lg font-bold text-gray-900 mb-3">Where this report stands</h2>
+      <h2 className="text-lg font-bold text-gray-900 mb-3">Where this snapshot stands</h2>
       <p className="text-sm text-gray-700 leading-relaxed">
-        The sections below report what you told us and what that pattern usually means.
+        The sections below cover what you told us and what that pattern usually means.
         They are not measured. The Full Report runs 50 buyer-intent queries × 4 engines
         and shows you the actual responses.
       </p>
@@ -275,7 +275,7 @@ function S3Platforms({ data }: { data: ReportData['s3Platforms'] }) {
                   </span>
                 </div>
                 <p className="text-xs text-gray-500 leading-relaxed">
-                  Not measured in this report — included in the Visibility Engine Retainer (SGD 4,500/mo).
+                  Not measured — included in the Visibility Engine Retainer (SGD 4,500/mo).
                 </p>
               </div>
             );
@@ -730,7 +730,7 @@ function FooterCta({ data }: { data: ReportData }) {
         Book a walkthrough with Maxifi Digital
       </h2>
       <p className="text-sm text-white/55 mb-6 max-w-lg mx-auto leading-relaxed">
-        A 30-minute session to walk through your report, clarify the priority actions, and answer
+        A 30-minute session to walk through your {data.meta.paid ? 'report' : 'snapshot'}, clarify the priority actions, and answer
         any questions about your AEO strategy. No obligation.
       </p>
       <a
@@ -752,7 +752,7 @@ function ReportFooter({ data }: { data: ReportData }) {
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
         <div>
           <p className="text-xs text-white/65">
-            AI Visibility Report · {data.meta.entityName}
+            {data.meta.paid ? 'AI Visibility Report' : 'AI Visibility Snapshot'} · {data.meta.entityName}
           </p>
           <p className="text-[11px] text-white/45 mt-0.5">
             Generated {new Date(data.meta.generatedAt).toLocaleDateString('en-GB', { day: 'numeric', month: 'long', year: 'numeric' })}
@@ -892,7 +892,7 @@ export default function ReportPage({ data }: { data: ReportData }) {
           />
         </a>
         <span className="text-[11px] text-white/40 hidden sm:block">
-          AI Visibility Report &nbsp;·&nbsp; {meta.entityName}
+          {paid ? 'AI Visibility Report' : 'AI Visibility Snapshot'} &nbsp;·&nbsp; {meta.entityName}
         </span>
         {!paid && (
           <a
@@ -914,7 +914,7 @@ export default function ReportPage({ data }: { data: ReportData }) {
             className="text-xs font-bold uppercase tracking-widest mb-4"
             style={{ color: '#C87A2F' }}
           >
-            AI Visibility Report &nbsp;·&nbsp; {meta.industry}
+            {paid ? 'AI Visibility Report' : 'AI Visibility Snapshot'} &nbsp;·&nbsp; {meta.industry}
           </p>
 
           <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-8">
@@ -928,7 +928,7 @@ export default function ReportPage({ data }: { data: ReportData }) {
                 {meta.website && meta.website.trim().length > 1 ? ` · ${meta.website}` : ''}
               </p>
               <p className="text-sm text-white/55 leading-relaxed max-w-lg">
-                This report analyses {meta.entityName}&rsquo;s current AI citation position
+                {paid ? 'This report' : 'This snapshot'} analyses {meta.entityName}&rsquo;s current AI citation position
                 against the sector reference median for {meta.industry} — a lookup from our
                 per-industry table, not a live cohort score. The Full Report replaces this
                 reference with a measured 50-query × 4-engine run.

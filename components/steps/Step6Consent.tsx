@@ -16,7 +16,7 @@ function toTitleCase(str: string): string {
 }
 
 const FREE_SECTIONS = [
-  'Where this report stands',
+  'Where this snapshot stands',
   'Failure mode diagnosis',
   'Platform priority overview',
   'Positioning vs. sector',
