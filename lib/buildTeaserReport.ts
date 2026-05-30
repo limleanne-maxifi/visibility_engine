@@ -492,7 +492,7 @@ function buildS3(formData: FormData): PlatformPrioritySection {
 
 function assessAlignmentLevel(positioning: string, industry: string): { level: AlignmentLevel; label: string } {
   if (!positioning || positioning.trim().length < 10) {
-    return { level: 'missing', label: 'No positioning statement provided — cannot assess alignment' };
+    return { level: 'missing', label: 'No positioning provided. Add it to sharpen positioning analysis and competitor framing in the Full Report.' };
   }
 
   const words = positioning.trim().split(/\s+/).length;
@@ -531,7 +531,7 @@ function buildS4(formData: FormData, entity: string): PositioningAssessmentSecti
   if (!positioning || positioning.length < 10) {
     observations.push(
       `No positioning phrase was provided. Without a clear category claim, it is difficult for AI engines to associate ${entity} with a specific buyer need or query type.`,
-      `AI engines default to brands with clear, consistent positioning across multiple sources. Without a statement to anchor against, ${entity} is competing against all vendors in ${formData.industry}.`,
+      `AI engines default to brands with clear, consistent positioning across multiple sources. Without a statement to anchor against, AI has no distinct claim to associate with you — so it groups you with every vendor in your sector.`,
     );
     opportunities.push(
       `Defining a specific, buyer-outcome-focused positioning phrase — such as "the [specialist] [buyer type] rely on for [specific outcome]" — would give you an anchor for all AI citation work.`,

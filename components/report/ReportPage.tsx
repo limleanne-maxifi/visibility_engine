@@ -275,7 +275,7 @@ function S3Platforms({ data }: { data: ReportData['s3Platforms'] }) {
                   </span>
                 </div>
                 <p className="text-xs text-gray-500 leading-relaxed">
-                  Not measured — included in the Visibility Engine Retainer (SGD 4,500/mo).
+                  Not measured — included in the Visibility Engine Retainer (USD 3,400/mo, SGD 4,500/mo).
                 </p>
               </div>
             );
@@ -322,15 +322,22 @@ function S4Positioning({ data }: { data: ReportData['s4Positioning'] }) {
       <h2 className="text-lg font-bold text-gray-900 mb-1">{data.headline}</h2>
       <p className="text-sm text-gray-500 mb-5 leading-relaxed">{data.sectorContext}</p>
 
-      {/* Positioning statement */}
+      {/* Positioning statement — hide the "Your stated positioning" header + quoted
+          value when the user didn't supply one. The alignment-label pill carries
+          the message in the missing case (label: "No positioning provided. Add it
+          to sharpen…"). See assessAlignmentLevel() in lib/buildTeaserReport.ts. */}
       <div className="rounded-xl p-4 mb-4" style={{ background: '#F9FAFB' }}>
-        <p className="text-[10px] font-bold uppercase tracking-wider text-gray-400 mb-1">
-          Your stated positioning
-        </p>
-        <p className="text-sm font-semibold text-gray-800 italic">
-          &ldquo;{data.entityPositioning}&rdquo;
-        </p>
-        <div className="mt-2">
+        {data.alignmentLevel !== 'missing' && (
+          <>
+            <p className="text-[10px] font-bold uppercase tracking-wider text-gray-400 mb-1">
+              Your stated positioning
+            </p>
+            <p className="text-sm font-semibold text-gray-800 italic">
+              &ldquo;{data.entityPositioning}&rdquo;
+            </p>
+          </>
+        )}
+        <div className={data.alignmentLevel === 'missing' ? '' : 'mt-2'}>
           <StatusPill status={data.alignmentLevel} styles={aStyles} />
         </div>
       </div>
@@ -411,7 +418,7 @@ function PaywallBlock({ data }: { data: ReportData }) {
         <p className="text-xs text-white/45 mb-6 leading-relaxed">
           <span className="font-semibold text-white/65">Not in this report:</span> a 60-day action plan,
           a recommended positioning sentence, content briefs per query, competitor counter-moves, or
-          owner/ETA assignments — those are consulting deliverables, included in the SGD 2,500 Strategic
+          owner/ETA assignments — those are consulting deliverables, included in the USD 1,900 (SGD 2,500) Strategic
           Baseline + Consult.
         </p>
 
@@ -452,13 +459,13 @@ function PaywallBlock({ data }: { data: ReportData }) {
               href={data.calendlyUrl}
               className="text-xs text-white/45 hover:text-white/65 transition-colors"
             >
-              Want the 60-day plan? Strategic Baseline + Consult — SGD $2,500 →
+              Want the 60-day plan? Strategic Baseline + Consult — USD $1,900 (SGD $2,500) →
             </a>
             <a
               href={data.calendlyUrl}
               className="text-xs text-white/45 hover:text-white/65 transition-colors"
             >
-              Visibility Engine Retainer (includes Copilot) — SGD $4,500/mo →
+              Visibility Engine Retainer (includes Copilot) — USD $3,400/mo (SGD $4,500/mo) →
             </a>
           </div>
         </div>
