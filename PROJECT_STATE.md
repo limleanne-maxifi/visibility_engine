@@ -1,11 +1,44 @@
 # PROJECT STATE — AI Visibility Report (Maxifi Digital)
 
 > Handoff / resume doc. Read this first to continue the build without breaks.
-> Last updated: 2026-05-28 (rev 9 — S1–S4 honesty overhaul SHIPPED & LIVE (main=`b112bd8`). FOUR pre-existing production bugs found & fixed this session, including a silent-write RLS misconfiguration that had the funnel capturing ZERO leads. Funnel restored. See §0.).
+> Last updated: 2026-05-30 (rev 10 — Stripe payment-capture gap CLOSED (`/api/stripe-webhook` live), USD-primary pricing SHIPPED, S4 positioning empty-state fix + observation softened. Service-role Supabase client introduced (server-only) for the webhook UPDATE path. Resend sending domain `send.maxifidigital.com` verified. main=`547d9ef`. See §0.).
 
-## 0. ⚠️ READ FIRST — current state (rev 9, 2026-05-28)
+## 0. ⚠️ READ FIRST — current state (rev 10, 2026-05-30)
 
-**Production main SHA:** `b112bd8` (was `9b020d1`). Deploys live to checkyourvisibility.maxifidigital.com from `main`.
+**Production main SHA:** `547d9ef` (was `b112bd8` at rev 9). Deploys live to checkyourvisibility.maxifidigital.com from `main`.
+
+**Three new pieces of infra/UX shipped this session (all merged + deployed):**
+
+1. **Stripe webhook — payment-capture gap CLOSED.** New route `app/api/stripe-webhook/route.ts`. Verifies Stripe-Signature (raw body + `STRIPE_WEBHOOK_SECRET`), handles `checkout.session.completed`, matches by email to most recent `aeo_leads` row, records the payment, and emails the owner. Branch `feat/stripe-webhook` merged to main as `547d9ef`. Endpoint registered in Stripe; test event returns 200. **Real-payment end-to-end test still owed** (see §7 backlog).
+2. **Service-role Supabase client introduced** (server-only, `getServiceRoleClient()` in `lib/supabase.ts`). Bypasses RLS for the webhook UPDATE — anon RLS has INSERT + SELECT policies only (RESOLVED-7). Service-role key (`SUPABASE_SERVICE_ROLE_KEY`) is Netlify-server-scope only, never imported client-side. New helpers `findLeadByEmail()` + `recordPayment()`. **This is the start of the server-only-writes migration** (rev 9 §7 backlog #1); the form-submit `insertLead` still uses anon (next sprint).
+3. **USD-primary pricing display SHIPPED** (branch `pricing/usd-primary` merged as `2f843db`). `lib/pricing.ts` now exports `PRICE_LAUNCH='USD $190'` / `PRICE_STANDARD='USD $340'` + `PRICE_LAUNCH_SGD` / `PRICE_STANDARD_SGD`. Strategic Baseline displays `USD 1,900 (SGD 2,500)`; Retainer `USD 3,400/mo (SGD 4,500/mo)`; Full Report is USD-only (launch block shows struck-through standard). 1 July 2026 date-switch logic UNCHANGED. **Stripe Payment Link price updated to USD 190** to match display. Decision baked: USD-primary supports the AI-advisory repositioning; SGD kept as static secondary subtext; no geo-detection this pass.
+
+**Plus one rendering fix on the S4 positioning empty-state path:**
+- `assessAlignmentLevel` "missing" branch label rewritten to read as a finding rather than a failure: *"No positioning provided. Add it to sharpen positioning analysis and competitor framing in the Full Report."*
+- `S4Positioning` in `ReportPage.tsx` now gates the "Your stated positioning" header + quoted value on `alignmentLevel !== 'missing'` — fixes the orphan `(no positioning phrase provided)` placeholder that was rendering live.
+- `buildS4` second observation softened: removed alarmist `${entity} is competing against all vendors in ${formData.industry}` → `AI has no distinct claim to associate with you — so it groups you with every vendor in your sector` (drops both interpolated values; second-person voice matches the surrounding observations).
+- Branch `fix/positioning-missing-label` merged as `feee907`. Verified live.
+
+**Email infra rev-10 changes:**
+- New `sendPaidOrderNotification()` in `lib/email.ts` — fires from the webhook, separate from `sendInternalNotification` (Owner-only, paid-order subject + body shape, manual-fulfillment trigger). Existing email paths untouched.
+- Resend sending domain **`send.maxifidigital.com`** verified (subdomain — avoided clobbering apex MX). `FROM_EMAIL=notifications@send.maxifidigital.com` in Netlify env. Old `hello@maxifidigital.com` fallback still in code.
+
+**Schema migration applied to production Supabase (2026-05-30):**
+```sql
+ALTER TABLE aeo_leads
+  ADD COLUMN paid_amount   bigint,
+  ADD COLUMN paid_currency text,
+  ADD COLUMN paid_at       timestamptz;
+```
+All nullable; old rows = NULL. `AeoLeadRow` type extended.
+
+**Rev-9 work remains LIVE** — S1–S4 honesty overhaul + Option γ Claude gate + 4 bug fixes from rev 9 are still on main. The rev-9 §0 narrative is preserved below as historical context.
+
+---
+
+### Rev 9 baseline (2026-05-28) — still LIVE on main
+
+**Production main SHA:** `b112bd8` (was `9b020d1` at rev 8). Deploys live to checkyourvisibility.maxifidigital.com from `main`.
 
 **Free snapshot (S1–S4) honesty overhaul — SHIPPED & LIVE.** The free report was previously almost entirely fabricated (named competitors, fake per-platform %, "31 firms" cohort, phantom action plan). Now every free-tier claim traces to form input or the per-industry benchmark lookup. Verified live via real production form submission (row written, `/r/{token}` rendered honest snapshot).
 
@@ -94,8 +127,11 @@ These two are **not wired together**. The engine delivers by email/Slack; the ap
 
 | Branch (origin) | Tip | Contains | Deployed? |
 |---|---|---|---|
-| `main` | `b112bd8` | Funnel + 4-signal scoring + methodology page + 6-step form + **S1–S4 honesty overhaul + Option γ Claude gate + 4 prod-bug fixes** (rev 9 work). | **LIVE in production** (`checkyourvisibility.maxifidigital.com`) — verified ✅ |
-| `feat/s1-s4-honesty` | `85b3022` | Source of the rev-9 merge. Can be deleted (merged to main as `b112bd8`). | merged |
+| `main` | `547d9ef` | Rev 9 + **Stripe webhook (payment-capture) + service-role Supabase client + USD-primary pricing + S4 positioning empty-state fix + softened S4 observation** (rev 10 work). | **LIVE in production** (`checkyourvisibility.maxifidigital.com`) — verified ✅ |
+| `feat/stripe-webhook` | `ea05c9f` | Source of the rev-10 Stripe webhook merge (PR #16 → `547d9ef`). Can be deleted. | merged |
+| `pricing/usd-primary` | `83cc02b` | Source of USD-primary pricing merge (`2f843db`). Can be deleted. | merged |
+| `fix/positioning-missing-label` | `3047656` | Source of S4 positioning empty-state + soften merge (`feee907`). Can be deleted. | merged |
+| `feat/s1-s4-honesty` | `85b3022` | Source of the rev-9 merge (`b112bd8`). Can be deleted. | merged |
 | `docs/sections-spec` | `f5384eb` | Spec docs: SECTIONS_SPEC.md, V2_COPY_DELTA.md, S1-S4_HONESTY_DELTA.md. Not yet merged to main. | not deployed (docs only) |
 | `main-backup-4signal` | `3d57260` | Original 9-commit 4-signal line. **Superseded** — the valuable parts were already ported into the live product. Keep for reference. | safe, not deployed |
 | `staging` | `69d38a4` | Old funnel staging line, now well behind main. | stale |
@@ -105,13 +141,16 @@ These two are **not wired together**. The engine delivers by email/Slack; the ap
 - **Report renderer:** `components/report/ReportPage.tsx` — V2 design (gold `#C87A2F`, navy `#152438` / `#091521`, Inter font). Sections `S1Visibility`…`S8ActionQueue`, `LockedSection`, `ScoreCircle`. **S1Visibility now renders a static placeholder (Option A slot).**
 - **Report route:** `app/r/[token]/page.tsx` — `getReport()` calls `getLeadByToken` + `buildReportFromLead`. `preview-free` / `preview-paid` tokens render mock fixtures (`data/fixtures/report_mock.ts`).
 - **Report builder:** `lib/buildTeaserReport.ts` — `buildTeaserReport`, `buildReportFromLead`, `buildScore`, `buildS1..S4`. s5–8 set to `null` (locked) for real leads. `buildS1` data path intact for Option A forward-compat (renderer ignores it for now).
-- **Supabase:** `lib/supabase.ts` — `insertLead(formData, plan, extras)`, `getLeadByToken(token)`. Token = `report_token` column. Uses ANON key for reads AND writes (see §0c sharp edges + CLAUDE.md RESOLVED-7).
-- **Report type:** `lib/reportTypes.ts` — `ReportData` (s1–s8). New `PlatformMeasurementState` field on `PlatformPriorityRow` (rev 9).
+- **Supabase:** `lib/supabase.ts` — anon-client (`getClient`) for the form-submit INSERT + all SELECT paths; **server-only service-role client (`getServiceRoleClient`) for the Stripe webhook UPDATE** (rev 10 — RESOLVED-7 + RESOLVED-11). Helpers: `insertLead`, `getLeadByToken`, `findLeadByEmail`, `recordPayment`.
+- **Report type:** `lib/reportTypes.ts` — `ReportData` (s1–s8). `PlatformMeasurementState` on `PlatformPriorityRow` (rev 9). `AeoLeadRow` extended with `paid_amount`/`paid_currency`/`paid_at` (rev 10).
 - **Form:** `components/MultiStepForm.tsx`. Industry field in `components/steps/Step2Context.tsx`.
 - **Generate API:** `app/api/generate/route.ts` — `DISABLE_CLAUDE_ACTION_PLAN = true` constant gates Claude call (rev 9).
+- **Stripe webhook:** `app/api/stripe-webhook/route.ts` — POST, Node runtime, raw-body signature verification, `checkout.session.completed` only; writes via service-role client; owner email via `sendPaidOrderNotification` (rev 10 — RESOLVED-12).
+- **Pricing constants:** `lib/pricing.ts` — `PRICE_LAUNCH='USD $190'`, `PRICE_STANDARD='USD $340'`, plus `PRICE_LAUNCH_SGD`/`PRICE_STANDARD_SGD` secondary constants (rev 10 — RESOLVED-13). Date-switch at 1 Jul 2026 00:00 SGT untouched.
+- **Email:** `lib/email.ts` — `sendUserPlanEmail` (snapshot delivery), `sendInternalNotification` (form-submit owner alert), `sendPaidOrderNotification` (rev 10 — paid-order owner alert, separate concern). Sending domain `send.maxifidigital.com` verified (RESOLVED-14).
 
 ### Supabase migration — DONE
-Columns on `aeo_leads`: base + `competitive_standing`, `query_coverage`, `platform_consistency` (4-signal), `report_token` (text, unique index), `report_data` (jsonb), `paid` (bool default false), `stripe_session_id` (text), `status` (text default 'teaser_sent'), `founding` (bool default false).
+Columns on `aeo_leads`: base + `competitive_standing`, `query_coverage`, `platform_consistency` (4-signal), `report_token` (text, unique index), `report_data` (jsonb), `paid` (bool default false), `stripe_session_id` (text), `status` (text default 'teaser_sent'), `founding` (bool default false), **`paid_amount` (bigint, nullable), `paid_currency` (text, nullable), `paid_at` (timestamptz, nullable)** (rev 10 — Stripe webhook).
 
 **Supabase RLS policies on `aeo_leads` (set 2026-05-28, see CLAUDE.md RESOLVED-7):**
 - `anon insert leads` — INSERT, to `anon`, WITH CHECK (true)
@@ -147,18 +186,22 @@ Columns on `aeo_leads`: base + `competitive_standing`, `query_coverage`, `platfo
 - **First clean 4-engine baseline run completed** (maxifi-test, 2026-05-27): named rates 12–14% across all engines; citation rates Perplexity 72% / Anthropic 8% / OpenAI 2% / Google 0%. OpenAI 403 fixed (model access enabled). SMTP/email delivery still broken (placeholder host) — separate workstream.
 - Existing real run data lives at `data/maxifi/2026-05-23/` and `data/maxifi-test/2026-05-27/`.
 
-## 7. Deferred / backlog (rev 9, priority order)
+## 7. Deferred / backlog (rev 10, priority order)
 
-1. **Service-role key for server-side writes (Fix 2).** Move `/api/generate` writes to `SUPABASE_SERVICE_ROLE_KEY` (server-only) so the funnel doesn't depend on a public anon INSERT policy. Plan into Option A sprint.
-2. **Tighten anon SELECT policy** (currently `using (true)` — reads any row). Token is unguessable (128-bit UUID) so practically OK at launch, but harden later — either token-aware policy or move reads server-side with service-role.
-3. **Fix preview Supabase env scoping** in Netlify so previews can exercise the funnel (scope `SUPABASE_URL` / `SUPABASE_ANON_KEY` to Deploy Previews context).
-4. **benchmarkLabel "average median" doubled noun** — visible on live render ("Legal & Legal Services average median"). Contract-level fix at `buildScore` (drop "average" from the label) + update `DATA_CONTRACT.md` consumers.
-5. **Original 502 Anthropic cause** — pull Netlify function log for request `01KSPWWW7Y0VVFJFT1JB03JN08` to learn why the Claude call was failing (key? quota?). Relevant if Option A re-enables a Claude call.
-6. **email.ts L199** — paragraph reads snapshot → Full Report across two sentences; accurate but wants a structural restructure.
-7. **Resend failure observability** — `/api/generate` email sends fail silently (`console.error` only). Pipe to a dashboard or surface in the API response.
-8. **Dead `/results/[id]` route** — legacy duplicate of `/r/[token]`; the form's fallback redirect points at it. Remove or repoint.
-9. **S8 internal identifiers** — `lib/reportTypes.ts:219` + `DATA_CONTRACT.md` still call S8 "60-Day Action Queue" (internal-only contract identifiers, not user-facing — out of RESOLVED-6 scope). Tidy when engine emits the new S8 shape.
-10. **INDUSTRY_BENCHMARKS provenance** — confirm medians are documented before "sector median" framing scales beyond launch.
+1. **Real-payment end-to-end Stripe test.** The webhook is registered and the Stripe-test-event returns 200, but no real payment has flowed through yet. Make ONE real payment via the live Stripe Payment Link (or test mode at the same code path), verify: row updated in `aeo_leads`, owner notification email received, no errors in Netlify function logs. Gate before promoting beyond Airspace World audience.
+2. **Migrate `/api/generate` `insertLead` to service-role.** The webhook now uses the service-role client; the form-submit INSERT still uses anon (depends on the public anon INSERT policy). Move it server-side so the anon role only needs SELECT — tighter security posture. Infra is already in `lib/supabase.ts` (`getServiceRoleClient`). Pair with #3 (tighten anon SELECT) and #4 (anon INSERT policy can be DROPPED entirely once both writes are server-side). Supersedes rev-9 §7 #1.
+3. **Tighten anon SELECT policy** (currently `using (true)` — reads any row). Token is unguessable (128-bit UUID) so practically OK at launch, but harden later — either token-aware policy or move reads server-side with service-role.
+4. **Drop anon INSERT/UPDATE policies on `aeo_leads`** once #2 lands. Anon should ideally be no-write at all.
+5. **Geo / locale detection for SGD pricing display.** Currently USD-primary + SGD secondary shown to everyone (RESOLVED-13). Detect Singapore visitors (Netlify edge headers or client locale) and show SGD-primary to them; keep USD for the rest of the world. Decision deferred — non-blocking.
+6. **Webhook idempotency / replay protection.** Stripe webhooks can be retried; the current handler is idempotent in DB effect (UPDATE same row to same state is a no-op) but the owner email fires on every retry. Add a check on `stripe_session_id` already-present before updating + notifying. Low priority — Stripe only retries on non-2xx, which the happy path doesn't return.
+7. **Fix preview Supabase env scoping** in Netlify so previews can exercise the funnel (scope `SUPABASE_URL` / `SUPABASE_ANON_KEY` + the rev-10 Stripe/service-role keys to Deploy Previews context).
+8. **benchmarkLabel "average median" doubled noun** — visible on live render ("Legal & Legal Services average median"). Contract-level fix at `buildScore` (drop "average" from the label) + update `DATA_CONTRACT.md` consumers.
+9. **Original 502 Anthropic cause** — pull Netlify function log for request `01KSPWWW7Y0VVFJFT1JB03JN08` to learn why the Claude call was failing (key? quota?). Relevant if Option A re-enables a Claude call.
+10. **email.ts L199** — paragraph reads snapshot → Full Report across two sentences; accurate but wants a structural restructure.
+11. **Resend failure observability** — `/api/generate` + `/api/stripe-webhook` email sends fail silently (`console.error` only). Pipe to a dashboard or surface in a health-check route.
+12. **Dead `/results/[id]` route** — legacy duplicate of `/r/[token]`; the form's fallback redirect points at it. Remove or repoint.
+13. **S8 internal identifiers** — `lib/reportTypes.ts:219` + `DATA_CONTRACT.md` still call S8 "60-Day Action Queue" (internal-only contract identifiers, not user-facing — out of RESOLVED-6 scope). Tidy when engine emits the new S8 shape.
+14. **INDUSTRY_BENCHMARKS provenance** — confirm medians are documented before "sector median" framing scales beyond launch.
 
 ## 7a. Carry-over engine fast-follow (post-launch, eng-side)
 - Reskin engine PDF template to exact V2 colors (branch `reskin-pdf-v2-design`).
@@ -199,9 +242,9 @@ Historical note: rev 6–8 work folded the 4-signal scoring + methodology page +
 - `staging` = `69d38a4` (stale; behind main)
 - Tag `prod-pre-4signal-8bac0a0` = `8bac0a0` (historical rollback marker)
 
-## 11. Roadmap (rev 9, unchanged scope, now unblocked)
+## 11. Roadmap (rev 10, payment-capture closed)
 
-Free-snapshot honesty = DONE/live. Funnel = restored (writes + reads). Next:
+Free-snapshot honesty = DONE/live. Funnel = restored. **Payment-capture gap = CLOSED** (Stripe webhook live, schema migrated, env vars set, owner notified on each paid event). Next:
 
 - **Phase 3 — engine gaps** for the PAID S5–S8 (work happens in `ai-visibility-engine`):
   - **Gap 1: citation URL extraction** (highest-value; Perplexity already 72% citation rate — capture the URLs).

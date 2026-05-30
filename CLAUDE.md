@@ -117,3 +117,111 @@ Netlify deploy-preview context lacks correctly-scoped Supabase env vars (`SUPABA
 **Do NOT renumber sections** to fill the S1 slot. S1 is reserved for **Option A** (fire one real engine query on submit, render the verbatim AI response — see PROJECT_STATE §0b.2). The `buildS1` builder in `lib/buildTeaserReport.ts` is left intact for forward-compatibility; the renderer currently ignores its output (the section type still flows through `ReportData['s1Visibility']`).
 
 Option A requires deploying the engine (`server.py` in `ai-visibility-engine`) as a hosted service first — it is laptop-only today. The service-role write migration (RESOLVED-7 future-better + PROJECT_STATE §7 backlog #1) can ride along in the same sprint.
+
+### RESOLVED-11: Service-role Supabase client (server-only — bypasses RLS)
+
+`lib/supabase.ts` now exports **two** Supabase clients:
+
+- **`getClient()`** — anon-key client. Used for the form-submit `insertLead` and all `getLeadByToken` / `getLeadById` / `getAllLeads` reads. Bound by RLS (RESOLVED-7).
+- **`getServiceRoleClient()`** — service-role client. Uses `SUPABASE_SERVICE_ROLE_KEY`. **Server-only**, bypasses RLS. Singleton, lazy. Currently consumed ONLY by `app/api/stripe-webhook/route.ts` for the lead `UPDATE` path.
+
+The webhook needs `UPDATE` to mark a lead paid + record Stripe session details. Anon RLS only has INSERT + SELECT policies (RESOLVED-7); granting UPDATE to anon would let any browser client mutate any lead row. Service-role bypasses RLS entirely and is safe in a server-only context.
+
+**Security rules — non-negotiable:**
+- `SUPABASE_SERVICE_ROLE_KEY` must be Netlify **server-context** only. **Never** prefix with `NEXT_PUBLIC_*`. **Never** scope to Deploy Previews unless explicitly intended.
+- Do not import `getServiceRoleClient` from a client component or a `'use client'` file.
+- Do not log the key. Do not include it in any API response.
+- New server-side write helpers go through `getServiceRoleClient`. New client-callable read helpers stay on `getClient` (anon).
+
+Updates the "future-better" note in RESOLVED-7 — that future is partially here:
+- Webhook path: uses service-role ✅ (rev 10)
+- Form-submit `insertLead`: still anon. Migration is PROJECT_STATE §7 backlog #2.
+
+Helpers added in rev 10 that use the service-role client: `findLeadByEmail(email)` (most-recent match, returns null if none) and `recordPayment(leadId, payload)` (sets `paid=true`, `status='paid'`, all Stripe-related fields).
+
+### RESOLVED-12: Stripe webhook scope and event handling
+
+`app/api/stripe-webhook/route.ts` is the payment-capture path. **Scope: record paid orders + notify the owner. NO customer-facing report generation, NO customer email** — fulfillment stays manual.
+
+What it does:
+- Reads the raw body via `await req.text()` **before any parsing** — required for signature verification.
+- Verifies via `stripe.webhooks.constructEvent(rawBody, sigHeader, STRIPE_WEBHOOK_SECRET)`.
+- Handles **only** `checkout.session.completed`. All other event types are 200-ack'd and ignored.
+- Matches by `session.customer_details.email` to the most recent `aeo_leads` row.
+- Records `paid=true`, `status='paid'`, `stripe_session_id`, `paid_amount` (smallest currency unit — Stripe semantics), `paid_currency`, `paid_at` via `recordPayment()`.
+- Fires `sendPaidOrderNotification()` in `lib/email.ts` on all paths (matched, no-lead, no-email).
+
+What it does NOT do:
+- Generate any customer report or trigger the engine.
+- Send any customer-facing email.
+- Touch `buildTeaserReport`, `sendUserPlanEmail`, or any other rev-9 path.
+
+HTTP semantics (matter for Stripe's retry behaviour):
+- 400 on missing/invalid signature → Stripe stops retrying (signing secret is wrong).
+- 200 on success / unhandled event / orphan → Stripe stops retrying (event handled).
+- 500 on DB UPDATE failure → Stripe retries for up to 3 days (the payment HAS happened, we just couldn't record it).
+
+Edge cases:
+- **No email on session** → owner gets a `[PAID-BUT-NO-LEAD] (no email) — …` alert; no DB write; 200.
+- **Email but no matching lead row** → owner gets a `[PAID-BUT-NO-LEAD] {email} — …` alert with reconcile instructions; no DB write; 200.
+- **Owner notification (Resend) fails** → swallowed in a wrapper (`safeNotifyOwner`) so Stripe doesn't retry the whole event just because Resend was slow. Logged only.
+
+Required env vars (server-scope, server-only):
+- `STRIPE_SECRET_KEY` — to init the Stripe SDK
+- `STRIPE_WEBHOOK_SECRET` — for signature verification
+- `SUPABASE_SERVICE_ROLE_KEY` — for the lead UPDATE
+
+Required Supabase schema (applied 2026-05-30):
+```sql
+ALTER TABLE aeo_leads
+  ADD COLUMN paid_amount   bigint,
+  ADD COLUMN paid_currency text,
+  ADD COLUMN paid_at       timestamptz;
+```
+
+**Not yet idempotency-protected.** The DB effect is idempotent (UPDATE to the same state is a no-op) but the owner email fires on every Stripe retry. See PROJECT_STATE §7 backlog #6 for the planned `stripe_session_id` already-present check.
+
+### RESOLVED-13: USD-primary pricing display rule
+
+All displayed prices are **USD primary, SGD secondary** (static parenthetical subtext). No geo/locale detection — same string shown to every visitor.
+
+Mapping (round numbers, not literal FX):
+
+| Tier | Display | Source |
+|---|---|---|
+| Full Report launch | `USD $190` (with struck-through `USD $340` on the launch block) | `PRICE_LAUNCH` in `lib/pricing.ts` |
+| Full Report standard (post-1 July 2026) | `USD $340` | `PRICE_STANDARD` |
+| Strategic Baseline + Consult | `USD 1,900 (SGD 2,500)` | hardcoded |
+| Visibility Engine Retainer | `USD 3,400/mo (SGD 4,500/mo)` | hardcoded |
+
+`lib/pricing.ts` constants:
+- `PRICE_LAUNCH = 'USD $190'`
+- `PRICE_STANDARD = 'USD $340'`
+- `PRICE_LAUNCH_SGD = 'SGD $250'` (secondary, available for future SG-locale rendering)
+- `PRICE_STANDARD_SGD = 'SGD $450'` (secondary)
+- Date-switch at 1 July 2026 00:00 SGT (`LAUNCH_RATE_CUTOFF_MS`) is **untouched** — still flips `PRICE_LAUNCH` → `PRICE_STANDARD`.
+
+**Rules:**
+- The **Full Report price** propagates automatically via `getReportPrice()` → `data.reportPrice` → `<PaywallBlock>` + `<LockedSection>` + unlock page. **Do not hardcode the Full Report price anywhere** — change `lib/pricing.ts` and surfaces follow.
+- The Strategic Baseline + Retainer prices are still hardcoded (no central constant). When you touch one, touch all four sites (unlock page tier card, paywall block link, ReportPage S3 not-measured row label, unlock page sample S5).
+- **Stripe Payment Link price must match the displayed Full Report price.** Currently both `USD 190`. If you change `PRICE_LAUNCH`/`PRICE_STANDARD`, update the Stripe Payment Link in Stripe Dashboard too.
+
+Internal-doc SGD references in `CLAUDE.md` / `PROJECT_STATE.md` (tier identifiers like "the SGD 250 Full Report") are NOT user-facing and don't need to follow the display rule. Customer-visible strings do.
+
+Backlog (PROJECT_STATE §7 #5): geo/locale detection — show SGD-primary to Singapore visitors, USD to the rest. Deferred — non-blocking.
+
+### RESOLVED-14: Resend sending domain — verified subdomain `send.maxifidigital.com`
+
+The Resend sending domain in production is the **subdomain** `send.maxifidigital.com`, not the apex `maxifidigital.com`. Apex MX records belong to inbound mail (the existing email hosting) and **must not be touched** — pointing apex MX to Resend would break inbound mail delivery for the team.
+
+Subdomain isolation is intentional:
+- Resend DNS records (SPF / DKIM / Return-Path) are scoped to the `send` subdomain only.
+- Apex MX, A, TXT records are untouched.
+- Inbound mail to `*@maxifidigital.com` continues to flow through existing hosting.
+- Outbound transactional mail flows via Resend from `*@send.maxifidigital.com`.
+
+Production env:
+- `FROM_EMAIL=notifications@send.maxifidigital.com` (Netlify, server-scope)
+- Fallback `hello@maxifidigital.com` still in code if env unset, but the env value is what production uses.
+
+**Do not change `FROM_EMAIL` to an apex address** unless apex DNS has also been configured for Resend — Resend will reject sends from unverified domains.
